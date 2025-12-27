@@ -1,0 +1,154 @@
+# Default configuration for finanzonline_databox
+#
+# This file contains the default configuration that ships with the application.
+# settings can be also set in defaultconfig.d
+
+# Settings can be overridden via:
+#   - Application-level config (LINUX):
+#        - /etc/xdg/finanzonline-databox/config.[toml|yaml|json]
+#        - /etc/xdg/finanzonline-databox/config.d/*.[toml|yaml|json]
+#   - Host-level config: (macOS)
+#        - /Library/Application Support/bitranox/FinanzOnline DataBox/config.[toml|yaml|json]
+#        - /Library/Application Support/bitranox/FinanzOnline DataBox/config.d/*.[toml|yaml|json]
+#   - User-level config: (Linux)
+#        - ~/.config/finanzonline-databox/config.[toml|yaml|json]
+#        - ~/.config/finanzonline-databox/config.d/*.[toml|yaml|json]
+#   - .env files: .env in current directory or parent directories
+#   - Environment variables: Prefix with FINANZONLINE_DATABOX___
+#
+# Precedence (lowest to highest): defaults → app → host → user → dotenv → env
+#
+# IMPORTANT: Naming Conventions for .env Files vs Environment Variables
+# ----------------------------------------------------------------------
+#
+# .env FILES (no prefix needed):
+#   Format: SECTION__KEY=value
+#   Uses double underscore (__) to create nested structures.
+#
+#   Examples in .env file:
+#     FINANZONLINE__TID=123456789
+#     FINANZONLINE__BENID=MYUSER
+#     FINANZONLINE__PIN=secret
+#     FINANZONLINE__HERSTELLERID=ATU12345678
+#     FINANZONLINE__SESSION_TIMEOUT=60.0
+#
+# ENVIRONMENT VARIABLES (require prefix):
+#   Format: PREFIX___SECTION__KEY=value
+#   Uses triple underscore (___) to separate PREFIX from SECTION,
+#   and double underscore (__) to separate SECTION from KEY.
+#
+#   Examples as environment variables:
+#     FINANZONLINE_DATABOX___FINANZONLINE__TID=123456789
+#     FINANZONLINE_DATABOX___FINANZONLINE__PIN=secret
+#
+# Value coercion: "true"/"false" → bool, "null"/"none" → None, numbers → int/float
+
+
+# ==============================================================================
+# Application Settings - General application behavior
+# ==============================================================================
+
+[app]
+
+# language = "en"
+# Purpose: Language for user-facing messages and email notifications
+# Type: string (language code)
+# Default: "en" (English)
+# Environment: FINANZONLINE_DATABOX___APP__LANGUAGE
+# Supported: "en" (English), "de" (German), "es" (Spanish), "fr" (French), "ru" (Russian)
+# Note: Affects CLI output, help text, error messages, and email content.
+# Example: language = "de"
+
+
+# ==============================================================================
+# FinanzOnline Configuration - BMF DataBox service credentials
+# ==============================================================================
+#
+# Documentation: See docs/prd/prd.md for detailed API specification
+# Settings can be overridden via lib_layered_config precedence chain
+# Environment variables: FINANZONLINE_DATABOX___FINANZONLINE__*
+#
+# IMPORTANT: Never commit credentials to version control!
+# Use environment variables or user config (~/.config/finanzonline-databox/config.toml)
+#
+[finanzonline]
+
+# tid = ""
+# Purpose: Participant ID (Teilnehmer-ID) for FinanzOnline authentication
+# Type: string
+# Default: "" (REQUIRED - must be configured)
+# Environment: FINANZONLINE_DATABOX___FINANZONLINE__TID
+# Example: tid = "123456789"
+
+# benid = ""
+# Purpose: User ID (Benutzer-ID) for FinanzOnline authentication
+# Type: string
+# Default: "" (REQUIRED - must be configured)
+# Environment: FINANZONLINE_DATABOX___FINANZONLINE__BENID
+# Example: benid = "MYUSER"
+
+# pin = ""
+# Purpose: Password/PIN for FinanzOnline authentication
+# Type: string
+# Default: "" (REQUIRED - must be configured)
+# Environment: FINANZONLINE_DATABOX___FINANZONLINE__PIN
+# Security: Store in environment variable, not config file!
+# Example: Set via environment variable for security
+
+# herstellerid = ""
+# Purpose: VAT-ID of software producer (required by BMF for session login)
+# Type: string
+# Default: "" (REQUIRED - must be configured)
+# Environment: FINANZONLINE_DATABOX___FINANZONLINE__HERSTELLERID
+# Note: This is YOUR company's Austrian UID (ATU number) as the software developer
+# Example: herstellerid = "ATU12345678"
+
+# session_timeout = 30.0
+# Purpose: Timeout in seconds for session operations (login/logout)
+# Type: float
+# Default: 30.0
+# Environment: FINANZONLINE_DATABOX___FINANZONLINE__SESSION_TIMEOUT
+# Example: session_timeout = 60.0
+
+# query_timeout = 30.0
+# Purpose: Timeout in seconds for DataBox operations
+# Type: float
+# Default: 30.0
+# Environment: FINANZONLINE_DATABOX___FINANZONLINE__QUERY_TIMEOUT
+# Example: query_timeout = 60.0
+
+# default_recipients = []
+# Purpose: Default email recipients for sync summary notifications
+# Type: array of strings (email addresses)
+# Default: [] (empty - no email notifications unless specified)
+# Environment: FINANZONLINE_DATABOX___FINANZONLINE__DEFAULT_RECIPIENTS
+# Note: Can be overridden with --recipient CLI option
+# Example: default_recipients = ["admin@example.com", "accounting@example.com"]
+
+# document_recipients = []
+# Purpose: Default email recipients for per-document notifications with attachments
+# Type: array of strings (email addresses)
+# Default: [] (empty - no per-document emails unless specified)
+# Environment: FINANZONLINE_DATABOX___FINANZONLINE__DOCUMENT_RECIPIENTS
+# Note: Each downloaded document is sent as a separate email with the document attached.
+#       Can be overridden with --document-recipient CLI option.
+# Example: document_recipients = ["archive@example.com", "documents@example.com"]
+
+# email_format = "both"
+# Purpose: Email body format for notifications
+# Type: string (one of: "html", "plain", "both")
+# Default: "both" (sends multipart/alternative with both formats)
+# Environment: FINANZONLINE_DATABOX___FINANZONLINE__EMAIL_FORMAT
+# Options:
+#   - "html":  Send HTML-only emails (rich formatting)
+#   - "plain": Send plain text-only emails
+#   - "both":  Send multipart/alternative with both formats
+# Example: email_format = "html"
+
+# output_dir = ""
+# Purpose: Default output directory for downloaded files
+# Type: string (path)
+# Default: "" (empty - uses command-specific defaults: ./databox for sync, . for download)
+# Environment: FINANZONLINE_DATABOX___FINANZONLINE__OUTPUT_DIR
+# Note: Supports ~ for home directory expansion. Can be overridden with --output-dir CLI option.
+# Example: output_dir = "~/Documents/FinanzOnline/DataBox"

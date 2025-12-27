@@ -1,0 +1,541 @@
+# Russian translations for finanzonline-databox.
+# Copyright (C) 2025 finanzonline-databox
+# This file is distributed under the same license as the
+# finanzonline-databox project.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: finanzonline-databox 2.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-12-27 17:30+0100\n"
+"PO-Revision-Date: 2025-12-27 17:30+0100\n"
+"Last-Translator: \n"
+"Language: ru\n"
+"Language-Team: Russian\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: src/finanzonline_databox/_format_utils.py:32
+msgid "Bescheid"
+msgstr "Решение"
+
+#: src/finanzonline_databox/_format_utils.py:33
+msgid "Mitteilung"
+msgstr "Уведомление"
+
+#: src/finanzonline_databox/_format_utils.py:34
+msgid "Information"
+msgstr "Информация"
+
+#: src/finanzonline_databox/_format_utils.py:35
+msgid "Protokoll"
+msgstr "Протокол"
+
+#: src/finanzonline_databox/_format_utils.py:36
+msgid "EU-Erledigung"
+msgstr "ЕС-обработка"
+
+#: src/finanzonline_databox/cli.py:199
+msgid "Show full Python traceback on errors"
+msgstr "Показывать полную трассировку Python при ошибках"
+
+#: src/finanzonline_databox/cli.py:205
+msgid "Load configuration from a named profile (e.g., 'production', 'test')"
+msgstr ""
+"Загрузить конфигурацию из именованного профиля (например, 'production', "
+"'test')"
+
+#: src/finanzonline_databox/cli.py:274
+msgid "Output format (human-readable or JSON)"
+msgstr "Формат вывода (читаемый или JSON)"
+
+#: src/finanzonline_databox/cli.py:280
+msgid "Show only a specific configuration section (e.g., 'lib_log_rich')"
+msgstr ""
+"Показать только определённый раздел конфигурации (например, "
+"'lib_log_rich')"
+
+#: src/finanzonline_databox/cli.py:286 src/finanzonline_databox/cli.py:357
+msgid "Override profile from root command (e.g., 'production', 'test')"
+msgstr ""
+"Переопределить профиль из корневой команды (например, 'production', "
+"'test')"
+
+#: src/finanzonline_databox/cli.py:317
+msgid "profile"
+msgstr "профиль"
+
+#: src/finanzonline_databox/cli.py:318
+msgid "Configuration deployed successfully"
+msgstr "Конфигурация успешно развёрнута"
+
+#: src/finanzonline_databox/cli.py:322
+msgid "No files were created (all target files already exist)."
+msgstr "Файлы не созданы (все целевые файлы уже существуют)."
+
+#: src/finanzonline_databox/cli.py:323
+msgid "Use --force to overwrite existing configuration files."
+msgstr "Используйте --force для перезаписи существующих файлов конфигурации."
+
+#: src/finanzonline_databox/adapters/output/formatters.py:151
+#: src/finanzonline_databox/cli.py:330 src/finanzonline_databox/cli.py:334
+#: src/finanzonline_databox/cli.py:475 src/finanzonline_databox/cli.py:1112
+msgid "Error"
+msgstr "Ошибка"
+
+#: src/finanzonline_databox/cli.py:330
+msgid "Permission denied."
+msgstr "Доступ запрещён."
+
+#: src/finanzonline_databox/cli.py:331
+msgid "Hint: System-wide deployment (--target app/host) may require sudo."
+msgstr ""
+"Подсказка: Системное развёртывание (--target app/host) может потребовать "
+"sudo."
+
+#: src/finanzonline_databox/cli.py:334
+msgid "Failed to deploy configuration:"
+msgstr "Не удалось развернуть конфигурацию:"
+
+#: src/finanzonline_databox/cli.py:345
+msgid "Target configuration layer(s) to deploy to (can specify multiple)"
+msgstr ""
+"Целевой уровень(и) конфигурации для развёртывания (можно указать "
+"несколько)"
+
+#: src/finanzonline_databox/cli.py:351
+msgid "Overwrite existing configuration files"
+msgstr "Перезаписать существующие файлы конфигурации"
+
+#: src/finanzonline_databox/cli.py:476
+msgid ""
+"Configure FinanzOnline credentials in your config file or via environment"
+" variables:"
+msgstr ""
+"Настройте учётные данные FinanzOnline в файле конфигурации или через "
+"переменные окружения:"
+
+#: src/finanzonline_databox/cli.py:477
+msgid "8-12 alphanumeric"
+msgstr "8-12 буквенно-цифровых"
+
+#: src/finanzonline_databox/cli.py:478
+msgid "5-12 chars"
+msgstr "5-12 символов"
+
+#: src/finanzonline_databox/cli.py:479
+msgid "5-128 chars"
+msgstr "5-128 символов"
+
+#: src/finanzonline_databox/cli.py:480
+msgid "10-24 alphanumeric"
+msgstr "10-24 буквенно-цифровых"
+
+#: src/finanzonline_databox/cli.py:555
+msgid "Return code:"
+msgstr "Код возврата:"
+
+#: src/finanzonline_databox/cli.py:558
+msgid "This error may be temporary. Try again later."
+msgstr "Эта ошибка может быть временной. Повторите попытку позже."
+
+#: src/finanzonline_databox/cli.py:874
+msgid ""
+"Document type filter (B=Bescheide, M=Mitteilungen, I=Info, P=Protokolle, "
+"empty=all unread)"
+msgstr ""
+"Фильтр типа документа (B=Решения, M=Уведомления, I=Инфо, P=Протоколы, "
+"пусто=все непрочитанные)"
+
+#: src/finanzonline_databox/cli.py:881
+msgid "Start date filter (YYYY-MM-DD, max 31 days ago)"
+msgstr "Фильтр начальной даты (YYYY-MM-DD, макс. 31 день назад)"
+
+#: src/finanzonline_databox/cli.py:888
+msgid "End date filter (YYYY-MM-DD, max 7 days after start)"
+msgstr "Фильтр конечной даты (YYYY-MM-DD, макс. 7 дней после начала)"
+
+#: src/finanzonline_databox/cli.py:895
+msgid "List documents from last N days (overrides --from/--to, max 7)"
+msgstr ""
+"Список документов за последние N дней (переопределяет --from/--to, макс. "
+"7)"
+
+#: src/finanzonline_databox/cli.py:903
+msgid "Show only unread documents (default)"
+msgstr "Показать только непрочитанные документы (по умолчанию)"
+
+#: src/finanzonline_databox/cli.py:909
+msgid "Show only read documents"
+msgstr "Показать только прочитанные документы"
+
+#: src/finanzonline_databox/cli.py:916
+msgid "Show all documents"
+msgstr "Показать все документы"
+
+#: src/finanzonline_databox/cli.py:923 src/finanzonline_databox/cli.py:1139
+msgid "Reference filter (anbringen, e.g., UID, E1)"
+msgstr "Фильтр по ссылке (anbringen, например, UID, E1)"
+
+#: src/finanzonline_databox/cli.py:930 src/finanzonline_databox/cli.py:1184
+msgid "Output format (default: human)"
+msgstr "Формат вывода (по умолчанию: читаемый)"
+
+#: src/finanzonline_databox/cli.py:1031
+msgid ""
+"Output directory for downloaded file (default: config or current "
+"directory)"
+msgstr ""
+"Каталог для скачанного файла (по умолчанию: из конфигурации или текущий "
+"каталог)"
+
+#: src/finanzonline_databox/cli.py:1038
+msgid "Override output filename (default: auto-generated from entry metadata)"
+msgstr "Переопределить имя файла (по умолчанию: автоматически из метаданных)"
+
+#: src/finanzonline_databox/cli.py:1108
+msgid "Downloaded"
+msgstr "Скачано"
+
+#: src/finanzonline_databox/cli.py:1109
+msgid "Size"
+msgstr "Размер"
+
+#: src/finanzonline_databox/cli.py:1125
+msgid "Output directory for downloaded files (default: config or ./databox)"
+msgstr "Каталог для скачанных файлов (по умолчанию: из конфигурации или ./databox)"
+
+#: src/finanzonline_databox/cli.py:1132
+msgid ""
+"Document type filter (B=Bescheide, M=Mitteilungen, I=Info, P=Protokolle, "
+"empty=all)"
+msgstr ""
+"Фильтр типа документа (B=Решения, M=Уведомления, I=Инфо, P=Протоколы, "
+"пусто=все)"
+
+#: src/finanzonline_databox/cli.py:1145
+msgid "Number of days to look back (default: 31, max: 31)"
+msgstr "Количество дней назад (по умолчанию: 31, макс: 31)"
+
+#: src/finanzonline_databox/cli.py:1153
+msgid "Sync only unread documents (default)"
+msgstr "Синхронизировать только непрочитанные документы (по умолчанию)"
+
+#: src/finanzonline_databox/cli.py:1159
+msgid "Sync only read documents"
+msgstr "Синхронизировать только прочитанные документы"
+
+#: src/finanzonline_databox/cli.py:1166
+msgid "Sync all documents"
+msgstr "Синхронизировать все документы"
+
+#: src/finanzonline_databox/cli.py:1171
+msgid "Skip files that already exist (default: skip)"
+msgstr "Пропустить существующие файлы (по умолчанию: пропустить)"
+
+#: src/finanzonline_databox/cli.py:1177
+msgid "Disable email notification (default: email enabled)"
+msgstr "Отключить уведомление по электронной почте (по умолчанию: включено)"
+
+#: src/finanzonline_databox/cli.py:1190
+msgid ""
+"Email recipient for sync summary (can specify multiple, uses config "
+"default if not specified)"
+msgstr ""
+"Получатель email для сводки синхронизации (можно указать несколько, "
+"использует значение из конфигурации по умолчанию)"
+
+#: src/finanzonline_databox/cli.py:1196
+msgid ""
+"Email recipient for per-document notifications with attachments (can "
+"specify multiple)"
+msgstr ""
+"Получатель email для уведомлений по документам с вложениями (можно "
+"указать несколько)"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:51
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:122
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:338
+msgid "This is an automated message from finanzonline-databox."
+msgstr "Это автоматическое сообщение от finanzonline-databox."
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:58
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:72
+msgid "Diagnostic Information"
+msgstr "Диагностическая информация"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:87
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:138
+#: src/finanzonline_databox/adapters/output/formatters.py:231
+msgid "SUCCESS"
+msgstr "УСПЕХ"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:87
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:138
+msgid "COMPLETED WITH ERRORS"
+msgstr "ЗАВЕРШЕНО С ОШИБКАМИ"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:90
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:163
+#: src/finanzonline_databox/adapters/output/formatters.py:235
+msgid "DataBox Sync Result"
+msgstr "Результат синхронизации DataBox"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:93
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:143
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:190
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:240
+#: src/finanzonline_databox/adapters/output/formatters.py:237
+msgid "Status:"
+msgstr "Статус:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:94
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:144
+#: src/finanzonline_databox/adapters/output/formatters.py:238
+msgid "Output Dir:"
+msgstr "Каталог:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:95
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:145
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:196
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:248
+msgid "Timestamp:"
+msgstr "Временная метка:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:97
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:168
+#: src/finanzonline_databox/adapters/output/formatters.py:240
+msgid "Statistics"
+msgstr "Статистика"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:99
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:149
+#: src/finanzonline_databox/adapters/output/formatters.py:242
+msgid "Total Listed:"
+msgstr "Всего в списке:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:100
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:150
+#: src/finanzonline_databox/adapters/output/formatters.py:243
+msgid "Downloaded:"
+msgstr "Скачано:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:101
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:151
+#: src/finanzonline_databox/adapters/output/formatters.py:244
+msgid "Skipped:"
+msgstr "Пропущено:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:102
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:152
+#: src/finanzonline_databox/adapters/output/formatters.py:245
+msgid "Failed:"
+msgstr "Не удалось:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:103
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:153
+#: src/finanzonline_databox/adapters/output/formatters.py:246
+msgid "Total Size:"
+msgstr "Общий размер:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:110
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:158
+msgid "New documents have been downloaded to your DataBox folder."
+msgstr "Новые документы были скачаны в вашу папку DataBox."
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:118
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:161
+msgid "WARNING: Some downloads failed. Please check the logs for details."
+msgstr ""
+"ПРЕДУПРЕЖДЕНИЕ: Некоторые загрузки не удались. Пожалуйста, проверьте логи"
+" для подробностей."
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:186
+msgid "DataBox ERROR Notification"
+msgstr "Уведомление об ОШИБКЕ DataBox"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:189
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:239
+msgid "Operation:"
+msgstr "Операция:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:190
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:237
+msgid "ERROR"
+msgstr "ОШИБКА"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:191
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:241
+msgid "Error Type:"
+msgstr "Тип ошибки:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:192
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:242
+msgid "Message:"
+msgstr "Сообщение:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:195
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:245
+msgid "Return Code:"
+msgstr "Код возврата:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:196
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:247
+msgid "Retryable:"
+msgstr "Повторяемый:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:196
+msgid "Yes"
+msgstr "Да"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:196
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:247
+msgid "No"
+msgstr "Нет"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:224
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:277
+msgid "This is an automated error notification from finanzonline-databox."
+msgstr "Это автоматическое уведомление об ошибке от finanzonline-databox."
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:247
+msgid "Yes - try again later"
+msgstr "Да - повторите попытку позже"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:279
+msgid "DataBox Error"
+msgstr "Ошибка DataBox"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:281
+msgid "DataBox ERROR"
+msgstr "ОШИБКА DataBox"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:321
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:370
+msgid "FinanzOnline DataBox - Document Notification"
+msgstr "FinanzOnline DataBox - Уведомление о документе"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:324
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:374
+msgid "Document Details"
+msgstr "Детали документа"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:326
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:358
+msgid "Type:"
+msgstr "Тип:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:327
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:359
+msgid "Description:"
+msgstr "Описание:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:328
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:360
+msgid "Tax Number:"
+msgstr "Налоговый номер:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:329
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:361
+msgid "Reference:"
+msgstr "Ссылка:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:330
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:362
+msgid "Period:"
+msgstr "Период:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:331
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:363
+msgid "Document Date:"
+msgstr "Дата документа:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:332
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:364
+msgid "Delivered:"
+msgstr "Доставлено:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:333
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:365
+msgid "File Type:"
+msgstr "Тип файла:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:335
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:368
+msgid "The document is attached to this email."
+msgstr "Документ прикреплён к этому письму."
+
+#: src/finanzonline_databox/adapters/output/formatters.py:59
+msgid "NEW"
+msgstr "НОВЫЙ"
+
+#: src/finanzonline_databox/adapters/output/formatters.py:62
+msgid "read"
+msgstr "прочитан"
+
+#: src/finanzonline_databox/adapters/output/formatters.py:88
+msgid "No entries found"
+msgstr "Записи не найдены"
+
+#: src/finanzonline_databox/adapters/output/formatters.py:92
+msgid "DataBox Entries"
+msgstr "Записи DataBox"
+
+#: src/finanzonline_databox/adapters/output/formatters.py:94
+msgid "Total:"
+msgstr "Всего:"
+
+#: src/finanzonline_databox/adapters/output/formatters.py:94
+msgid "unread"
+msgstr "непрочитанных"
+
+#: src/finanzonline_databox/adapters/output/formatters.py:214
+msgid "New documents have been downloaded."
+msgstr "Новые документы были скачаны."
+
+#: src/finanzonline_databox/adapters/output/formatters.py:216
+msgid "WARNING: Some downloads failed. Check logs for details."
+msgstr ""
+"ПРЕДУПРЕЖДЕНИЕ: Некоторые загрузки не удались. Проверьте логи для "
+"подробностей."
+
+#: src/finanzonline_databox/adapters/output/formatters.py:231
+msgid "COMPLETED WITH WARNINGS"
+msgstr "ЗАВЕРШЕНО С ПРЕДУПРЕЖДЕНИЯМИ"
+
+#: src/finanzonline_databox/domain/return_codes.py:114
+msgid "Operation successful"
+msgstr "Операция успешна"
+
+#: src/finanzonline_databox/domain/return_codes.py:116
+msgid "Session invalid or expired"
+msgstr "Сессия недействительна или истекла"
+
+#: src/finanzonline_databox/domain/return_codes.py:117
+msgid "System maintenance"
+msgstr "Техническое обслуживание системы"
+
+#: src/finanzonline_databox/domain/return_codes.py:118
+msgid "Technical error"
+msgstr "Техническая ошибка"
+
+#: src/finanzonline_databox/domain/return_codes.py:122
+msgid "ts_zust_von and ts_zust_bis must both be specified"
+msgstr "ts_zust_von и ts_zust_bis должны быть указаны оба"
+
+#: src/finanzonline_databox/domain/return_codes.py:127
+msgid "ts_zust_von must not be more than 31 days in the past"
+msgstr "ts_zust_von не может быть более 31 дня в прошлом"
+
+#: src/finanzonline_databox/domain/return_codes.py:132
+msgid "ts_zust_bis must not be more than 7 days after ts_zust_von"
+msgstr "ts_zust_bis не может быть более 7 дней после ts_zust_von"
+
+#: src/finanzonline_databox/domain/return_codes.py:175
+msgid "Unknown return code"
+msgstr "Неизвестный код возврата"
+

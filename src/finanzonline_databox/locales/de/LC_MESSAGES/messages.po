@@ -1,0 +1,546 @@
+# German translations for finanzonline-databox.
+# Copyright (C) 2025 finanzonline-databox
+# This file is distributed under the same license as the
+# finanzonline-databox project.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: finanzonline-databox 2.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-12-27 17:30+0100\n"
+"PO-Revision-Date: 2025-12-27 17:00+0100\n"
+"Last-Translator: \n"
+"Language: de\n"
+"Language-Team: German\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+# Document types
+#: src/finanzonline_databox/_format_utils.py:32
+msgid "Bescheid"
+msgstr "Bescheid"
+
+#: src/finanzonline_databox/_format_utils.py:33
+msgid "Mitteilung"
+msgstr "Mitteilung"
+
+#: src/finanzonline_databox/_format_utils.py:34
+msgid "Information"
+msgstr "Information"
+
+#: src/finanzonline_databox/_format_utils.py:35
+msgid "Protokoll"
+msgstr "Protokoll"
+
+#: src/finanzonline_databox/_format_utils.py:36
+msgid "EU-Erledigung"
+msgstr "EU-Erledigung"
+
+# CLI messages
+#: src/finanzonline_databox/cli.py:199
+msgid "Show full Python traceback on errors"
+msgstr "Vollständige Python-Fehlerrückverfolgung bei Fehlern anzeigen"
+
+#: src/finanzonline_databox/cli.py:205
+msgid "Load configuration from a named profile (e.g., 'production', 'test')"
+msgstr "Konfiguration aus einem benannten Profil laden (z.B. 'production', 'test')"
+
+#: src/finanzonline_databox/cli.py:274
+msgid "Output format (human-readable or JSON)"
+msgstr "Ausgabeformat (menschenlesbar oder JSON)"
+
+#: src/finanzonline_databox/cli.py:280
+msgid "Show only a specific configuration section (e.g., 'lib_log_rich')"
+msgstr ""
+"Nur einen bestimmten Konfigurationsabschnitt anzeigen (z.B. "
+"'lib_log_rich')"
+
+#: src/finanzonline_databox/cli.py:286 src/finanzonline_databox/cli.py:357
+msgid "Override profile from root command (e.g., 'production', 'test')"
+msgstr "Profil vom Hauptbefehl überschreiben (z.B. 'production', 'test')"
+
+#: src/finanzonline_databox/cli.py:317
+msgid "profile"
+msgstr "Profil"
+
+#: src/finanzonline_databox/cli.py:318
+msgid "Configuration deployed successfully"
+msgstr "Konfiguration erfolgreich bereitgestellt"
+
+#: src/finanzonline_databox/cli.py:322
+msgid "No files were created (all target files already exist)."
+msgstr "Keine Dateien erstellt (alle Zieldateien existieren bereits)."
+
+#: src/finanzonline_databox/cli.py:323
+msgid "Use --force to overwrite existing configuration files."
+msgstr ""
+"Verwenden Sie --force um vorhandene Konfigurationsdateien zu "
+"überschreiben."
+
+#: src/finanzonline_databox/adapters/output/formatters.py:151
+#: src/finanzonline_databox/cli.py:330 src/finanzonline_databox/cli.py:334
+#: src/finanzonline_databox/cli.py:475 src/finanzonline_databox/cli.py:1112
+msgid "Error"
+msgstr "Fehler"
+
+#: src/finanzonline_databox/cli.py:330
+msgid "Permission denied."
+msgstr "Zugriff verweigert."
+
+#: src/finanzonline_databox/cli.py:331
+msgid "Hint: System-wide deployment (--target app/host) may require sudo."
+msgstr ""
+"Hinweis: Systemweite Bereitstellung (--target app/host) erfordert "
+"möglicherweise sudo."
+
+#: src/finanzonline_databox/cli.py:334
+msgid "Failed to deploy configuration:"
+msgstr "Konfigurationsbereitstellung fehlgeschlagen:"
+
+#: src/finanzonline_databox/cli.py:345
+msgid "Target configuration layer(s) to deploy to (can specify multiple)"
+msgstr "Ziel-Konfigurationsebene(n) für Bereitstellung (mehrfach möglich)"
+
+#: src/finanzonline_databox/cli.py:351
+msgid "Overwrite existing configuration files"
+msgstr "Vorhandene Konfigurationsdateien überschreiben"
+
+#: src/finanzonline_databox/cli.py:476
+msgid ""
+"Configure FinanzOnline credentials in your config file or via environment"
+" variables:"
+msgstr ""
+"Konfigurieren Sie FinanzOnline-Zugangsdaten in Ihrer Konfigurationsdatei "
+"oder über Umgebungsvariablen:"
+
+#: src/finanzonline_databox/cli.py:477
+msgid "8-12 alphanumeric"
+msgstr "8-12 alphanumerisch"
+
+#: src/finanzonline_databox/cli.py:478
+msgid "5-12 chars"
+msgstr "5-12 Zeichen"
+
+#: src/finanzonline_databox/cli.py:479
+msgid "5-128 chars"
+msgstr "5-128 Zeichen"
+
+#: src/finanzonline_databox/cli.py:480
+msgid "10-24 alphanumeric"
+msgstr "10-24 alphanumerisch"
+
+#: src/finanzonline_databox/cli.py:555
+msgid "Return code:"
+msgstr "Rückgabecode:"
+
+#: src/finanzonline_databox/cli.py:558
+msgid "This error may be temporary. Try again later."
+msgstr ""
+"Dieser Fehler ist möglicherweise vorübergehend. Versuchen Sie es später "
+"erneut."
+
+#: src/finanzonline_databox/cli.py:874
+msgid ""
+"Document type filter (B=Bescheide, M=Mitteilungen, I=Info, P=Protokolle, "
+"empty=all unread)"
+msgstr ""
+"Dokumenttyp-Filter (B=Bescheide, M=Mitteilungen, I=Info, P=Protokolle, "
+"leer=alle ungelesenen)"
+
+#: src/finanzonline_databox/cli.py:881
+msgid "Start date filter (YYYY-MM-DD, max 31 days ago)"
+msgstr "Startdatum-Filter (JJJJ-MM-TT, max. 31 Tage zurück)"
+
+#: src/finanzonline_databox/cli.py:888
+msgid "End date filter (YYYY-MM-DD, max 7 days after start)"
+msgstr "Enddatum-Filter (JJJJ-MM-TT, max. 7 Tage nach Start)"
+
+#: src/finanzonline_databox/cli.py:895
+msgid "List documents from last N days (overrides --from/--to, max 7)"
+msgstr "Dokumente der letzten N Tage auflisten (überschreibt --from/--to, max. 7)"
+
+#: src/finanzonline_databox/cli.py:903
+msgid "Show only unread documents (default)"
+msgstr "Nur ungelesene Dokumente anzeigen (Standard)"
+
+#: src/finanzonline_databox/cli.py:909
+msgid "Show only read documents"
+msgstr "Nur gelesene Dokumente anzeigen"
+
+#: src/finanzonline_databox/cli.py:916
+msgid "Show all documents"
+msgstr "Alle Dokumente anzeigen"
+
+#: src/finanzonline_databox/cli.py:923 src/finanzonline_databox/cli.py:1139
+msgid "Reference filter (anbringen, e.g., UID, E1)"
+msgstr "Referenz-Filter (Anbringen, z.B. UID, E1)"
+
+#: src/finanzonline_databox/cli.py:930 src/finanzonline_databox/cli.py:1184
+msgid "Output format (default: human)"
+msgstr "Ausgabeformat (Standard: menschenlesbar)"
+
+#: src/finanzonline_databox/cli.py:1031
+msgid ""
+"Output directory for downloaded file (default: config or current "
+"directory)"
+msgstr ""
+"Ausgabeverzeichnis für heruntergeladene Datei (Standard: Konfiguration oder "
+"aktuelles Verzeichnis)"
+
+#: src/finanzonline_databox/cli.py:1038
+msgid "Override output filename (default: auto-generated from entry metadata)"
+msgstr ""
+"Ausgabedateiname überschreiben (Standard: automatisch aus Metadaten "
+"generiert)"
+
+#: src/finanzonline_databox/cli.py:1108
+msgid "Downloaded"
+msgstr "Heruntergeladen"
+
+#: src/finanzonline_databox/cli.py:1109
+msgid "Size"
+msgstr "Größe"
+
+#: src/finanzonline_databox/cli.py:1125
+msgid "Output directory for downloaded files (default: config or ./databox)"
+msgstr "Ausgabeverzeichnis für heruntergeladene Dateien (Standard: Konfiguration oder ./databox)"
+
+#: src/finanzonline_databox/cli.py:1132
+msgid ""
+"Document type filter (B=Bescheide, M=Mitteilungen, I=Info, P=Protokolle, "
+"empty=all)"
+msgstr ""
+"Dokumenttyp-Filter (B=Bescheide, M=Mitteilungen, I=Info, P=Protokolle, "
+"leer=alle)"
+
+#: src/finanzonline_databox/cli.py:1145
+msgid "Number of days to look back (default: 31, max: 31)"
+msgstr "Anzahl der Tage zurückschauen (Standard: 31, max: 31)"
+
+#: src/finanzonline_databox/cli.py:1153
+msgid "Sync only unread documents (default)"
+msgstr "Nur ungelesene Dokumente synchronisieren (Standard)"
+
+#: src/finanzonline_databox/cli.py:1159
+msgid "Sync only read documents"
+msgstr "Nur gelesene Dokumente synchronisieren"
+
+#: src/finanzonline_databox/cli.py:1166
+msgid "Sync all documents"
+msgstr "Alle Dokumente synchronisieren"
+
+#: src/finanzonline_databox/cli.py:1171
+msgid "Skip files that already exist (default: skip)"
+msgstr "Vorhandene Dateien überspringen (Standard: überspringen)"
+
+#: src/finanzonline_databox/cli.py:1177
+msgid "Disable email notification (default: email enabled)"
+msgstr "E-Mail-Benachrichtigung deaktivieren (Standard: aktiviert)"
+
+#: src/finanzonline_databox/cli.py:1190
+msgid ""
+"Email recipient for sync summary (can specify multiple, uses config "
+"default if not specified)"
+msgstr ""
+"E-Mail-Empfänger für Sync-Zusammenfassung (mehrfach möglich, Standard aus"
+" Konfiguration)"
+
+#: src/finanzonline_databox/cli.py:1196
+msgid ""
+"Email recipient for per-document notifications with attachments (can "
+"specify multiple)"
+msgstr ""
+"E-Mail-Empfänger für Dokument-Benachrichtigungen mit Anhängen (mehrfach "
+"möglich)"
+
+# Email adapter messages
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:51
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:122
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:338
+msgid "This is an automated message from finanzonline-databox."
+msgstr "Dies ist eine automatische Nachricht von finanzonline-databox."
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:58
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:72
+msgid "Diagnostic Information"
+msgstr "Diagnoseinformationen"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:87
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:138
+#: src/finanzonline_databox/adapters/output/formatters.py:231
+msgid "SUCCESS"
+msgstr "ERFOLG"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:87
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:138
+msgid "COMPLETED WITH ERRORS"
+msgstr "MIT FEHLERN ABGESCHLOSSEN"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:90
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:163
+#: src/finanzonline_databox/adapters/output/formatters.py:235
+msgid "DataBox Sync Result"
+msgstr "DataBox-Synchronisierungsergebnis"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:93
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:143
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:190
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:240
+#: src/finanzonline_databox/adapters/output/formatters.py:237
+msgid "Status:"
+msgstr "Status:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:94
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:144
+#: src/finanzonline_databox/adapters/output/formatters.py:238
+msgid "Output Dir:"
+msgstr "Ausgabeverz.:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:95
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:145
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:196
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:248
+msgid "Timestamp:"
+msgstr "Zeitstempel:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:97
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:168
+#: src/finanzonline_databox/adapters/output/formatters.py:240
+msgid "Statistics"
+msgstr "Statistik"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:99
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:149
+#: src/finanzonline_databox/adapters/output/formatters.py:242
+msgid "Total Listed:"
+msgstr "Gesamt gelistet:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:100
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:150
+#: src/finanzonline_databox/adapters/output/formatters.py:243
+msgid "Downloaded:"
+msgstr "Heruntergeladen:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:101
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:151
+#: src/finanzonline_databox/adapters/output/formatters.py:244
+msgid "Skipped:"
+msgstr "Übersprungen:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:102
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:152
+#: src/finanzonline_databox/adapters/output/formatters.py:245
+msgid "Failed:"
+msgstr "Fehlgeschlagen:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:103
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:153
+#: src/finanzonline_databox/adapters/output/formatters.py:246
+msgid "Total Size:"
+msgstr "Gesamtgröße:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:110
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:158
+msgid "New documents have been downloaded to your DataBox folder."
+msgstr "Neue Dokumente wurden in Ihren DataBox-Ordner heruntergeladen."
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:118
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:161
+msgid "WARNING: Some downloads failed. Please check the logs for details."
+msgstr ""
+"WARNUNG: Einige Downloads sind fehlgeschlagen. Bitte prüfen Sie die Logs "
+"für Details."
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:186
+msgid "DataBox ERROR Notification"
+msgstr "DataBox-FEHLER-Benachrichtigung"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:189
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:239
+msgid "Operation:"
+msgstr "Operation:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:190
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:237
+msgid "ERROR"
+msgstr "FEHLER"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:191
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:241
+msgid "Error Type:"
+msgstr "Fehlertyp:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:192
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:242
+msgid "Message:"
+msgstr "Meldung:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:195
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:245
+msgid "Return Code:"
+msgstr "Rückgabecode:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:196
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:247
+msgid "Retryable:"
+msgstr "Wiederholbar:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:196
+msgid "Yes"
+msgstr "Ja"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:196
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:247
+msgid "No"
+msgstr "Nein"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:224
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:277
+msgid "This is an automated error notification from finanzonline-databox."
+msgstr ""
+"Dies ist eine automatische Fehlerbenachrichtigung von finanzonline-"
+"databox."
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:247
+msgid "Yes - try again later"
+msgstr "Ja - später erneut versuchen"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:279
+msgid "DataBox Error"
+msgstr "DataBox-Fehler"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:281
+msgid "DataBox ERROR"
+msgstr "DataBox-FEHLER"
+
+# Document notification messages
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:321
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:370
+msgid "FinanzOnline DataBox - Document Notification"
+msgstr "FinanzOnline DataBox - Dokumentbenachrichtigung"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:324
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:374
+msgid "Document Details"
+msgstr "Dokumentdetails"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:326
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:358
+msgid "Type:"
+msgstr "Typ:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:327
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:359
+msgid "Description:"
+msgstr "Beschreibung:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:328
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:360
+msgid "Tax Number:"
+msgstr "Steuernummer:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:329
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:361
+msgid "Reference:"
+msgstr "Referenz:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:330
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:362
+msgid "Period:"
+msgstr "Zeitraum:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:331
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:363
+msgid "Document Date:"
+msgstr "Dokumentdatum:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:332
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:364
+msgid "Delivered:"
+msgstr "Zugestellt:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:333
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:365
+msgid "File Type:"
+msgstr "Dateityp:"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:335
+#: src/finanzonline_databox/adapters/notification/email_adapter.py:368
+msgid "The document is attached to this email."
+msgstr "Das Dokument ist dieser E-Mail angehängt."
+
+# Formatter messages
+#: src/finanzonline_databox/adapters/output/formatters.py:59
+msgid "NEW"
+msgstr "NEU"
+
+#: src/finanzonline_databox/adapters/output/formatters.py:62
+msgid "read"
+msgstr "gelesen"
+
+#: src/finanzonline_databox/adapters/output/formatters.py:88
+msgid "No entries found"
+msgstr "Keine Einträge gefunden"
+
+#: src/finanzonline_databox/adapters/output/formatters.py:92
+msgid "DataBox Entries"
+msgstr "DataBox-Einträge"
+
+#: src/finanzonline_databox/adapters/output/formatters.py:94
+msgid "Total:"
+msgstr "Gesamt:"
+
+#: src/finanzonline_databox/adapters/output/formatters.py:94
+msgid "unread"
+msgstr "ungelesen"
+
+#: src/finanzonline_databox/adapters/output/formatters.py:214
+msgid "New documents have been downloaded."
+msgstr "Neue Dokumente wurden heruntergeladen."
+
+#: src/finanzonline_databox/adapters/output/formatters.py:216
+msgid "WARNING: Some downloads failed. Check logs for details."
+msgstr ""
+"WARNUNG: Einige Downloads sind fehlgeschlagen. Prüfen Sie die Logs für "
+"Details."
+
+#: src/finanzonline_databox/adapters/output/formatters.py:231
+msgid "COMPLETED WITH WARNINGS"
+msgstr "MIT WARNUNGEN ABGESCHLOSSEN"
+
+# Return codes
+#: src/finanzonline_databox/domain/return_codes.py:114
+msgid "Operation successful"
+msgstr "Operation erfolgreich"
+
+#: src/finanzonline_databox/domain/return_codes.py:116
+msgid "Session invalid or expired"
+msgstr "Sitzung ungültig oder abgelaufen"
+
+#: src/finanzonline_databox/domain/return_codes.py:117
+msgid "System maintenance"
+msgstr "Systemwartung"
+
+#: src/finanzonline_databox/domain/return_codes.py:118
+msgid "Technical error"
+msgstr "Technischer Fehler"
+
+#: src/finanzonline_databox/domain/return_codes.py:122
+msgid "ts_zust_von and ts_zust_bis must both be specified"
+msgstr "ts_zust_von und ts_zust_bis müssen beide angegeben werden"
+
+#: src/finanzonline_databox/domain/return_codes.py:127
+msgid "ts_zust_von must not be more than 31 days in the past"
+msgstr "ts_zust_von darf nicht mehr als 31 Tage in der Vergangenheit liegen"
+
+#: src/finanzonline_databox/domain/return_codes.py:132
+msgid "ts_zust_bis must not be more than 7 days after ts_zust_von"
+msgstr "ts_zust_bis darf nicht mehr als 7 Tage nach ts_zust_von liegen"
+
+#: src/finanzonline_databox/domain/return_codes.py:175
+msgid "Unknown return code"
+msgstr "Unbekannter Rückgabecode"
+

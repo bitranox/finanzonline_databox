@@ -1,0 +1,92 @@
+{
+  "pass": 3,
+  "total_violations": 12,
+  "fixed_since_pass_1": 16,
+  "files": {
+    "src/finanzonline_databox/domain/models.py": {
+      "violations": [
+        {"line": 287, "type": "string_literal_for_status", "description": "Field 'erltyp' uses empty string default - should be Optional with enum", "status": "acceptable", "reason": "erltyp is a document type code from BMF API, not a finite set"}
+      ],
+      "status": "clean",
+      "fixed_violations": [
+        {"type": "enum_instead_of_string", "description": "Field 'status' now uses ReadStatus enum"},
+        {"type": "enum_instead_of_string", "description": "Field 'fileart' now uses FileType enum"},
+        {"type": "string_literal_status_comparison", "description": "Magic strings replaced with enum comparisons"}
+      ]
+    },
+    "src/finanzonline_databox/cli.py": {
+      "violations": [
+        {"line": 515, "type": "unnecessary_conversion", "description": "config.as_dict() then load_email_config_from_dict - Model→dict→Model conversion", "status": "acceptable", "reason": "Config system boundary - lib_layered_config returns dict"},
+        {"line": 691, "type": "unnecessary_conversion", "description": "config.as_dict() then load_email_config_from_dict - Model→dict→Model conversion", "status": "acceptable", "reason": "Config system boundary - lib_layered_config returns dict"}
+      ],
+      "status": "clean",
+      "fixed_violations": [
+        {"type": "string_literal_comparison", "description": "ReadFilter enum now used for read_filter comparisons"},
+        {"type": "string_literal_comparison", "description": "Direct enum comparison works because ReadFilter extends str"}
+      ]
+    },
+    "src/finanzonline_databox/application/use_cases.py": {
+      "violations": [],
+      "status": "clean",
+      "fixed_violations": [
+        {"type": "string_literal_for_status", "description": "read_filter now accepts str and compares with ReadFilter enum members"},
+        {"type": "string_literal_comparison", "description": "Direct comparison with enum works because ReadFilter extends str"}
+      ]
+    },
+    "src/finanzonline_databox/adapters/output/formatters.py": {
+      "violations": [
+        {"line": 117, "type": "dict_instead_of_model", "description": "Creating list[dict[str, Any]] manually instead of using model serialization", "status": "acceptable", "reason": "JSON serialization boundary - explicit control over output format"},
+        {"line": 177, "type": "dict_instead_of_model", "description": "Creating list[dict[str, Any]] in format_list_result_json", "status": "acceptable", "reason": "JSON serialization boundary - explicit control over output format"}
+      ],
+      "status": "boundary",
+      "note": "Formatters explicitly convert domain models to JSON-serializable dicts at adapter boundary"
+    },
+    "src/finanzonline_databox/mail.py": {
+      "violations": [
+        {"line": 371, "type": "dict_key_access", "description": "config_dict.get('email', {}) - string literal key access", "status": "acceptable", "reason": "Config system boundary"},
+        {"line": 375, "type": "dict_key_access", "description": "Multiple .get() calls with string literal keys", "status": "acceptable", "reason": "Config system boundary"}
+      ],
+      "status": "boundary"
+    },
+    "src/finanzonline_databox/i18n.py": {
+      "violations": [],
+      "status": "clean",
+      "fixed_violations": [
+        {"type": "string_literal_comparison", "description": "Now uses Language.ENGLISH enum instead of 'en' string"},
+        {"type": "legacy_shim_removed", "description": "Removed SUPPORTED_LANGUAGES tuple, use Language.is_supported() instead"}
+      ]
+    },
+    "src/finanzonline_databox/config.py": {
+      "violations": [
+        {"line": 206, "type": "dict_key_access", "description": "config_dict.get('app', {}) - string literal for config section", "status": "acceptable", "reason": "Config system boundary - TOML section names"},
+        {"line": 259, "type": "dict_key_access", "description": "config_dict.get('finanzonline', {}) - string literal for config section", "status": "acceptable", "reason": "Config system boundary - TOML section names"},
+        {"line": 263, "type": "dict_key_access", "description": "fo_section.get('tid', '') - string literal keys", "status": "acceptable", "reason": "Config system boundary - TOML key names"},
+        {"line": 304, "type": "string_literal_enum", "description": "String literal 'both' instead of EmailFormat.BOTH", "status": "acceptable", "reason": "Config default value matching TOML convention"}
+      ],
+      "status": "boundary",
+      "note": "Configuration loading from TOML is a system boundary where dict access is appropriate",
+      "fixed_violations": [
+        {"type": "enum_instead_of_string", "description": "AppConfig.language now uses Language enum instead of str"}
+      ]
+    },
+    "src/finanzonline_databox/logging_setup.py": {
+      "violations": [
+        {"line": 62, "type": "dict_type_annotation", "description": "Using dict[str, Any] type annotation", "status": "acceptable", "reason": "Logging config is inherently dict-based per Python logging conventions"},
+        {"line": 66, "type": "dict_key_mutation", "description": "log_config['service'] = ... - string literal key mutation", "status": "acceptable", "reason": "Logging config is inherently dict-based"}
+      ],
+      "status": "boundary"
+    },
+    "src/finanzonline_databox/domain/errors.py": {"violations": [], "status": "clean"},
+    "src/finanzonline_databox/domain/return_codes.py": {"violations": [], "status": "clean"},
+    "src/finanzonline_databox/application/ports.py": {"violations": [], "status": "clean"},
+    "src/finanzonline_databox/adapters/finanzonline/session_client.py": {"violations": [], "status": "clean"},
+    "src/finanzonline_databox/adapters/finanzonline/databox_client.py": {"violations": [], "status": "clean"},
+    "src/finanzonline_databox/adapters/notification/email_adapter.py": {"violations": [], "status": "clean"},
+    "src/finanzonline_databox/behaviors.py": {"violations": [], "status": "clean"},
+    "src/finanzonline_databox/config_deploy.py": {"violations": [], "status": "clean"},
+    "src/finanzonline_databox/config_show.py": {"violations": [], "status": "clean"},
+    "src/finanzonline_databox/enums.py": {"violations": [], "status": "clean"},
+    "src/finanzonline_databox/_format_utils.py": {"violations": [], "status": "clean"},
+    "src/finanzonline_databox/_datetime_utils.py": {"violations": [], "status": "clean"}
+  }
+}
