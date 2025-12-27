@@ -351,7 +351,8 @@ class TestLoadFinanzOnlineConfig:
         result = load_finanzonline_config(mock_config)
         assert result.output_dir is not None
         assert not str(result.output_dir).startswith("~")
-        assert "Documents/DataBox" in str(result.output_dir)
+        assert result.output_dir.name == "DataBox"
+        assert result.output_dir.parent.name == "Documents"
 
     def test_empty_output_dir_becomes_none(self) -> None:
         """Empty output_dir becomes None."""
