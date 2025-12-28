@@ -5,6 +5,12 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 
 
+## [1.2.1] - 2025-12-28
+
+### Changed
+
+- Changed default email format from `both` to `html`
+
 ## [1.2.0] - 2025-12-28
 
 ### Added

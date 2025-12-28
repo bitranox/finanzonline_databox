@@ -116,7 +116,7 @@ class FinanzOnlineConfigSchema(BaseModel):
     query_timeout: float = Field(default=30.0, description="Query timeout in seconds")
     default_recipients: list[str] = Field(default_factory=list, description="Default email recipients")
     document_recipients: list[str] = Field(default_factory=list, description="Document notification recipients")
-    email_format: str = Field(default="both", description="Email format: html, plain, or both")
+    email_format: str = Field(default="html", description="Email format: html, plain, or both")
     output_dir: str = Field(default="", description="Default output directory")
 
     @field_validator("session_timeout", "query_timeout", mode="before")

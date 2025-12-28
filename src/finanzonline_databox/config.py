@@ -327,8 +327,8 @@ def load_finanzonline_config(config: Config) -> FinanzOnlineConfig:
     default_recipients = fo_section.default_recipients
     document_recipients = fo_section.document_recipients
 
-    # Parse email_format - defaults to "both" (HTML and plain text)
-    email_format = _parse_email_format(fo_section.email_format, EmailFormat.BOTH)
+    # Parse email_format - defaults to "html"
+    email_format = _parse_email_format(fo_section.email_format, EmailFormat.HTML)
 
     # Parse output_dir - default output directory for downloaded files
     output_dir_raw = fo_section.output_dir
