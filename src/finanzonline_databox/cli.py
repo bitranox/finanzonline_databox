@@ -314,13 +314,16 @@ def cli_config(ctx: click.Context, format: str, section: str | None, profile: st
         display_config(config, format=output_format, section=section)
 
 
-def _display_deploy_result(deployed_paths: list[Path], effective_profile: str | None) -> None:
+def _display_deploy_result(deployed_paths: list[Path], effective_profile: str | None, *, force: bool = False) -> None:
     """Display deployment result to user."""
     if deployed_paths:
         profile_msg = f" ({_('profile')}: {effective_profile})" if effective_profile else ""
         click.echo(f"\n{_('Configuration deployed successfully')}{profile_msg}:")
         for path in deployed_paths:
             click.echo(f"  ✓ {path}")
+    elif force:
+        # Force was used but nothing deployed - content is identical
+        click.echo(f"\n{_('All configuration files are already up to date (content unchanged).')}")
     else:
         click.echo(f"\n{_('No files were created (all target files already exist).')}")
         click.echo(_("Use --force to overwrite existing configuration files."))
@@ -383,7 +386,7 @@ def cli_config_deploy(ctx: click.Context, targets: tuple[str, ...], force: bool,
 
         try:
             deployed_paths = deploy_configuration(targets=deploy_targets, force=force, profile=effective_profile)
-            _display_deploy_result(deployed_paths, effective_profile)
+            _display_deploy_result(deployed_paths, effective_profile, force=force)
         except Exception as exc:
             _handle_deploy_error(exc)
 

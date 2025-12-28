@@ -65,11 +65,15 @@ msgstr ""
 msgid "Configuration deployed successfully"
 msgstr ""
 
-#: src/finanzonline_databox/cli.py:322
+#: src/finanzonline_databox/cli.py:326
+msgid "All configuration files are already up to date (content unchanged)."
+msgstr ""
+
+#: src/finanzonline_databox/cli.py:328
 msgid "No files were created (all target files already exist)."
 msgstr ""
 
-#: src/finanzonline_databox/cli.py:323
+#: src/finanzonline_databox/cli.py:329
 msgid "Use --force to overwrite existing configuration files."
 msgstr ""
 
