@@ -82,6 +82,38 @@ def _parse_email_format(raw: Any, default: EmailFormat) -> EmailFormat:
     return default
 
 
+def _normalize_path_string(path_str: str) -> str:
+    """Normalize path string to use OS-appropriate separators.
+
+    Allows users to use forward slashes (Linux-style) on all platforms,
+    including Windows. This is especially useful for UNC paths which
+    would otherwise require escaped backslashes in TOML config files.
+
+    Args:
+        path_str: Path string, possibly with forward slashes.
+
+    Returns:
+        Normalized path string with OS-appropriate separators.
+
+    Examples:
+        On Windows:
+            "//server/share/folder" -> "\\\\server\\share\\folder"
+            "/home/user/docs" -> "\\home\\user\\docs"
+
+        On Linux/macOS:
+            "//server/share/folder" -> "//server/share/folder" (unchanged)
+            "C:\\Users\\docs" -> "C:\\Users\\docs" (unchanged)
+    """
+    import os
+
+    if os.name == "nt":  # Windows
+        # Replace forward slashes with backslashes for Windows
+        return path_str.replace("/", "\\")
+
+    # On Linux/macOS, leave path unchanged
+    return path_str
+
+
 @lru_cache(maxsize=1)
 def get_default_config_path() -> Path:
     """Return the path to the bundled default configuration file.
@@ -331,10 +363,12 @@ def load_finanzonline_config(config: Config) -> FinanzOnlineConfig:
     email_format = _parse_email_format(fo_section.email_format, EmailFormat.HTML)
 
     # Parse output_dir - default output directory for downloaded files
+    # Normalize path separators to allow Linux-style paths on Windows (e.g., UNC paths)
     output_dir_raw = fo_section.output_dir
     output_dir: Path | None = None
     if output_dir_raw and output_dir_raw.strip():
-        output_dir = Path(output_dir_raw.strip()).expanduser()
+        normalized_path = _normalize_path_string(output_dir_raw.strip())
+        output_dir = Path(normalized_path).expanduser()
 
     return FinanzOnlineConfig(
         credentials=credentials,

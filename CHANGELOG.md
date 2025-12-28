@@ -5,7 +5,21 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 
 
+## [1.2.2] - 2025-12-28
+
+### Added
+
+- Added tests for `_normalize_path_string()` helper with Windows/Linux path conversion coverage
+
+### Changed
+
+- Updated `defaultconfig.toml` documentation with cross-platform path examples for UNC paths
+
 ## [1.2.1] - 2025-12-28
+
+### Added
+
+- Added cross-platform path support: forward slashes (Linux-style) now work on Windows for all path settings like `output_dir`. This is especially useful for UNC paths which would otherwise require escaped backslashes (e.g., `//server/share/folder` instead of `\\\\server\\share\\folder`).
 
 ### Changed
 

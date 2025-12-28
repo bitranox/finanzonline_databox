@@ -24,7 +24,7 @@ name = "finanzonline_databox"
 #: Human-readable summary shown in CLI help output.
 title = "Python library and CLI for downloading documents from FinanzOnline Austria DataBox"
 #: Current release version pulled from ``pyproject.toml`` by automation.
-version = "1.2.1"
+version = "1.2.2"
 #: Repository homepage presented to users.
 homepage = "https://github.com/bitranox/finanzonline_databox"
 #: Author attribution surfaced in CLI output.

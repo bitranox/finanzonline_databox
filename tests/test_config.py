@@ -9,6 +9,7 @@ import pytest
 
 from finanzonline_databox.config import (
     AppConfig,
+    _normalize_path_string,  # pyright: ignore[reportPrivateUsage]
     _parse_email_format,  # pyright: ignore[reportPrivateUsage]
     parse_string_list,
     get_default_config_path,
@@ -103,6 +104,50 @@ class TestParseEmailFormat:
         """Numbers return default."""
         result = _parse_email_format(42, EmailFormat.HTML)
         assert result == EmailFormat.HTML
+
+
+class TestNormalizePathString:
+    """Tests for _normalize_path_string helper."""
+
+    def test_linux_path_unchanged_on_linux(self) -> None:
+        """Linux paths are unchanged on Linux/macOS."""
+        from unittest.mock import patch
+
+        with patch.object(__import__("os"), "name", "posix"):
+            result = _normalize_path_string("/home/user/Documents")
+            assert result == "/home/user/Documents"
+
+    def test_unc_path_unchanged_on_linux(self) -> None:
+        """UNC-style paths are unchanged on Linux/macOS."""
+        from unittest.mock import patch
+
+        with patch.object(__import__("os"), "name", "posix"):
+            result = _normalize_path_string("//server/share/folder")
+            assert result == "//server/share/folder"
+
+    def test_forward_slashes_converted_on_windows(self) -> None:
+        """Forward slashes are converted to backslashes on Windows."""
+        from unittest.mock import patch
+
+        with patch.object(__import__("os"), "name", "nt"):
+            result = _normalize_path_string("/home/user/Documents")
+            assert result == "\\home\\user\\Documents"
+
+    def test_unc_path_converted_on_windows(self) -> None:
+        """UNC paths with forward slashes are converted on Windows."""
+        from unittest.mock import patch
+
+        with patch.object(__import__("os"), "name", "nt"):
+            result = _normalize_path_string("//server/share/folder")
+            assert result == "\\\\server\\share\\folder"
+
+    def test_mixed_slashes_on_windows(self) -> None:
+        """Mixed slashes are all converted to backslashes on Windows."""
+        from unittest.mock import patch
+
+        with patch.object(__import__("os"), "name", "nt"):
+            result = _normalize_path_string("//server/share\\folder/subfolder")
+            assert result == "\\\\server\\share\\folder\\subfolder"
 
 
 class TestGetDefaultConfigPath:
