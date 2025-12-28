@@ -22,12 +22,12 @@ import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
 from btx_lib_mail.lib_mail import ConfMail
 from btx_lib_mail.lib_mail import send as btx_send
 
-from finanzonline_databox.config import parse_string_list
+from finanzonline_databox.config_schema import EmailConfigSchema
 
 logger = logging.getLogger(__name__)
 
@@ -330,31 +330,12 @@ def send_notification(
     )
 
 
-def _parse_string(raw: Any, default: str) -> str:
-    """Parse a string value with fallback to default."""
-    return raw if isinstance(raw, str) else default
-
-
-def _parse_optional_string(raw: Any) -> str | None:
-    """Parse an optional string value."""
-    return raw if isinstance(raw, str) else None
-
-
-def _parse_bool(raw: Any, default: bool) -> bool:
-    """Parse a boolean value with fallback to default."""
-    return raw if isinstance(raw, bool) else default
-
-
-def _parse_float(raw: Any, default: float) -> float:
-    """Parse a float value with fallback to default."""
-    return float(raw) if isinstance(raw, (int, float)) else default
-
-
 def load_email_config_from_dict(config_dict: Mapping[str, Any]) -> EmailConfig:
     """Load EmailConfig from a configuration dictionary.
 
     Bridges lib_layered_config's dictionary output with the typed
     EmailConfig dataclass, handling optional values and type conversions.
+    Uses Pydantic validation at the boundary.
 
     Args:
         config_dict: Configuration dictionary typically from lib_layered_config.
@@ -376,19 +357,20 @@ def load_email_config_from_dict(config_dict: Mapping[str, Any]) -> EmailConfig:
         >>> email_config.use_starttls
         True
     """
+    # Validate email section at boundary using Pydantic schema
     email_section_raw = config_dict.get("email", {})
-    section: Mapping[str, Any] = cast(Mapping[str, Any], email_section_raw if isinstance(email_section_raw, dict) else {})
+    schema = EmailConfigSchema.model_validate(email_section_raw if isinstance(email_section_raw, dict) else {})
 
     return EmailConfig(
-        smtp_hosts=parse_string_list(section.get("smtp_hosts", [])),
-        from_address=_parse_string(section.get("from_address"), "noreply@localhost"),
-        smtp_username=_parse_optional_string(section.get("smtp_username")),
-        smtp_password=_parse_optional_string(section.get("smtp_password")),
-        use_starttls=_parse_bool(section.get("use_starttls", True), True),
-        timeout=_parse_float(section.get("timeout", 30.0), 30.0),
-        raise_on_missing_attachments=_parse_bool(section.get("raise_on_missing_attachments", True), True),
-        raise_on_invalid_recipient=_parse_bool(section.get("raise_on_invalid_recipient", True), True),
-        default_recipients=parse_string_list(section.get("default_recipients", [])),
+        smtp_hosts=schema.smtp_hosts,
+        from_address=schema.from_address,
+        smtp_username=schema.smtp_username,
+        smtp_password=schema.smtp_password,
+        use_starttls=schema.use_starttls,
+        timeout=schema.timeout,
+        raise_on_missing_attachments=schema.raise_on_missing_attachments,
+        raise_on_invalid_recipient=schema.raise_on_invalid_recipient,
+        default_recipients=schema.default_recipients,
     )
 
 

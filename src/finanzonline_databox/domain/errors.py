@@ -12,6 +12,8 @@ Contents
 * :class:`AuthenticationError` - Login/credentials failure
 * :class:`SessionError` - Session management errors
 * :class:`DataboxOperationError` - DataBox operation execution errors
+* :class:`FilesystemError` - Filesystem operation failures
+* :func:`filesystem_error_from_oserror` - Create FilesystemError from OSError
 
 System Role
 -----------
@@ -34,10 +36,13 @@ True
 
 from __future__ import annotations
 
+import errno
 from dataclasses import dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from finanzonline_databox.domain.models import Diagnostics
+from finanzonline_databox.i18n import _
 
 if TYPE_CHECKING:
     from finanzonline_databox.domain.return_codes import CliExitCode
@@ -201,3 +206,90 @@ class DataboxOperationError(DataboxError):
         self.return_code = return_code
         self.retryable = retryable
         self.diagnostics = diagnostics or Diagnostics()
+
+
+class FilesystemError(DataboxError):
+    """Filesystem operation failed.
+
+    Raised when file or directory operations fail, such as:
+    - Permission denied when creating directories or writing files
+    - Disk full when saving downloaded content
+    - Read-only filesystem
+    - Invalid path or path too long
+
+    Attributes:
+        message: Human-readable error description.
+        path: Path that caused the error (if available).
+        operation: Operation that failed (e.g., "create directory", "write file").
+        original_error: The underlying OS error.
+    """
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        path: Path | str | None = None,
+        operation: str | None = None,
+        original_error: OSError | None = None,
+    ) -> None:
+        """Initialize with error details.
+
+        Args:
+            message: Human-readable error description.
+            path: Optional path that caused the error.
+            operation: Optional operation name that failed.
+            original_error: Optional underlying OSError.
+        """
+        super().__init__(message)
+        self.path = Path(path) if isinstance(path, str) else path
+        self.operation = operation
+        self.original_error = original_error
+
+
+def filesystem_error_from_oserror(
+    exc: OSError,
+    *,
+    path: Path | str | None = None,
+    operation: str = "write",
+) -> FilesystemError:
+    """Create a FilesystemError from an OSError with user-friendly message.
+
+    Maps common errno values to localized, user-friendly error messages.
+
+    Args:
+        exc: The original OSError.
+        path: Path that caused the error.
+        operation: Operation that failed (e.g., "create directory", "write file").
+
+    Returns:
+        FilesystemError with user-friendly message.
+
+    Examples:
+        >>> import errno
+        >>> exc = PermissionError(errno.EACCES, "Permission denied", "/tmp/test")
+        >>> err = filesystem_error_from_oserror(exc, path="/tmp/test", operation="write file")
+        >>> "Permission denied" in err.message
+        True
+    """
+    path_str = str(path) if path else _("unknown")
+
+    # Classify by errno for specific messages
+    error_messages: dict[int, str] = {
+        errno.EACCES: _("Permission denied: Cannot {operation} '{path}'"),
+        errno.ENOSPC: _("Disk full: Cannot {operation} '{path}'"),
+        errno.EROFS: _("Read-only filesystem: Cannot {operation} '{path}'"),
+        errno.ENAMETOOLONG: _("Path too long: '{path}'"),
+        errno.ENOENT: _("Directory does not exist: '{path}'"),
+        errno.ENOTDIR: _("Not a directory: '{path}'"),
+    }
+
+    default_template = _("Filesystem error ({operation}): {error}")
+    template = error_messages.get(exc.errno, default_template) if exc.errno is not None else default_template
+    message = template.format(operation=operation, path=path_str, error=str(exc))
+
+    return FilesystemError(
+        message,
+        path=path,
+        operation=operation,
+        original_error=exc,
+    )

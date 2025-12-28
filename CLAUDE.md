@@ -74,6 +74,7 @@ finanzonline_databox/
 │   ├── __main__.py            # CLI entry point
 │   ├── cli.py                 # CLI implementation (rich-click)
 │   ├── config.py              # Configuration loading
+│   ├── config_schema.py       # Pydantic config validation schemas
 │   ├── mail.py                # Email utilities
 │   └── py.typed               # PEP 561 marker
 ├── tests/                     # Test suite (mirrors src structure)
@@ -150,6 +151,7 @@ Apply principles from `python_clean_architecture.md` when designing and implemen
 - `lib_layered_config` - Layered configuration system (TOML + env vars)
 - `lib_log_rich` - Rich structured logging
 - `lib_cli_exit_tools` - CLI exit code and error handling
+- `pydantic` - Config validation at boundaries
 - `rich-click` - CLI framework with rich output
 - `zeep` - SOAP client for FinanzOnline web services
 - `filelock` - File locking for rate limit files

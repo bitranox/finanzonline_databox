@@ -10,7 +10,6 @@ import pytest
 from finanzonline_databox.config import (
     AppConfig,
     _parse_email_format,  # pyright: ignore[reportPrivateUsage]
-    _parse_float,  # pyright: ignore[reportPrivateUsage]
     parse_string_list,
     get_default_config_path,
     load_app_config,
@@ -21,30 +20,6 @@ from finanzonline_databox.enums import EmailFormat
 from finanzonline_databox.i18n import Language
 
 pytestmark = pytest.mark.os_agnostic
-
-
-class TestParseFloat:
-    """Tests for _parse_float helper."""
-
-    def test_parses_int(self) -> None:
-        """Integer values are converted to float."""
-        assert _parse_float(42, 0.0) == 42.0
-
-    def test_parses_float(self) -> None:
-        """Float values pass through."""
-        assert _parse_float(3.14, 0.0) == 3.14
-
-    def test_returns_default_for_string(self) -> None:
-        """Non-numeric strings return default."""
-        assert _parse_float("not a number", 99.9) == 99.9
-
-    def test_returns_default_for_none(self) -> None:
-        """None returns default."""
-        assert _parse_float(None, 5.5) == 5.5
-
-    def test_returns_default_for_list(self) -> None:
-        """Lists return default."""
-        assert _parse_float([1, 2], 1.0) == 1.0
 
 
 class TestParseStringList:

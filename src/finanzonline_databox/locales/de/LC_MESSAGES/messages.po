@@ -548,3 +548,82 @@ msgstr "ts_zust_bis darf nicht mehr als 7 Tage nach ts_zust_von liegen"
 msgid "Unknown return code"
 msgstr "Unbekannter Rückgabecode"
 
+# Filesystem error messages
+#: src/finanzonline_databox/domain/errors.py
+msgid "Permission denied: Cannot {operation} '{path}'"
+msgstr "Zugriff verweigert: Kann {operation} '{path}' nicht ausführen"
+
+#: src/finanzonline_databox/domain/errors.py
+msgid "Disk full: Cannot {operation} '{path}'"
+msgstr "Festplatte voll: Kann {operation} '{path}' nicht ausführen"
+
+#: src/finanzonline_databox/domain/errors.py
+msgid "Read-only filesystem: Cannot {operation} '{path}'"
+msgstr "Schreibgeschütztes Dateisystem: Kann {operation} '{path}' nicht ausführen"
+
+#: src/finanzonline_databox/domain/errors.py
+msgid "Path too long: '{path}'"
+msgstr "Pfad zu lang: '{path}'"
+
+#: src/finanzonline_databox/domain/errors.py
+msgid "Directory does not exist: '{path}'"
+msgstr "Verzeichnis existiert nicht: '{path}'"
+
+#: src/finanzonline_databox/domain/errors.py
+msgid "Not a directory: '{path}'"
+msgstr "Kein Verzeichnis: '{path}'"
+
+#: src/finanzonline_databox/domain/errors.py
+msgid "Filesystem error ({operation}): {error}"
+msgstr "Dateisystemfehler ({operation}): {error}"
+
+#: src/finanzonline_databox/domain/errors.py
+msgid "unknown"
+msgstr "unbekannt"
+
+# CLI error types
+#: src/finanzonline_databox/cli.py
+msgid "Configuration Error"
+msgstr "Konfigurationsfehler"
+
+#: src/finanzonline_databox/cli.py
+msgid "Authentication Error"
+msgstr "Authentifizierungsfehler"
+
+#: src/finanzonline_databox/cli.py
+msgid "Session Error"
+msgstr "Sitzungsfehler"
+
+#: src/finanzonline_databox/cli.py
+msgid "DataBox Operation Error"
+msgstr "DataBox-Betriebsfehler"
+
+#: src/finanzonline_databox/cli.py
+msgid "Filesystem Error"
+msgstr "Dateisystemfehler"
+
+#: src/finanzonline_databox/cli.py
+msgid "DataBox Error"
+msgstr "DataBox-Fehler"
+
+# Filesystem error hints
+#: src/finanzonline_databox/cli.py
+msgid "Use --output to specify a different directory, or check file permissions."
+msgstr "Verwenden Sie --output, um ein anderes Verzeichnis anzugeben, oder überprüfen Sie die Dateiberechtigungen."
+
+#: src/finanzonline_databox/cli.py
+msgid "Free up disk space or use --output to specify a different disk."
+msgstr "Geben Sie Speicherplatz frei oder verwenden Sie --output, um eine andere Festplatte anzugeben."
+
+#: src/finanzonline_databox/cli.py
+msgid "Use --output to specify a writable directory."
+msgstr "Verwenden Sie --output, um ein beschreibbares Verzeichnis anzugeben."
+
+#: src/finanzonline_databox/cli.py
+msgid "Use --filename to specify a shorter filename."
+msgstr "Verwenden Sie --filename, um einen kürzeren Dateinamen anzugeben."
+
+#: src/finanzonline_databox/cli.py
+msgid "Hint:"
+msgstr "Hinweis:"
+

@@ -135,6 +135,18 @@ _RETURN_CODE_INFO: dict[int, ReturnCodeInfo] = {
 }
 
 
+# Validate dict keys match ReturnCodeInfo.code values at module load time
+# This prevents silent bugs if keys and codes are accidentally mismatched
+def _validate_return_code_dict() -> None:
+    """Validate that dict keys match ReturnCodeInfo.code values."""
+    for key, info in _RETURN_CODE_INFO.items():
+        if key != info.code:
+            raise ValueError(f"Return code dict key {key} does not match ReturnCodeInfo.code {info.code}")
+
+
+_validate_return_code_dict()
+
+
 def get_return_code_info(code: int) -> ReturnCodeInfo:
     """Get information about a return code.
 

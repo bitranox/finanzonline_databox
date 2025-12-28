@@ -32,7 +32,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from finanzonline_databox.domain.errors import SessionError
+from finanzonline_databox.domain.errors import (
+    SessionError,
+    filesystem_error_from_oserror,
+)
 from finanzonline_databox.domain.models import (
     DataboxDownloadRequest,
     DataboxEntry,
@@ -67,26 +70,26 @@ def _filter_by_anbringen(
 
 def _filter_by_read_status(
     entries: tuple[DataboxEntry, ...],
-    read_filter: str,
+    read_filter: ReadFilter,
 ) -> tuple[DataboxEntry, ...]:
     """Filter entries by read status."""
-    filters: dict[str, tuple[str, str]] = {
-        ReadFilter.UNREAD: ("is_unread", "unread"),
-        ReadFilter.READ: ("is_read", "read"),
-    }
-    if read_filter not in filters:
+    if read_filter == ReadFilter.ALL:
         return entries
-
-    attr_name, label = filters[read_filter]
-    filtered = tuple(e for e in entries if getattr(e, attr_name))
-    logger.info("Filtered to %d %s entries", len(filtered), label)
-    return filtered
+    if read_filter == ReadFilter.UNREAD:
+        filtered = tuple(e for e in entries if e.is_unread)
+        logger.info("Filtered to %d unread entries", len(filtered))
+        return filtered
+    if read_filter == ReadFilter.READ:
+        filtered = tuple(e for e in entries if e.is_read)
+        logger.info("Filtered to %d read entries", len(filtered))
+        return filtered
+    return entries
 
 
 def _filter_sync_entries(
     entries: tuple[DataboxEntry, ...],
     anbringen_filter: str,
-    read_filter: str,
+    read_filter: ReadFilter,
 ) -> tuple[DataboxEntry, ...]:
     """Filter entries by anbringen and read status for sync operation."""
     entries = _filter_by_anbringen(entries, anbringen_filter)
@@ -289,7 +292,7 @@ class DownloadEntryUseCase:
         Raises:
             SessionError: Login or session management failed.
             DataboxOperationError: Download operation failed.
-            OSError: File write failed (if output_path specified).
+            FilesystemError: File write failed (if output_path specified).
         """
         logger.info("Downloading entry with applkey=%s", applkey)
 
@@ -321,16 +324,32 @@ class DownloadEntryUseCase:
 
         Uses unique path to avoid overwriting existing files.
 
+        Args:
+            result: Download result containing content to save.
+            output_path: Desired file path.
+
         Returns:
             The actual path where the file was saved.
+
+        Raises:
+            FilesystemError: If directory cannot be created or file cannot be written.
         """
         if result.content is None:
             return output_path
 
         # Get unique path to avoid overwriting existing files
         actual_path = _get_unique_path(output_path)
-        actual_path.parent.mkdir(parents=True, exist_ok=True)
-        actual_path.write_bytes(result.content)
+
+        try:
+            actual_path.parent.mkdir(parents=True, exist_ok=True)
+        except OSError as exc:
+            raise filesystem_error_from_oserror(exc, path=actual_path.parent, operation="create directory") from exc
+
+        try:
+            actual_path.write_bytes(result.content)
+        except OSError as exc:
+            raise filesystem_error_from_oserror(exc, path=actual_path, operation="write file") from exc
+
         logger.info("Saved %d bytes to %s", len(result.content), actual_path)
         return actual_path
 
@@ -371,7 +390,7 @@ class SyncDataboxUseCase:
         request: DataboxListRequest | None = None,
         skip_existing: bool = True,
         anbringen_filter: str = "",
-        read_filter: str = ReadFilter.ALL,
+        read_filter: ReadFilter = ReadFilter.ALL,
     ) -> SyncResult:
         """Sync databox entries to local storage.
 
@@ -389,12 +408,16 @@ class SyncDataboxUseCase:
         Raises:
             SessionError: Login or session management failed.
             DataboxOperationError: List or download operation failed.
+            FilesystemError: Output directory cannot be created.
         """
         if request is None:
             request = DataboxListRequest()
 
         logger.info("Starting databox sync to %s", output_dir)
-        output_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            output_dir.mkdir(parents=True, exist_ok=True)
+        except OSError as exc:
+            raise filesystem_error_from_oserror(exc, path=output_dir, operation="create directory") from exc
 
         session = _login_session(self._session_client, credentials)
 
@@ -478,7 +501,20 @@ class SyncDataboxUseCase:
         entry: DataboxEntry,
         output_path: Path,
     ) -> DataboxDownloadResult:
-        """Download and save a single entry."""
+        """Download and save a single entry.
+
+        Args:
+            session_id: Active session ID.
+            credentials: FinanzOnline credentials.
+            entry: Entry to download.
+            output_path: Path to save the file.
+
+        Returns:
+            DataboxDownloadResult indicating success or failure.
+
+        Raises:
+            OSError: If file cannot be written (caught by _try_download_entry).
+        """
         request = DataboxDownloadRequest(applkey=entry.applkey)
 
         result = self._databox_client.download_entry(
@@ -488,8 +524,26 @@ class SyncDataboxUseCase:
         )
 
         if result.is_success and result.content is not None:
-            output_path.parent.mkdir(parents=True, exist_ok=True)
-            output_path.write_bytes(result.content)
+            try:
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+            except OSError as exc:
+                logger.error(
+                    "Cannot create directory for %s: %s",
+                    output_path.name,
+                    exc,
+                )
+                raise
+
+            try:
+                output_path.write_bytes(result.content)
+            except OSError as exc:
+                logger.error(
+                    "Cannot write file %s: %s",
+                    output_path.name,
+                    exc,
+                )
+                raise
+
             logger.info("Downloaded: %s (%d bytes)", output_path.name, len(result.content))
 
         return result

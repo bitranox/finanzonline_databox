@@ -20,7 +20,6 @@ System Role:
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
@@ -29,6 +28,7 @@ from typing import TYPE_CHECKING, Any, cast
 from lib_layered_config import Config, read_config
 
 from . import __init__conf__
+from .config_schema import ConfigSchema
 from .domain.errors import ConfigurationError
 from .domain.models import FinanzOnlineCredentials
 from .enums import EmailFormat
@@ -39,11 +39,6 @@ if TYPE_CHECKING:
 # =============================================================================
 # Configuration Parsing Helpers
 # =============================================================================
-
-
-def _parse_float(raw: Any, default: float) -> float:
-    """Parse a float value with fallback to default."""
-    return float(raw) if isinstance(raw, (int, float)) else default
 
 
 def parse_string_list(raw: object) -> list[str]:
@@ -177,6 +172,34 @@ def get_config(*, profile: str | None = None, start_dir: str | None = None) -> C
     )
 
 
+def validate_config(config: Config) -> ConfigSchema:
+    """Validate config dict against Pydantic schema.
+
+    Converts the untyped config dictionary from lib_layered_config into
+    a validated Pydantic model. This is the boundary where untyped config
+    data becomes typed.
+
+    Args:
+        config: Loaded layered configuration object.
+
+    Returns:
+        Validated ConfigSchema with typed sections.
+
+    Raises:
+        ConfigurationError: If config validation fails.
+
+    Example:
+        >>> config = get_config()  # doctest: +SKIP
+        >>> schema = validate_config(config)  # doctest: +SKIP
+        >>> schema.app.language  # doctest: +SKIP
+        'en'
+    """
+    try:
+        return ConfigSchema.model_validate(config.as_dict())
+    except Exception as e:
+        raise ConfigurationError(f"Configuration validation failed: {e}") from e
+
+
 def _default_language() -> Language:
     """Return default language (avoids circular import at module load)."""
     from .i18n import Language
@@ -212,13 +235,12 @@ def load_app_config(config: Config) -> AppConfig:
     """
     from .i18n import Language
 
-    config_dict = config.as_dict()
-    app_section_raw = config_dict.get("app", {})
-    app_section: Mapping[str, Any] = cast(Mapping[str, Any], app_section_raw if isinstance(app_section_raw, dict) else {})
+    # Validate config at boundary using Pydantic schema
+    schema = validate_config(config)
 
     # Parse language with validation (from_string handles invalid values)
-    raw_language = app_section.get("language", "")
-    language = Language.from_string(str(raw_language)) if raw_language else Language.ENGLISH
+    raw_language = schema.app.language
+    language = Language.from_string(raw_language) if raw_language else Language.ENGLISH
 
     return AppConfig(language=language)
 
@@ -262,15 +284,15 @@ def load_finanzonline_config(config: Config) -> FinanzOnlineConfig:
         >>> config = get_config()  # doctest: +SKIP
         >>> fo_config = load_finanzonline_config(config)  # doctest: +SKIP
     """
-    config_dict = config.as_dict()
-    fo_section_raw = config_dict.get("finanzonline", {})
-    fo_section: Mapping[str, Any] = cast(Mapping[str, Any], fo_section_raw if isinstance(fo_section_raw, dict) else {})
+    # Validate config at boundary using Pydantic schema
+    schema = validate_config(config)
+    fo_section = schema.finanzonline
 
-    # Required credentials
-    tid = fo_section.get("tid", "")
-    benid = fo_section.get("benid", "")
-    pin = fo_section.get("pin", "")
-    herstellerid = fo_section.get("herstellerid", "")
+    # Required credentials (typed access from schema)
+    tid = fo_section.tid
+    benid = fo_section.benid
+    pin = fo_section.pin
+    herstellerid = fo_section.herstellerid
 
     # Validate required fields
     missing: list[str] = []
@@ -289,31 +311,29 @@ def load_finanzonline_config(config: Config) -> FinanzOnlineConfig:
     # Create credentials (validation happens in __post_init__)
     try:
         credentials = FinanzOnlineCredentials(
-            tid=str(tid),
-            benid=str(benid),
-            pin=str(pin),
-            herstellerid=str(herstellerid),
+            tid=tid,
+            benid=benid,
+            pin=pin,
+            herstellerid=herstellerid,
         )
     except ValueError as e:
         raise ConfigurationError(f"Invalid credentials: {e}") from e
 
-    # Optional settings with defaults
-    session_timeout = _parse_float(fo_section.get("session_timeout", 30.0), 30.0)
-    query_timeout = _parse_float(fo_section.get("query_timeout", 30.0), 30.0)
+    # Optional settings with defaults (already validated by Pydantic)
+    session_timeout = fo_section.session_timeout
+    query_timeout = fo_section.query_timeout
 
-    # Parse default_recipients - handle JSON string from .env files
-    default_recipients = parse_string_list(fo_section.get("default_recipients", []))
-
-    # Parse document_recipients - recipients for per-document notifications with attachments
-    document_recipients = parse_string_list(fo_section.get("document_recipients", []))
+    # Recipients are already validated as list[str] by Pydantic
+    default_recipients = fo_section.default_recipients
+    document_recipients = fo_section.document_recipients
 
     # Parse email_format - defaults to "both" (HTML and plain text)
-    email_format = _parse_email_format(fo_section.get("email_format", "both"), EmailFormat.BOTH)
+    email_format = _parse_email_format(fo_section.email_format, EmailFormat.BOTH)
 
     # Parse output_dir - default output directory for downloaded files
-    output_dir_raw = fo_section.get("output_dir", "")
+    output_dir_raw = fo_section.output_dir
     output_dir: Path | None = None
-    if output_dir_raw and isinstance(output_dir_raw, str) and output_dir_raw.strip():
+    if output_dir_raw and output_dir_raw.strip():
         output_dir = Path(output_dir_raw.strip()).expanduser()
 
     return FinanzOnlineConfig(
@@ -335,4 +355,5 @@ __all__ = [
     "load_app_config",
     "load_finanzonline_config",
     "parse_string_list",
+    "validate_config",
 ]

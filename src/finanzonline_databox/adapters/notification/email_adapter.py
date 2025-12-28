@@ -458,7 +458,7 @@ class EmailNotificationAdapter:
         logger.info(
             "Sending DataBox download notification to %d recipients (format=%s)",
             len(recipients),
-            self._email_format.value,
+            self._email_format,
         )
 
         try:
@@ -504,7 +504,7 @@ class EmailNotificationAdapter:
         logger.info(
             "Sending DataBox sync notification to %d recipients (format=%s)",
             len(recipients),
-            self._email_format.value,
+            self._email_format,
         )
 
         try:
@@ -557,7 +557,7 @@ class EmailNotificationAdapter:
         logger.info(
             "Sending DataBox error notification to %d recipients (format=%s)",
             len(recipients),
-            self._email_format.value,
+            self._email_format,
         )
 
         try:
@@ -607,7 +607,7 @@ class EmailNotificationAdapter:
             "Sending document notification for %s to %d recipients (format=%s)",
             entry.applkey[:8],
             len(recipients),
-            self._email_format.value,
+            self._email_format,
         )
 
         try:

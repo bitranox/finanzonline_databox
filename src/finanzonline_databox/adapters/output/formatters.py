@@ -54,7 +54,14 @@ _DIM = "\033[2m"
 
 
 def _entry_to_dict(entry: DataboxEntry) -> dict[str, Any]:
-    """Convert DataboxEntry to JSON-serializable dict."""
+    """Convert DataboxEntry to JSON-serializable dict.
+
+    Note on enum serialization:
+        IntEnum fields (fileart, status) serialize to their names (e.g., "PDF", "UNREAD")
+        for human readability in JSON output. This matches the common expectation that
+        JSON consumers want descriptive strings rather than internal integer codes.
+        The original integer values are not exposed in JSON output.
+    """
     return {
         "stnr": entry.stnr,
         "name": entry.name,

@@ -129,6 +129,7 @@ Authentication credentials for the FinanzOnline web service.
 | `finanzonline.query_timeout`      | `float`     | `30.0`   | Query/download timeout in seconds             |
 | `finanzonline.output_dir`         | `str`       | `""`     | Default output directory (supports ~ for home)|
 | `finanzonline.default_recipients` | `list[str]` | `[]`     | Default email recipients for notifications    |
+| `finanzonline.document_recipients`| `list[str]` | `[]`     | Recipients for per-document email attachments |
 | `finanzonline.email_format`       | `str`       | `"both"` | Email format: `html`, `plain`, or `both`      |
 
 **.env example:**

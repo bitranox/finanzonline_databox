@@ -129,6 +129,7 @@ Authentifizierungsdaten für den FinanzOnline-Webservice.
 | `finanzonline.query_timeout`      | `float`     | `30.0`       | Abfrage/Download-Timeout in Sekunden                      |
 | `finanzonline.output_dir`         | `str`       | `""`         | Standard-Ausgabeverzeichnis (unterstützt ~ für Home)      |
 | `finanzonline.default_recipients` | `list[str]` | `[]`         | Standard-E-Mail-Empfänger für Benachrichtigungen          |
+| `finanzonline.document_recipients`| `list[str]` | `[]`         | Empfänger für Dokumente als E-Mail-Anhänge                |
 | `finanzonline.email_format`       | `str`       | `"both"`     | E-Mail-Format: `html`, `plain` oder `both`                |
 
 **.env-Beispiel:**

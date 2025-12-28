@@ -18,7 +18,9 @@ from finanzonline_databox.application.use_cases import (
     SyncResult,
     _get_unique_path,  # pyright: ignore[reportPrivateUsage]
 )
-from finanzonline_databox.domain.errors import SessionError
+import errno
+
+from finanzonline_databox.domain.errors import FilesystemError, SessionError
 from finanzonline_databox.domain.models import (
     DataboxDownloadResult,
     DataboxListRequest,
@@ -788,3 +790,224 @@ class TestSyncDataboxUseCaseAnbringenFilter:
         assert result.downloaded == 0
         assert result.skipped == 0
         assert not fake_databox_client.download_called
+
+
+# =============================================================================
+# Filesystem Error Handling Tests
+# =============================================================================
+
+
+@pytest.mark.os_agnostic
+class TestDownloadEntryUseCaseFilesystemError:
+    """Tests for filesystem error handling in download operations."""
+
+    def test_raises_filesystem_error_on_mkdir_failure(
+        self,
+        fake_session_client: FakeSessionClient,
+        fake_databox_client: FakeDataboxClient,
+        valid_credentials: Any,
+        successful_session: SessionInfo,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Download raises FilesystemError when directory creation fails."""
+        fake_session_client.login_response = successful_session
+        fake_databox_client.download_responses = [DataboxDownloadResult(rc=0, msg="OK", content=b"test content")]
+
+        # Mock mkdir to raise PermissionError
+        def mock_mkdir(self: Path, **kwargs: Any) -> None:
+            raise PermissionError(errno.EACCES, "Permission denied", str(self))
+
+        monkeypatch.setattr(Path, "mkdir", mock_mkdir)
+
+        use_case = DownloadEntryUseCase(fake_session_client, fake_databox_client)
+        output_file = tmp_path / "subdir" / "test.pdf"
+
+        with pytest.raises(FilesystemError, match="Permission denied"):
+            use_case.execute(valid_credentials, "abc123def456", output_path=output_file)
+
+    def test_raises_filesystem_error_on_write_failure(
+        self,
+        fake_session_client: FakeSessionClient,
+        fake_databox_client: FakeDataboxClient,
+        valid_credentials: Any,
+        successful_session: SessionInfo,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Download raises FilesystemError when file write fails."""
+        fake_session_client.login_response = successful_session
+        fake_databox_client.download_responses = [DataboxDownloadResult(rc=0, msg="OK", content=b"test content")]
+
+        # Mock write_bytes to raise disk full error
+        def mock_write_bytes(self: Path, data: bytes) -> int:
+            raise OSError(errno.ENOSPC, "No space left on device", str(self))
+
+        monkeypatch.setattr(Path, "write_bytes", mock_write_bytes)
+
+        use_case = DownloadEntryUseCase(fake_session_client, fake_databox_client)
+        output_file = tmp_path / "test.pdf"
+
+        with pytest.raises(FilesystemError, match="Disk full"):
+            use_case.execute(valid_credentials, "abc123def456", output_path=output_file)
+
+    def test_logs_out_even_when_filesystem_error_occurs(
+        self,
+        fake_session_client: FakeSessionClient,
+        fake_databox_client: FakeDataboxClient,
+        valid_credentials: Any,
+        successful_session: SessionInfo,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Logout is called even when FilesystemError occurs."""
+        fake_session_client.login_response = successful_session
+        fake_databox_client.download_responses = [DataboxDownloadResult(rc=0, msg="OK", content=b"test content")]
+
+        def mock_write_bytes(self: Path, data: bytes) -> int:
+            raise OSError(errno.ENOSPC, "No space left on device", str(self))
+
+        monkeypatch.setattr(Path, "write_bytes", mock_write_bytes)
+
+        use_case = DownloadEntryUseCase(fake_session_client, fake_databox_client)
+
+        with pytest.raises(FilesystemError):
+            use_case.execute(valid_credentials, "abc123def456", output_path=tmp_path / "test.pdf")
+
+        assert fake_session_client.logout_called
+
+
+@pytest.mark.os_agnostic
+class TestSyncDataboxUseCaseFilesystemError:
+    """Tests for filesystem error handling in sync operations."""
+
+    def test_raises_filesystem_error_on_output_dir_creation_failure(
+        self,
+        fake_session_client: FakeSessionClient,
+        fake_databox_client: FakeDataboxClient,
+        valid_credentials: Any,
+        successful_session: SessionInfo,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Sync raises FilesystemError when output directory cannot be created."""
+        fake_session_client.login_response = successful_session
+
+        def mock_mkdir(self: Path, **kwargs: Any) -> None:
+            raise PermissionError(errno.EACCES, "Permission denied", str(self))
+
+        monkeypatch.setattr(Path, "mkdir", mock_mkdir)
+
+        use_case = SyncDataboxUseCase(fake_session_client, fake_databox_client)
+
+        with pytest.raises(FilesystemError, match="Permission denied"):
+            use_case.execute(valid_credentials, Path("/readonly/dir"))
+
+    def test_counts_file_write_failure_as_failed(
+        self,
+        fake_session_client: FakeSessionClient,
+        fake_databox_client: FakeDataboxClient,
+        valid_credentials: Any,
+        successful_session: SessionInfo,
+        make_databox_entry: Any,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Sync counts file write failures in failed count and continues."""
+        fake_session_client.login_response = successful_session
+        fake_databox_client.list_response = DataboxListResult(
+            rc=0,
+            msg="OK",
+            entries=(make_databox_entry(applkey="key1xxxxxxxxx", filebez="doc1.pdf"),),
+        )
+        fake_databox_client.download_responses = [DataboxDownloadResult(rc=0, msg="OK", content=b"test content")]
+
+        # Make write fail for files
+        write_call_count = 0
+
+        def mock_write_bytes(self: Path, data: bytes) -> int:
+            nonlocal write_call_count
+            write_call_count += 1
+            raise OSError(errno.ENOSPC, "No space left on device")
+
+        monkeypatch.setattr(Path, "write_bytes", mock_write_bytes)
+
+        use_case = SyncDataboxUseCase(fake_session_client, fake_databox_client)
+        result = use_case.execute(valid_credentials, tmp_path)
+
+        # Write was attempted
+        assert write_call_count == 1
+        # Failure was counted
+        assert result.failed == 1
+        assert result.downloaded == 0
+        assert result.is_success is False
+
+    def test_continues_after_individual_file_failure(
+        self,
+        fake_session_client: FakeSessionClient,
+        fake_databox_client: FakeDataboxClient,
+        valid_credentials: Any,
+        successful_session: SessionInfo,
+        make_databox_entry: Any,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Sync continues processing remaining entries after a file write failure."""
+        fake_session_client.login_response = successful_session
+        fake_databox_client.list_response = DataboxListResult(
+            rc=0,
+            msg="OK",
+            entries=(
+                make_databox_entry(applkey="key1xxxxxxxxx", filebez="doc1.pdf"),
+                make_databox_entry(applkey="key2xxxxxxxxx", filebez="doc2.pdf"),
+            ),
+        )
+        fake_databox_client.download_responses = [
+            DataboxDownloadResult(rc=0, msg="OK", content=b"content1"),
+            DataboxDownloadResult(rc=0, msg="OK", content=b"content2"),
+        ]
+
+        # First write fails, second succeeds
+        write_attempts: list[str] = []
+        original_write_bytes = Path.write_bytes
+
+        def mock_write_bytes(self: Path, data: bytes) -> int:
+            write_attempts.append(self.name)
+            if len(write_attempts) == 1:
+                raise OSError(errno.ENOSPC, "No space left on device")
+            return original_write_bytes(self, data)
+
+        monkeypatch.setattr(Path, "write_bytes", mock_write_bytes)
+
+        use_case = SyncDataboxUseCase(fake_session_client, fake_databox_client)
+        result = use_case.execute(valid_credentials, tmp_path)
+
+        # Both files were attempted
+        assert len(write_attempts) == 2
+        # One failed, one succeeded
+        assert result.failed == 1
+        assert result.downloaded == 1
+        assert result.is_success is False
+
+    def test_logs_out_even_when_output_dir_creation_fails(
+        self,
+        fake_session_client: FakeSessionClient,
+        fake_databox_client: FakeDataboxClient,
+        valid_credentials: Any,
+        successful_session: SessionInfo,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Logout is NOT called when output dir creation fails (before login)."""
+        fake_session_client.login_response = successful_session
+
+        def mock_mkdir(self: Path, **kwargs: Any) -> None:
+            raise PermissionError(errno.EACCES, "Permission denied", str(self))
+
+        monkeypatch.setattr(Path, "mkdir", mock_mkdir)
+
+        use_case = SyncDataboxUseCase(fake_session_client, fake_databox_client)
+
+        with pytest.raises(FilesystemError):
+            use_case.execute(valid_credentials, Path("/readonly/dir"))
+
+        # mkdir happens before login, so logout should not be called
+        assert not fake_session_client.logout_called

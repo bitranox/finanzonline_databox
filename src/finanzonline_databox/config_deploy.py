@@ -118,16 +118,13 @@ def deploy_configuration(
     """
     source = get_default_config_path()
 
-    # Convert enum values to strings for lib_layered_config
-    target_strings = [t.value for t in targets]
-
     results = deploy_config(
         source=source,
         vendor=__init__conf__.LAYEREDCONF_VENDOR,
         app=__init__conf__.LAYEREDCONF_APP,
         slug=__init__conf__.LAYEREDCONF_SLUG,
         profile=profile,
-        targets=target_strings,
+        targets=list(targets),  # DeployTarget inherits from str, so enums work directly
         force=force,
     )
 

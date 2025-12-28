@@ -25,10 +25,15 @@ from typing import TYPE_CHECKING, Any, cast
 
 from zeep import Client
 from zeep.exceptions import Fault, TransportError
+from zeep.transports import Transport
 
 from finanzonline_databox._format_utils import mask_credential
 from finanzonline_databox.domain.errors import AuthenticationError, SessionError
-from finanzonline_databox.domain.models import Diagnostics, SessionInfo
+from finanzonline_databox.domain.models import (
+    Diagnostics,
+    RC_DATE_PARAMS_REQUIRED,
+    SessionInfo,
+)
 
 if TYPE_CHECKING:
     from finanzonline_databox.domain.models import FinanzOnlineCredentials
@@ -158,14 +163,15 @@ class FinanzOnlineSessionClient:
         self._client: Client | None = None
 
     def _get_client(self) -> Client:
-        """Get or create SOAP client.
+        """Get or create SOAP client with configured timeout.
 
         Returns:
             Zeep Client instance for session service.
         """
         if self._client is None:
-            logger.debug("Creating session service client")
-            self._client = Client(SESSION_SERVICE_WSDL)
+            logger.debug("Creating session service client with timeout=%.1fs", self._timeout)
+            transport = Transport(timeout=self._timeout)
+            self._client = Client(SESSION_SERVICE_WSDL, transport=transport)
         return self._client
 
     def login(self, credentials: FinanzOnlineCredentials) -> SessionInfo:
@@ -212,7 +218,8 @@ class FinanzOnlineSessionClient:
 
         logger.debug("Login response: rc=%d, msg=%s", return_code, message)
 
-        if return_code == -4:
+        if return_code == RC_DATE_PARAMS_REQUIRED:
+            # RC -4: Session service uses this for authorization failures (login validation)
             diagnostics = _build_login_diagnostics(credentials, response)
             raise AuthenticationError(f"Not authorized: {message}", return_code=return_code, diagnostics=diagnostics)
 

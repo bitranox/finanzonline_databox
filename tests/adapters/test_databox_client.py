@@ -71,22 +71,31 @@ class TestClientInitialization:
 class TestLazyClientCreation:
     """The zeep client is created on first use and reused thereafter."""
 
-    def test_first_call_creates_zeep_client(self) -> None:
-        """Calling _get_client creates the zeep Client."""
-        client = DataboxClient()
-        with patch("finanzonline_databox.adapters.finanzonline.databox_client.Client") as mock_class:
-            mock_instance = MagicMock()
-            mock_class.return_value = mock_instance
+    def test_first_call_creates_zeep_client_with_transport(self) -> None:
+        """Calling _get_client creates the zeep Client with configured Transport."""
+        client = DataboxClient(timeout=45.0)
+        with (
+            patch("finanzonline_databox.adapters.finanzonline.databox_client.Transport") as mock_transport,
+            patch("finanzonline_databox.adapters.finanzonline.databox_client.Client") as mock_client,
+        ):
+            mock_transport_instance = MagicMock()
+            mock_transport.return_value = mock_transport_instance
+            mock_client_instance = MagicMock()
+            mock_client.return_value = mock_client_instance
 
             result = client._get_client()
 
-            mock_class.assert_called_once_with(DATABOX_SERVICE_WSDL)
-            assert result is mock_instance
+            mock_transport.assert_called_once_with(timeout=45.0)
+            mock_client.assert_called_once_with(DATABOX_SERVICE_WSDL, transport=mock_transport_instance)
+            assert result is mock_client_instance
 
     def test_subsequent_calls_reuse_existing_client(self) -> None:
         """Multiple calls return the same client instance."""
         client = DataboxClient()
-        with patch("finanzonline_databox.adapters.finanzonline.databox_client.Client") as mock_class:
+        with (
+            patch("finanzonline_databox.adapters.finanzonline.databox_client.Transport"),
+            patch("finanzonline_databox.adapters.finanzonline.databox_client.Client") as mock_class,
+        ):
             mock_instance = MagicMock()
             mock_class.return_value = mock_instance
 
@@ -187,23 +196,36 @@ class TestExtractResponseMessage:
 class TestDecodeContent:
     """Tests for _decode_content helper."""
 
-    def test_decodes_base64_content(self) -> None:
+    def test_decodes_base64_content(self, valid_credentials: Any) -> None:
         """Base64 content is decoded."""
         response = MagicMock()
         response.result = base64.b64encode(b"PDF content").decode("ascii")
-        result = _decode_content(response, "key123")
+        result = _decode_content(response, "key123def456", "SESSION123", valid_credentials)
         assert result == b"PDF content"
 
-    def test_returns_none_for_empty_result(self) -> None:
+    def test_returns_none_for_empty_result(self, valid_credentials: Any) -> None:
         """Returns None when result is empty."""
         response = MagicMock()
         response.result = ""
-        assert _decode_content(response, "key123") is None
+        assert _decode_content(response, "key123def456", "SESSION123", valid_credentials) is None
 
-    def test_returns_none_for_missing_result(self) -> None:
+    def test_returns_none_for_missing_result(self, valid_credentials: Any) -> None:
         """Returns None when result attribute is missing."""
         response = MagicMock(spec=["rc", "msg"])
-        assert _decode_content(response, "key123") is None
+        assert _decode_content(response, "key123def456", "SESSION123", valid_credentials) is None
+
+    def test_invalid_base64_raises_operation_error(self, valid_credentials: Any) -> None:
+        """Invalid base64 content raises DataboxOperationError."""
+        response = MagicMock()
+        response.result = "!!!not-valid-base64!!!"
+        response.rc = 0
+        response.msg = None
+
+        with pytest.raises(DataboxOperationError) as exc_info:
+            _decode_content(response, "key123def456", "SESSION123", valid_credentials)
+
+        assert "invalid base64" in str(exc_info.value).lower()
+        assert exc_info.value.diagnostics is not None
 
 
 class TestParseDataboxEntry:

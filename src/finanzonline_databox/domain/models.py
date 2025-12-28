@@ -420,7 +420,7 @@ class DataboxListResult:
         rc: Return code (0 = success).
         msg: Response message (if error).
         entries: List of databox entries.
-        timestamp: When the list was retrieved (UTC).
+        timestamp: When the list was retrieved (local timezone).
     """
 
     rc: int
@@ -468,7 +468,7 @@ class DataboxDownloadResult:
         rc: Return code (0 = success).
         msg: Response message (if error).
         content: Decoded document content (bytes).
-        timestamp: When the download was performed (UTC).
+        timestamp: When the download was performed (local timezone).
     """
 
     rc: int

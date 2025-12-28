@@ -17,6 +17,7 @@ System Role:
 
 from __future__ import annotations
 
+import errno
 import logging
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -56,6 +57,7 @@ from .domain.errors import (
     DataboxError,
     DataboxErrorInfo,
     DataboxOperationError,
+    FilesystemError,
     SessionError,
 )
 from .domain.models import DataboxEntry, DataboxListRequest, DataboxListResult, FinanzOnlineCredentials
@@ -272,8 +274,8 @@ def cli_fail() -> None:
 @cli.command("config", context_settings=CLICK_CONTEXT_SETTINGS)
 @click.option(
     "--format",
-    type=click.Choice([f.value for f in OutputFormat], case_sensitive=False),
-    default=OutputFormat.HUMAN.value,
+    type=click.Choice(list(OutputFormat), case_sensitive=False),
+    default=OutputFormat.HUMAN,
     help=_("Output format (human-readable or JSON)"),
 )
 @click.option(
@@ -308,9 +310,9 @@ def cli_config(ctx: click.Context, format: str, section: str | None, profile: st
         effective_profile = cli_ctx.profile
 
     output_format = OutputFormat(format.lower())
-    extra = {"command": "config", "format": output_format.value, "profile": effective_profile}
+    extra = {"command": "config", "format": output_format, "profile": effective_profile}
     with lib_log_rich.runtime.bind(job_id="cli-config", extra=extra):
-        logger.info("Displaying configuration", extra={"format": output_format.value, "section": section, "profile": effective_profile})
+        logger.info("Displaying configuration", extra={"format": output_format, "section": section, "profile": effective_profile})
         display_config(config, format=output_format, section=section)
 
 
@@ -345,7 +347,7 @@ def _handle_deploy_error(exc: Exception) -> None:
 @click.option(
     "--target",
     "targets",
-    type=click.Choice([t.value for t in DeployTarget], case_sensitive=False),
+    type=click.Choice(list(DeployTarget), case_sensitive=False),
     multiple=True,
     required=True,
     help=_("Target configuration layer(s) to deploy to (can specify multiple)"),
@@ -378,11 +380,10 @@ def cli_config_deploy(ctx: click.Context, targets: tuple[str, ...], force: bool,
     cli_ctx = _get_cli_context(ctx)
     effective_profile = profile if profile else cli_ctx.profile
     deploy_targets = tuple(DeployTarget(t.lower()) for t in targets)
-    target_values = tuple(t.value for t in deploy_targets)
-    extra = {"command": "config-deploy", "targets": target_values, "force": force, "profile": effective_profile}
+    extra = {"command": "config-deploy", "targets": deploy_targets, "force": force, "profile": effective_profile}
 
     with lib_log_rich.runtime.bind(job_id="cli-config-deploy", extra=extra):
-        logger.info("Deploying configuration", extra={"targets": target_values, "force": force, "profile": effective_profile})
+        logger.info("Deploying configuration", extra={"targets": deploy_targets, "force": force, "profile": effective_profile})
 
         try:
             deployed_paths = deploy_configuration(targets=deploy_targets, force=force, profile=effective_profile)
@@ -396,24 +397,92 @@ def cli_config_deploy(ctx: click.Context, targets: tuple[str, ...], force: bool,
 # =============================================================================
 
 
+@dataclass(frozen=True, slots=True)
+class ErrorTypeInfo:
+    """Mapping of error type to display label and exit code.
+
+    Provides type-safe structure for error type mappings instead of raw tuples.
+
+    Attributes:
+        label: Human-readable label for the error type (e.g., "Configuration Error").
+        exit_code: CLI exit code to return for this error type.
+    """
+
+    label: str
+    exit_code: CliExitCode
+
+
+#: Maps exception types to their display info. Uses dataclass instead of tuple.
+_ERROR_TYPE_MAP: dict[type[DataboxError], ErrorTypeInfo] = {
+    ConfigurationError: ErrorTypeInfo(_("Configuration Error"), CliExitCode.CONFIG_ERROR),
+    AuthenticationError: ErrorTypeInfo(_("Authentication Error"), CliExitCode.AUTH_ERROR),
+    SessionError: ErrorTypeInfo(_("Session Error"), CliExitCode.DOWNLOAD_ERROR),
+    DataboxOperationError: ErrorTypeInfo(_("DataBox Operation Error"), CliExitCode.DOWNLOAD_ERROR),
+    FilesystemError: ErrorTypeInfo(_("Filesystem Error"), CliExitCode.IO_ERROR),
+}
+
+#: Default error info when exception type is not in the map.
+_DEFAULT_ERROR_INFO: ErrorTypeInfo = ErrorTypeInfo(_("DataBox Error"), CliExitCode.DOWNLOAD_ERROR)
+
+
 def _get_databox_error_info(exc: DataboxError) -> DataboxErrorInfo:
     """Get DataboxErrorInfo for DataboxError subclasses."""
-    error_type_map: dict[type[DataboxError], tuple[str, CliExitCode]] = {
-        ConfigurationError: ("Configuration Error", CliExitCode.CONFIG_ERROR),
-        AuthenticationError: ("Authentication Error", CliExitCode.AUTH_ERROR),
-        SessionError: ("Session Error", CliExitCode.DOWNLOAD_ERROR),
-        DataboxOperationError: ("DataBox Operation Error", CliExitCode.DOWNLOAD_ERROR),
-    }
     exc_type = type(exc)
-    error_type, exit_code = error_type_map.get(exc_type, ("DataBox Error", CliExitCode.DOWNLOAD_ERROR))
+    error_info = _ERROR_TYPE_MAP.get(exc_type, _DEFAULT_ERROR_INFO)
     return DataboxErrorInfo(
-        error_type=error_type,
+        error_type=error_info.label,
         message=exc.message,
-        exit_code=exit_code,
+        exit_code=error_info.exit_code,
         return_code=getattr(exc, "return_code", None),
         retryable=getattr(exc, "retryable", False),
         diagnostics=getattr(exc, "diagnostics", None),
     )
+
+
+@dataclass(frozen=True, slots=True)
+class FilesystemErrorHint:
+    """Mapping of errno to actionable hint message.
+
+    Provides type-safe structure for filesystem error hints instead of raw dict.
+
+    Attributes:
+        errno_value: The errno constant (e.g., errno.EACCES).
+        hint: User-friendly hint message for this error type.
+    """
+
+    errno_value: int
+    hint: str
+
+
+#: Hints for common filesystem errors, providing actionable guidance.
+_FILESYSTEM_ERROR_HINTS: tuple[FilesystemErrorHint, ...] = (
+    FilesystemErrorHint(errno.EACCES, _("Use --output to specify a different directory, or check file permissions.")),
+    FilesystemErrorHint(errno.ENOSPC, _("Free up disk space or use --output to specify a different disk.")),
+    FilesystemErrorHint(errno.EROFS, _("Use --output to specify a writable directory.")),
+    FilesystemErrorHint(errno.ENAMETOOLONG, _("Use --filename to specify a shorter filename.")),
+)
+
+
+def _get_filesystem_error_hint(exc: FilesystemError) -> str | None:
+    """Get actionable hint for filesystem error.
+
+    Args:
+        exc: The filesystem error.
+
+    Returns:
+        Hint string or None if no specific hint available.
+    """
+    if exc.original_error is None:
+        return None
+
+    err_no = exc.original_error.errno
+    if err_no is None:
+        return None
+
+    for hint_info in _FILESYSTEM_ERROR_HINTS:
+        if hint_info.errno_value == err_no:
+            return hint_info.hint
+    return None
 
 
 def _get_error_info(exc: Exception) -> DataboxErrorInfo:
@@ -462,6 +531,10 @@ def _handle_command_exception(
     logger.error(error_info.error_type, extra={"error": str(exc)})
     if isinstance(exc, ConfigurationError):
         _show_config_help(exc.message)
+
+    # Get hint for filesystem errors
+    hint = _get_filesystem_error_hint(exc) if isinstance(exc, FilesystemError) else None
+
     _handle_databox_error(
         error_info,
         send_notification=send_notification,
@@ -469,6 +542,7 @@ def _handle_command_exception(
         fo_config=fo_config,
         recipients=recipients,
         operation=operation,
+        hint=hint,
     )
 
 
@@ -540,6 +614,7 @@ def _handle_databox_error(
     fo_config: FinanzOnlineConfig | None,
     recipients: list[str],
     operation: str = "databox",
+    hint: str | None = None,
 ) -> None:
     """Handle databox command errors with output and notification.
 
@@ -550,6 +625,7 @@ def _handle_databox_error(
         fo_config: FinanzOnline configuration (may be None).
         recipients: Email recipients.
         operation: Operation name for error reporting.
+        hint: Optional actionable hint to display.
 
     Raises:
         SystemExit: Always raises with the specified exit code.
@@ -562,6 +638,9 @@ def _handle_databox_error(
 
     if error_info.retryable:
         click.echo(f"  {_('This error may be temporary. Try again later.')}", err=True)
+
+    if hint:
+        click.echo(f"  {_('Hint:')} {hint}", err=True)
 
     if send_notification:
         _send_error_notification(
@@ -720,7 +799,7 @@ def _parse_date(date_str: str | None) -> datetime | None:
         date_str: Date string in YYYY-MM-DD format or None.
 
     Returns:
-        Parsed datetime with UTC timezone or None.
+        Parsed datetime with local timezone or None.
 
     Raises:
         click.BadParameter: If date format is invalid.
@@ -729,7 +808,7 @@ def _parse_date(date_str: str | None) -> datetime | None:
         return None
     try:
         parsed = datetime.strptime(date_str, "%Y-%m-%d")  # noqa: DTZ007
-        return parsed.astimezone()  # Use local timezone
+        return parsed.astimezone()  # Convert to local timezone
     except ValueError as exc:
         msg = f"Invalid date format: {date_str}. Use YYYY-MM-DD."
         raise click.BadParameter(msg) from exc
@@ -937,7 +1016,7 @@ def _resolve_effective_days(
     days: int | None,
     date_from: str | None,
     date_to: str | None,
-    read_filter: str,
+    read_filter: ReadFilter,
 ) -> int | None:
     """Resolve effective days, auto-setting for read/all filters.
 
@@ -995,7 +1074,7 @@ def _execute_list_operation(
 
 def _apply_list_filters(
     result: DataboxListResult,
-    read_filter: str,
+    read_filter: ReadFilter,
     reference: str,
 ) -> DataboxListResult:
     """Apply read status and reference filters to list result."""
@@ -1019,7 +1098,7 @@ def _execute_chunked_sync(
     output_dir: Path,
     erltyp: str,
     reference: str,
-    read_filter: str,
+    read_filter: ReadFilter,
     skip_existing: bool,
     ts_zust_von: datetime,
     ts_zust_bis: datetime,
@@ -1143,8 +1222,8 @@ def _filter_by_reference(result: DataboxListResult, reference: str) -> DataboxLi
 @click.option(
     "--format",
     "output_format",
-    type=click.Choice([f.value for f in OutputFormat], case_sensitive=False),
-    default=OutputFormat.HUMAN.value,
+    type=click.Choice(list(OutputFormat), case_sensitive=False),
+    default=OutputFormat.HUMAN,
     help=_("Output format (default: human)"),
 )
 @click.pass_context
@@ -1193,10 +1272,13 @@ def cli_list(
     cli_ctx = _get_cli_context(ctx)
     config = cli_ctx.config
 
-    effective_days = _resolve_effective_days(days, date_from, date_to, read_filter)
+    # Convert string to enum at boundary (Click passes strings via flag_value)
+    read_filter_enum = ReadFilter(read_filter)
+
+    effective_days = _resolve_effective_days(days, date_from, date_to, read_filter_enum)
     ts_zust_von, ts_zust_bis = _resolve_date_range(effective_days, date_from, date_to, max_days=31)
 
-    extra = {"command": "list", "erltyp": erltyp, "reference": reference, "format": output_format, "days": effective_days, "read_filter": read_filter}
+    extra = {"command": "list", "erltyp": erltyp, "reference": reference, "format": output_format, "days": effective_days, "read_filter": read_filter_enum}
 
     with lib_log_rich.runtime.bind(job_id="cli-list", extra=extra):
         try:
@@ -1209,12 +1291,12 @@ def cli_list(
             )
 
             result = _execute_list_operation(use_case, fo_config.credentials, erltyp, ts_zust_von, ts_zust_bis)
-            result = _apply_list_filters(result, read_filter, reference)
+            result = _apply_list_filters(result, read_filter_enum, reference)
 
             click.echo(_format_list_result(result, output_format))
             raise SystemExit(CliExitCode.SUCCESS if result.is_success else CliExitCode.DOWNLOAD_ERROR)
 
-        except (ConfigurationError, AuthenticationError, SessionError, DataboxOperationError, ValueError, DataboxError) as exc:
+        except (ConfigurationError, AuthenticationError, SessionError, DataboxOperationError, FilesystemError, ValueError, DataboxError) as exc:
             _handle_command_exception(exc, config=config, fo_config=None, recipients=[], send_notification=False, operation="list")
 
 
@@ -1319,7 +1401,7 @@ def cli_download(
                 click.echo(f"{_('Error')}: {result.msg}", err=True)
                 raise SystemExit(CliExitCode.DOWNLOAD_ERROR)
 
-        except (ConfigurationError, AuthenticationError, SessionError, DataboxOperationError, ValueError, DataboxError) as exc:
+        except (ConfigurationError, AuthenticationError, SessionError, DataboxOperationError, FilesystemError, ValueError, DataboxError) as exc:
             _handle_command_exception(exc, config=config, fo_config=None, recipients=[], send_notification=False, operation="download")
 
 
@@ -1386,8 +1468,8 @@ def cli_download(
 @click.option(
     "--format",
     "output_format",
-    type=click.Choice([f.value for f in OutputFormat], case_sensitive=False),
-    default=OutputFormat.HUMAN.value,
+    type=click.Choice(list(OutputFormat), case_sensitive=False),
+    default=OutputFormat.HUMAN,
     help=_("Output format (default: human)"),
 )
 @click.option(
@@ -1444,6 +1526,9 @@ def cli_sync(
     cli_ctx = _get_cli_context(ctx)
     config = cli_ctx.config
 
+    # Convert string to enum at boundary (Click passes strings via flag_value)
+    read_filter_enum = ReadFilter(read_filter)
+
     # Resolve output directory: CLI option > config > default
     output_dir = _resolve_output_dir(output, config, default="./databox")
     recipients_list = list(recipients)
@@ -1458,7 +1543,7 @@ def cli_sync(
         "erltyp": erltyp,
         "reference": reference,
         "days": clamped_days,
-        "read_filter": read_filter,
+        "read_filter": read_filter_enum,
         "skip_existing": skip_existing,
         "format": output_format,
     }
@@ -1475,14 +1560,16 @@ def cli_sync(
                 DataboxClient(timeout=fo_config.query_timeout),
             )
 
-            result = _execute_chunked_sync(use_case, fo_config.credentials, output_dir, erltyp, reference, read_filter, skip_existing, ts_zust_von, ts_zust_bis)
+            result = _execute_chunked_sync(
+                use_case, fo_config.credentials, output_dir, erltyp, reference, read_filter_enum, skip_existing, ts_zust_von, ts_zust_bis
+            )
 
             click.echo(_format_sync_result(result, str(output_dir), output_format))
             _send_sync_notifications_if_enabled(no_email, config, fo_config, result, str(output_dir), recipients_list, document_recipients_list)
 
             raise SystemExit(CliExitCode.SUCCESS if result.is_success else CliExitCode.DOWNLOAD_ERROR)
 
-        except (ConfigurationError, AuthenticationError, SessionError, DataboxOperationError, ValueError, DataboxError) as exc:
+        except (ConfigurationError, AuthenticationError, SessionError, DataboxOperationError, FilesystemError, ValueError, DataboxError) as exc:
             _handle_command_exception(exc, config=config, fo_config=fo_config, recipients=recipients_list, send_notification=not no_email, operation="sync")
 
 

@@ -21,12 +21,14 @@ BMF DataBox-Download Webservice: https://finanzonline.bmf.gv.at/fon/ws/databoxSe
 from __future__ import annotations
 
 import base64
+import binascii
 import logging
 from datetime import date, datetime
 from typing import TYPE_CHECKING, Any, cast
 
 from zeep import Client
 from zeep.exceptions import Fault, TransportError
+from zeep.transports import Transport
 
 from finanzonline_databox._datetime_utils import local_now
 from finanzonline_databox._format_utils import mask_credential
@@ -193,12 +195,46 @@ def _extract_response_message(response: Any) -> str | None:
     return str(getattr(response, "msg", "") or "")
 
 
-def _decode_content(response: Any, applkey: str) -> bytes | None:
-    """Decode base64 content from download response."""
+def _decode_content(
+    response: Any,
+    applkey: str,
+    session_id: str,
+    credentials: FinanzOnlineCredentials,
+) -> bytes | None:
+    """Decode base64 content from download response.
+
+    Args:
+        response: SOAP response containing base64 encoded content.
+        applkey: Document key for logging and diagnostics.
+        session_id: Session ID for diagnostics.
+        credentials: Credentials for diagnostics.
+
+    Returns:
+        Decoded bytes or None if no content.
+
+    Raises:
+        DataboxOperationError: If base64 decoding fails.
+    """
     raw_content = getattr(response, "result", None)
     if not raw_content:
         return None
-    content = base64.b64decode(raw_content)
+
+    try:
+        content = base64.b64decode(raw_content)
+    except binascii.Error as exc:
+        request = DataboxDownloadRequest(applkey=applkey)
+        diagnostics = _build_download_diagnostics(
+            session_id,
+            credentials,
+            request,
+            response,
+            error=f"Invalid base64 content: {exc}",
+        )
+        raise DataboxOperationError(
+            f"Failed to decode document content for applkey={applkey}: invalid base64 encoding",
+            diagnostics=diagnostics,
+        ) from exc
+
     logger.info("Downloaded %d bytes for applkey=%s", len(content), applkey)
     return content
 
@@ -323,14 +359,15 @@ class DataboxClient:
         self._client: Client | None = None
 
     def _get_client(self) -> Client:
-        """Get or create SOAP client.
+        """Get or create SOAP client with configured timeout.
 
         Returns:
             Zeep Client instance for DataBox service.
         """
         if self._client is None:
-            logger.debug("Creating DataBox service client")
-            self._client = Client(DATABOX_SERVICE_WSDL)
+            logger.debug("Creating DataBox service client with timeout=%.1fs", self._timeout)
+            transport = Transport(timeout=self._timeout)
+            self._client = Client(DATABOX_SERVICE_WSDL, transport=transport)
         return self._client
 
     def list_entries(
@@ -494,5 +531,5 @@ class DataboxClient:
 
         self._check_session_valid(return_code, message, session_id, credentials, request, response)
 
-        content = _decode_content(response, request.applkey) if return_code == RC_OK else None
+        content = _decode_content(response, request.applkey, session_id, credentials) if return_code == RC_OK else None
         return DataboxDownloadResult(rc=return_code, msg=message, content=content, timestamp=local_now())

@@ -54,22 +54,31 @@ class TestClientInitialization:
 class TestLazyClientCreation:
     """The zeep client is created on first use and reused thereafter."""
 
-    def test_first_call_creates_zeep_client(self) -> None:
-        """Calling _get_client creates the zeep Client."""
-        client = FinanzOnlineSessionClient()
-        with patch("finanzonline_databox.adapters.finanzonline.session_client.Client") as mock_class:
-            mock_instance = MagicMock()
-            mock_class.return_value = mock_instance
+    def test_first_call_creates_zeep_client_with_transport(self) -> None:
+        """Calling _get_client creates the zeep Client with configured Transport."""
+        client = FinanzOnlineSessionClient(timeout=45.0)
+        with (
+            patch("finanzonline_databox.adapters.finanzonline.session_client.Transport") as mock_transport,
+            patch("finanzonline_databox.adapters.finanzonline.session_client.Client") as mock_client,
+        ):
+            mock_transport_instance = MagicMock()
+            mock_transport.return_value = mock_transport_instance
+            mock_client_instance = MagicMock()
+            mock_client.return_value = mock_client_instance
 
             result = client._get_client()
 
-            mock_class.assert_called_once_with(SESSION_SERVICE_WSDL)
-            assert result is mock_instance
+            mock_transport.assert_called_once_with(timeout=45.0)
+            mock_client.assert_called_once_with(SESSION_SERVICE_WSDL, transport=mock_transport_instance)
+            assert result is mock_client_instance
 
     def test_subsequent_calls_reuse_existing_client(self) -> None:
         """Multiple calls return the same client instance."""
         client = FinanzOnlineSessionClient()
-        with patch("finanzonline_databox.adapters.finanzonline.session_client.Client") as mock_class:
+        with (
+            patch("finanzonline_databox.adapters.finanzonline.session_client.Transport"),
+            patch("finanzonline_databox.adapters.finanzonline.session_client.Client") as mock_class,
+        ):
             mock_instance = MagicMock()
             mock_class.return_value = mock_instance
 
