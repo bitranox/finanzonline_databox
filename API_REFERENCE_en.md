@@ -442,11 +442,13 @@ print(f"Total bytes: {result.total_bytes}")
 Result of a sync operation.
 
 ```python
-result.total_listed   # Total entries found
-result.downloaded     # Successfully downloaded
-result.skipped        # Skipped (already exist)
-result.failed         # Failed to download
-result.total_bytes    # Total bytes downloaded
+result.total_retrieved  # Raw count from API before filtering
+result.total_listed     # Entries after filtering
+result.unread_listed    # Unread entries in filtered list
+result.downloaded       # Successfully downloaded
+result.skipped          # Skipped (already exist)
+result.failed           # Failed to download
+result.total_bytes      # Total bytes downloaded
 
 # Properties
 result.is_success        # True if failed == 0

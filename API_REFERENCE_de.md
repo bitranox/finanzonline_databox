@@ -451,11 +451,13 @@ print(f"Gesamt Bytes: {result.total_bytes}")
 Ergebnis einer Sync-Operation.
 
 ```python
-result.total_listed   # Gesamt gefundene Einträge
-result.downloaded     # Erfolgreich heruntergeladen
-result.skipped        # Übersprungen (existieren bereits)
-result.failed         # Fehlgeschlagen beim Herunterladen
-result.total_bytes    # Gesamt heruntergeladene Bytes
+result.total_retrieved  # Rohanzahl von API vor Filterung
+result.total_listed     # Einträge nach Filterung
+result.unread_listed    # Ungelesene Einträge in gefilterter Liste
+result.downloaded       # Erfolgreich heruntergeladen
+result.skipped          # Übersprungen (existieren bereits)
+result.failed           # Fehlgeschlagen beim Herunterladen
+result.total_bytes      # Gesamt heruntergeladene Bytes
 
 # Properties
 result.is_success        # True wenn failed == 0

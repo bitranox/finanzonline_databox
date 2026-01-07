@@ -185,6 +185,20 @@ Key domain models for the DataBox service:
 - `DataboxListResult` - List operation result
 - `DataboxDownloadRequest` - Download request (applkey)
 - `DataboxDownloadResult` - Downloaded content (bytes)
+- `SyncResult` - Sync operation statistics (see below)
+
+### SyncResult Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `total_retrieved` | `int` | Raw count of entries returned by API before filtering |
+| `total_listed` | `int` | Entries after filtering (by read status, reference, etc.) |
+| `unread_listed` | `int` | Number of unread entries in the filtered list |
+| `downloaded` | `int` | Number of entries successfully downloaded |
+| `skipped` | `int` | Number of entries skipped (already exist locally) |
+| `failed` | `int` | Number of entries that failed to download |
+| `total_bytes` | `int` | Total bytes downloaded |
+| `downloaded_files` | `tuple` | Tuples of (DataboxEntry, Path) for each downloaded file |
 
 ## DataBox Return Codes
 
