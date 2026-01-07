@@ -426,7 +426,7 @@ class SyncDataboxUseCase:
 
             if not list_result.is_success:
                 logger.error("Failed to list entries: %s", list_result.msg)
-                return SyncResult(total_listed=0, downloaded=0, skipped=0, failed=0, total_bytes=0)
+                return SyncResult(total_listed=0, unread_listed=0, downloaded=0, skipped=0, failed=0, total_bytes=0)
 
             entries = _filter_sync_entries(list_result.entries, anbringen_filter, read_filter)
             return self._download_entries(session.session_id, credentials, entries, output_dir, skip_existing)
@@ -471,6 +471,7 @@ class SyncDataboxUseCase:
         """Download all entries to output directory."""
         downloaded, skipped, failed, total_bytes = 0, 0, 0, 0
         downloaded_files: list[tuple[DataboxEntry, Path]] = []
+        unread_count = sum(1 for e in entries if e.is_unread)
 
         for entry in entries:
             base_path = output_dir / entry.suggested_filename
@@ -491,7 +492,13 @@ class SyncDataboxUseCase:
 
         logger.info("Sync complete: %d downloaded, %d skipped, %d failed (%d bytes total)", downloaded, skipped, failed, total_bytes)
         return SyncResult(
-            total_listed=len(entries), downloaded=downloaded, skipped=skipped, failed=failed, total_bytes=total_bytes, downloaded_files=tuple(downloaded_files)
+            total_listed=len(entries),
+            unread_listed=unread_count,
+            downloaded=downloaded,
+            skipped=skipped,
+            failed=failed,
+            total_bytes=total_bytes,
+            downloaded_files=tuple(downloaded_files),
         )
 
     def _download_single_entry(
@@ -555,6 +562,7 @@ class SyncResult:
 
     Attributes:
         total_listed: Total entries listed from databox.
+        unread_listed: Number of unread entries listed.
         downloaded: Number of entries successfully downloaded.
         skipped: Number of entries skipped (already exist locally).
         failed: Number of entries that failed to download.
@@ -563,6 +571,7 @@ class SyncResult:
     """
 
     total_listed: int
+    unread_listed: int
     downloaded: int
     skipped: int
     failed: int

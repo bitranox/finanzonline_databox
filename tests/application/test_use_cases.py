@@ -105,6 +105,7 @@ class TestSyncResultSuccess:
         """A sync with zero failures is successful."""
         result = SyncResult(
             total_listed=10,
+            unread_listed=5,
             downloaded=8,
             skipped=2,
             failed=0,
@@ -117,6 +118,7 @@ class TestSyncResultSuccess:
         """A sync with any failed downloads is not successful."""
         result = SyncResult(
             total_listed=10,
+            unread_listed=5,
             downloaded=7,
             skipped=2,
             failed=1,
@@ -134,6 +136,7 @@ class TestSyncResultHasNewDownloads:
         """A sync with downloaded files has new downloads."""
         result = SyncResult(
             total_listed=5,
+            unread_listed=3,
             downloaded=3,
             skipped=2,
             failed=0,
@@ -146,6 +149,7 @@ class TestSyncResultHasNewDownloads:
         """A sync with zero downloaded files has no new downloads."""
         result = SyncResult(
             total_listed=5,
+            unread_listed=0,
             downloaded=0,
             skipped=5,
             failed=0,

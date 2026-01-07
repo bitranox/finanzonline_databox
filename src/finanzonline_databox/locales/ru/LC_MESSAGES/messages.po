@@ -637,3 +637,16 @@ msgstr "Исходный код HTML"
 msgid "Click to expand"
 msgstr "Нажмите для раскрытия"
 
+# Chunked sync progress messages
+#: src/finanzonline_databox/cli.py
+msgid "Chunk %d (days %d-%d): Retrieved %d %s - %d unread"
+msgstr "Часть %d (дни %d-%d): Получено %d %s - %d непрочитанных"
+
+#: src/finanzonline_databox/cli.py
+msgid "entry"
+msgstr "запись"
+
+#: src/finanzonline_databox/cli.py
+msgid "entries"
+msgstr "записей"
+

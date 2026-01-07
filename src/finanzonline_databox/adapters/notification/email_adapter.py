@@ -477,6 +477,7 @@ class EmailNotificationAdapter:
 
         result = SyncResult(
             total_listed=entries_downloaded,
+            unread_listed=entries_downloaded,
             downloaded=entries_downloaded,
             skipped=0,
             failed=0,

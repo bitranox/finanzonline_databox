@@ -229,6 +229,7 @@ class TestFormatSyncResultHuman:
         """Successful sync shows SUCCESS status."""
         result = SyncResult(
             total_listed=5,
+            unread_listed=3,
             downloaded=3,
             skipped=2,
             failed=0,
@@ -241,6 +242,7 @@ class TestFormatSyncResultHuman:
         """Sync with failures shows warning."""
         result = SyncResult(
             total_listed=5,
+            unread_listed=2,
             downloaded=2,
             skipped=1,
             failed=2,
@@ -253,6 +255,7 @@ class TestFormatSyncResultHuman:
         """Shows all statistics."""
         result = SyncResult(
             total_listed=10,
+            unread_listed=5,
             downloaded=5,
             skipped=3,
             failed=2,
@@ -268,7 +271,7 @@ class TestFormatSyncResultHuman:
 
     def test_shows_output_directory(self) -> None:
         """Shows output directory path."""
-        result = SyncResult(0, 0, 0, 0, 0)
+        result = SyncResult(0, 0, 0, 0, 0, 0)
         output = format_sync_result_human(result, "/path/to/downloads")
         assert "/path/to/downloads" in output
 
@@ -276,6 +279,7 @@ class TestFormatSyncResultHuman:
         """When new downloads exist, shows info message."""
         result = SyncResult(
             total_listed=1,
+            unread_listed=1,
             downloaded=1,
             skipped=0,
             failed=0,
@@ -290,7 +294,7 @@ class TestFormatSyncResultJson:
 
     def test_returns_valid_json(self) -> None:
         """Returns valid parseable JSON."""
-        result = SyncResult(10, 5, 3, 2, 1024)
+        result = SyncResult(10, 5, 5, 3, 2, 1024)
         output = format_sync_result_json(result, "/tmp/out")
         data = json.loads(output)  # Should not raise
         assert isinstance(data, dict)
@@ -299,6 +303,7 @@ class TestFormatSyncResultJson:
         """JSON includes all required fields."""
         result = SyncResult(
             total_listed=10,
+            unread_listed=5,
             downloaded=5,
             skipped=3,
             failed=2,
@@ -318,14 +323,14 @@ class TestFormatSyncResultJson:
 
     def test_success_true_when_no_failures(self) -> None:
         """success=true when failed=0."""
-        result = SyncResult(5, 5, 0, 0, 1000)
+        result = SyncResult(5, 5, 5, 0, 0, 1000)
         output = format_sync_result_json(result, "/tmp")
         data = json.loads(output)
         assert data["success"] is True
 
     def test_has_new_downloads_false_when_none(self) -> None:
         """has_new_downloads=false when downloaded=0."""
-        result = SyncResult(5, 0, 5, 0, 0)
+        result = SyncResult(5, 0, 0, 5, 0, 0)
         output = format_sync_result_json(result, "/tmp")
         data = json.loads(output)
         assert data["has_new_downloads"] is False

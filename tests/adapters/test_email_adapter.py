@@ -35,10 +35,12 @@ def _make_sync_result(
     skipped: int = 2,
     failed: int = 0,
     total_bytes: int = 1024,
+    unread_listed: int | None = None,
 ) -> SyncResult:
     """Create test sync result."""
     return SyncResult(
         total_listed=downloaded + skipped + failed,
+        unread_listed=unread_listed if unread_listed is not None else downloaded,
         downloaded=downloaded,
         skipped=skipped,
         failed=failed,

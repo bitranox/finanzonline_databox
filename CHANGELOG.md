@@ -5,6 +5,18 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 
 
+## [1.2.5] - 2026-01-07
+
+### Added
+
+- Added `unread_listed` field to `SyncResult` dataclass to track unread entry count per sync operation
+- Added chunk progress logging during sync: `Chunk N (days X-Y): Retrieved N entries - N unread`
+
+### Changed
+
+- Sync operations now display per-chunk progress with entry counts and unread status
+- `_sum_sync_stats()` and `_aggregate_sync_results()` now aggregate unread counts across chunks
+
 ## [1.2.4] - 2026-01-07
 
 ### Changed

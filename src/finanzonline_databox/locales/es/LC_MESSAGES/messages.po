@@ -636,3 +636,16 @@ msgstr "Código fuente HTML"
 msgid "Click to expand"
 msgstr "Haga clic para expandir"
 
+# Chunked sync progress messages
+#: src/finanzonline_databox/cli.py
+msgid "Chunk %d (days %d-%d): Retrieved %d %s - %d unread"
+msgstr "Bloque %d (días %d-%d): %d %s recuperadas - %d no leídas"
+
+#: src/finanzonline_databox/cli.py
+msgid "entry"
+msgstr "entrada"
+
+#: src/finanzonline_databox/cli.py
+msgid "entries"
+msgstr "entradas"
+
