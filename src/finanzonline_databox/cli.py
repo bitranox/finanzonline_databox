@@ -26,6 +26,7 @@ from pathlib import Path
 from typing import Final
 
 import lib_cli_exit_tools
+import lib_log_rich
 import lib_log_rich.runtime
 import rich_click as click
 from click.core import ParameterSource
@@ -84,18 +85,11 @@ def _flush_all_log_handlers() -> None:
     """Flush all handlers to ensure log output appears before subsequent prints.
 
     lib_log_rich uses a queue-based async console adapter. This function
-    waits for the queue to drain before returning, ensuring all pending
-    log messages are written to the console.
+    drains the queue and flushes adapters before returning, ensuring all
+    pending log messages are written to the console.
     """
-    # Wait for lib_log_rich's queue to drain (async console adapter)
     if lib_log_rich.runtime.is_initialised():
-        runtime = lib_log_rich.runtime.current_runtime()
-        if runtime.queue is not None:
-            runtime.queue.wait_until_idle(timeout=2.0)
-
-    # Flush standard logging handlers as fallback
-    for handler in logging.root.handlers:
-        handler.flush()
+        lib_log_rich.flush(timeout=2.0)
 
 
 @dataclass(frozen=True, slots=True)
