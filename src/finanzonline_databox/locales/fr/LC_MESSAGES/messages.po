@@ -640,14 +640,6 @@ msgstr "Cliquez pour développer"
 
 # Chunked sync progress messages
 #: src/finanzonline_databox/cli.py
-msgid "Chunk %d (days %d-%d): Retrieved %d %s - %d unread"
-msgstr "Bloc %d (jours %d-%d): %d %s récupérées - %d non lues"
-
-#: src/finanzonline_databox/cli.py
-msgid "entry"
-msgstr "entrée"
-
-#: src/finanzonline_databox/cli.py
-msgid "entries"
-msgstr "entrées"
+msgid "Chunk %d (days %d-%d): %d from API, %d after filter - %d unread"
+msgstr "Bloc %d (jours %d-%d): %d de l'API, %d après filtre - %d non lues"
 

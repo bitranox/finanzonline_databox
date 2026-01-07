@@ -5,6 +5,18 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 
 
+## [1.2.6] - 2026-01-07
+
+### Added
+
+- Added `total_retrieved` field to `SyncResult` to track raw API count before filtering
+
+### Changed
+
+- Sync log now shows date range: `Starting databox sync (2026-01-01 to 2026-01-07) to /path`
+- Chunk progress now shows both raw API count and filtered count: `Chunk 1 (days 0-7): 5 from API, 3 after filter - 2 unread`
+- `_sum_sync_stats()` and `_aggregate_sync_results()` now aggregate `total_retrieved` across chunks
+
 ## [1.2.5] - 2026-01-07
 
 ### Added

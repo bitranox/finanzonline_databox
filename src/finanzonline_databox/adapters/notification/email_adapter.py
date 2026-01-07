@@ -476,6 +476,7 @@ class EmailNotificationAdapter:
         from finanzonline_databox.application.use_cases import SyncResult
 
         result = SyncResult(
+            total_retrieved=entries_downloaded,
             total_listed=entries_downloaded,
             unread_listed=entries_downloaded,
             downloaded=entries_downloaded,

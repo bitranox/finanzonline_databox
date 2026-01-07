@@ -413,7 +413,9 @@ class SyncDataboxUseCase:
         if request is None:
             request = DataboxListRequest()
 
-        logger.info("Starting databox sync to %s", output_dir)
+        date_from = request.ts_zust_von.date() if request.ts_zust_von else "open"
+        date_to = request.ts_zust_bis.date() if request.ts_zust_bis else "open"
+        logger.info("Starting databox sync (%s to %s) to %s", date_from, date_to, output_dir)
         try:
             output_dir.mkdir(parents=True, exist_ok=True)
         except OSError as exc:
@@ -426,10 +428,11 @@ class SyncDataboxUseCase:
 
             if not list_result.is_success:
                 logger.error("Failed to list entries: %s", list_result.msg)
-                return SyncResult(total_listed=0, unread_listed=0, downloaded=0, skipped=0, failed=0, total_bytes=0)
+                return SyncResult(total_retrieved=0, total_listed=0, unread_listed=0, downloaded=0, skipped=0, failed=0, total_bytes=0)
 
+            raw_count = len(list_result.entries)
             entries = _filter_sync_entries(list_result.entries, anbringen_filter, read_filter)
-            return self._download_entries(session.session_id, credentials, entries, output_dir, skip_existing)
+            return self._download_entries(session.session_id, credentials, entries, output_dir, skip_existing, raw_count)
         finally:
             logger.debug("Logging out from FinanzOnline")
             _logout_session(self._session_client, session.session_id, credentials)
@@ -467,8 +470,21 @@ class SyncDataboxUseCase:
         entries: tuple[DataboxEntry, ...],
         output_dir: Path,
         skip_existing: bool,
+        raw_count: int,
     ) -> SyncResult:
-        """Download all entries to output directory."""
+        """Download all entries to output directory.
+
+        Args:
+            session_id: Active session ID.
+            credentials: FinanzOnline credentials.
+            entries: Filtered entries to download.
+            output_dir: Directory to save files.
+            skip_existing: Skip files that already exist.
+            raw_count: Raw count from API before filtering.
+
+        Returns:
+            SyncResult with download statistics.
+        """
         downloaded, skipped, failed, total_bytes = 0, 0, 0, 0
         downloaded_files: list[tuple[DataboxEntry, Path]] = []
         unread_count = sum(1 for e in entries if e.is_unread)
@@ -492,6 +508,7 @@ class SyncDataboxUseCase:
 
         logger.info("Sync complete: %d downloaded, %d skipped, %d failed (%d bytes total)", downloaded, skipped, failed, total_bytes)
         return SyncResult(
+            total_retrieved=raw_count,
             total_listed=len(entries),
             unread_listed=unread_count,
             downloaded=downloaded,
@@ -561,7 +578,8 @@ class SyncResult:
     """Result of a sync operation.
 
     Attributes:
-        total_listed: Total entries listed from databox.
+        total_retrieved: Raw count of entries returned by API before filtering.
+        total_listed: Entries after filtering (by read status, reference, etc.).
         unread_listed: Number of unread entries listed.
         downloaded: Number of entries successfully downloaded.
         skipped: Number of entries skipped (already exist locally).
@@ -570,6 +588,7 @@ class SyncResult:
         downloaded_files: Tuples of (DataboxEntry, Path) for each downloaded file.
     """
 
+    total_retrieved: int
     total_listed: int
     unread_listed: int
     downloaded: int

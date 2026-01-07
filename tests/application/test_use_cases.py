@@ -104,6 +104,7 @@ class TestSyncResultSuccess:
     def test_success_when_zero_failures(self) -> None:
         """A sync with zero failures is successful."""
         result = SyncResult(
+            total_retrieved=10,
             total_listed=10,
             unread_listed=5,
             downloaded=8,
@@ -117,6 +118,7 @@ class TestSyncResultSuccess:
     def test_failure_when_any_download_failed(self) -> None:
         """A sync with any failed downloads is not successful."""
         result = SyncResult(
+            total_retrieved=10,
             total_listed=10,
             unread_listed=5,
             downloaded=7,
@@ -135,6 +137,7 @@ class TestSyncResultHasNewDownloads:
     def test_has_downloads_when_downloaded_positive(self) -> None:
         """A sync with downloaded files has new downloads."""
         result = SyncResult(
+            total_retrieved=5,
             total_listed=5,
             unread_listed=3,
             downloaded=3,
@@ -148,6 +151,7 @@ class TestSyncResultHasNewDownloads:
     def test_no_downloads_when_all_skipped(self) -> None:
         """A sync with zero downloaded files has no new downloads."""
         result = SyncResult(
+            total_retrieved=5,
             total_listed=5,
             unread_listed=0,
             downloaded=0,

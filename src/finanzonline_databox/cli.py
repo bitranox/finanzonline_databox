@@ -862,17 +862,18 @@ def _chunk_date_range(
     return chunks
 
 
-def _sum_sync_stats(results: list[SyncResult]) -> tuple[int, int, int, int, int, int]:
+def _sum_sync_stats(results: list[SyncResult]) -> tuple[int, int, int, int, int, int, int]:
     """Sum statistics from multiple sync results."""
-    total_listed = unread_listed = downloaded = skipped = failed = total_bytes = 0
+    total_retrieved = total_listed = unread_listed = downloaded = skipped = failed = total_bytes = 0
     for r in results:
+        total_retrieved += r.total_retrieved
         total_listed += r.total_listed
         unread_listed += r.unread_listed
         downloaded += r.downloaded
         skipped += r.skipped
         failed += r.failed
         total_bytes += r.total_bytes
-    return total_listed, unread_listed, downloaded, skipped, failed, total_bytes
+    return total_retrieved, total_listed, unread_listed, downloaded, skipped, failed, total_bytes
 
 
 def _collect_downloaded_files(results: list[SyncResult]) -> tuple[tuple[DataboxEntry, Path], ...]:
@@ -886,10 +887,20 @@ def _collect_downloaded_files(results: list[SyncResult]) -> tuple[tuple[DataboxE
 def _aggregate_sync_results(results: list[SyncResult]) -> SyncResult:
     """Aggregate multiple SyncResults into one."""
     if not results:
-        return SyncResult(total_listed=0, unread_listed=0, downloaded=0, skipped=0, failed=0, total_bytes=0, downloaded_files=())
+        return SyncResult(
+            total_retrieved=0,
+            total_listed=0,
+            unread_listed=0,
+            downloaded=0,
+            skipped=0,
+            failed=0,
+            total_bytes=0,
+            downloaded_files=(),
+        )
 
-    total_listed, unread_listed, downloaded, skipped, failed, total_bytes = _sum_sync_stats(results)
+    total_retrieved, total_listed, unread_listed, downloaded, skipped, failed, total_bytes = _sum_sync_stats(results)
     return SyncResult(
+        total_retrieved=total_retrieved,
         total_listed=total_listed,
         unread_listed=unread_listed,
         downloaded=downloaded,
@@ -1127,14 +1138,13 @@ def _execute_chunked_sync(
         chunk_results.append(chunk_result)
 
         # Log chunk progress
-        entries_word = _("entry") if chunk_result.total_listed == 1 else _("entries")
         logger.info(
-            _("Chunk %d (days %d-%d): Retrieved %d %s - %d unread"),
+            _("Chunk %d (days %d-%d): %d from API, %d after filter - %d unread"),
             chunk_idx,
             days_start,
             days_end,
+            chunk_result.total_retrieved,
             chunk_result.total_listed,
-            entries_word,
             chunk_result.unread_listed,
         )
 
