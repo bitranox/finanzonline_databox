@@ -198,8 +198,6 @@ msgid "Override output filename (default: auto-generated from entry metadata)"
 msgstr "Переопределить имя файла (по умолчанию: автоматически из метаданных)"
 
 #: src/finanzonline_databox/cli.py:1108
-msgid "Downloaded"
-msgstr "Скачано"
 
 #: src/finanzonline_databox/cli.py:1109
 msgid "Size"
@@ -312,21 +310,31 @@ msgstr "Временная метка:"
 msgid "Statistics"
 msgstr "Статистика"
 
+#: src/finanzonline_databox/adapters/output/formatters.py:230
+msgid "Retrieved:"
+msgstr "Получено:"
+
+#: src/finanzonline_databox/adapters/output/formatters.py:231
+msgid "After Filter:"
+msgstr "После фильтра:"
+
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:99
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:149
-#: src/finanzonline_databox/adapters/output/formatters.py:242
 msgid "Total Listed:"
 msgstr "Всего в списке:"
 
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:100
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:150
-#: src/finanzonline_databox/adapters/output/formatters.py:243
+#: src/finanzonline_databox/adapters/output/formatters.py:232
 msgid "Downloaded:"
 msgstr "Скачано:"
 
+#: src/finanzonline_databox/adapters/output/formatters.py:233
+msgid "Skipped (exists):"
+msgstr "Пропущено (существует):"
+
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:101
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:151
-#: src/finanzonline_databox/adapters/output/formatters.py:244
 msgid "Skipped:"
 msgstr "Пропущено:"
 
@@ -642,3 +650,25 @@ msgstr "Нажмите для раскрытия"
 msgid "Chunk %d (days %d-%d): %d from API, %d after filter - %d unread"
 msgstr "Часть %d (дни %d-%d): %d от API, %d после фильтра - %d непрочитанных"
 
+
+msgid "Status"
+msgstr "Статус"
+
+msgid "Output Dir"
+msgstr "Каталог"
+
+msgid "Retrieved"
+msgstr "Получено"
+
+msgid "After Filter"
+msgstr "После фильтра"
+
+
+msgid "Skipped (exists)"
+msgstr "Пропущено (существует)"
+
+msgid "Failed"
+msgstr "Не удалось"
+
+msgid "Total Size"
+msgstr "Общий размер"

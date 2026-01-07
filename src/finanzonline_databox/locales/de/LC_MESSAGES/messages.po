@@ -293,15 +293,21 @@ msgstr "DataBox-Synchronisierungsergebnis"
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:143
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:190
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:240
-#: src/finanzonline_databox/adapters/output/formatters.py:237
 msgid "Status:"
 msgstr "Status:"
 
+#: src/finanzonline_databox/adapters/output/formatters.py
+msgid "Status"
+msgstr "Status"
+
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:94
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:144
-#: src/finanzonline_databox/adapters/output/formatters.py:238
 msgid "Output Dir:"
 msgstr "Ausgabeverz.:"
+
+#: src/finanzonline_databox/adapters/output/formatters.py
+msgid "Output Dir"
+msgstr "Ausgabeverz."
 
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:95
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:145
@@ -312,33 +318,49 @@ msgstr "Zeitstempel:"
 
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:97
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:168
-#: src/finanzonline_databox/adapters/output/formatters.py:240
+#: src/finanzonline_databox/adapters/output/formatters.py
 msgid "Statistics"
 msgstr "Statistik"
 
+#: src/finanzonline_databox/adapters/output/formatters.py
+msgid "Retrieved"
+msgstr "Abgerufen"
+
+#: src/finanzonline_databox/adapters/output/formatters.py
+msgid "After Filter"
+msgstr "Nach Filter"
+
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:99
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:149
-#: src/finanzonline_databox/adapters/output/formatters.py:242
 msgid "Total Listed:"
 msgstr "Gesamt gelistet:"
 
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:100
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:150
-#: src/finanzonline_databox/adapters/output/formatters.py:243
 msgid "Downloaded:"
 msgstr "Heruntergeladen:"
 
+#: src/finanzonline_databox/adapters/output/formatters.py
+msgid "Skipped (exists)"
+msgstr "Übersprungen (vorhanden)"
+
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:101
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:151
-#: src/finanzonline_databox/adapters/output/formatters.py:244
 msgid "Skipped:"
 msgstr "Übersprungen:"
 
+#: src/finanzonline_databox/adapters/output/formatters.py
+msgid "Failed"
+msgstr "Fehlgeschlagen"
+
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:102
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:152
-#: src/finanzonline_databox/adapters/output/formatters.py:245
 msgid "Failed:"
 msgstr "Fehlgeschlagen:"
+
+#: src/finanzonline_databox/adapters/output/formatters.py
+msgid "Total Size"
+msgstr "Gesamtgröße"
 
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:103
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:153

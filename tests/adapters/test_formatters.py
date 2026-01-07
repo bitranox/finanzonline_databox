@@ -266,7 +266,7 @@ class TestFormatSyncResultHuman:
         )
         output = format_sync_result_human(result, "/tmp/output")
 
-        assert "10" in output  # total_listed
+        assert "10" in output  # total_retrieved
         assert "5" in output  # downloaded
         assert "3" in output  # skipped
         assert "2" in output  # failed
@@ -319,6 +319,7 @@ class TestFormatSyncResultJson:
 
         assert data["success"] is False  # failed > 0
         assert data["output_dir"] == "/tmp/out"
+        assert data["total_retrieved"] == 10
         assert data["total_listed"] == 10
         assert data["downloaded"] == 5
         assert data["skipped"] == 3

@@ -219,20 +219,38 @@ def format_sync_result_human(result: SyncResult, output_dir: str) -> str:
     status = _("SUCCESS") if result.is_success else _("COMPLETED WITH WARNINGS")
     failed_color = _RED if result.failed > 0 else _DIM
 
+    # Build filter label with applied filters
+    if result.applied_filters:
+        filter_label = f"{_('After Filter')} [{', '.join(result.applied_filters)}]"
+    else:
+        filter_label = _("After Filter")
+
+    # Define statistics with labels and values for aligned output
+    stats: list[tuple[str, str, str, str]] = [
+        (_("Retrieved"), "", str(result.total_retrieved), ""),
+        (filter_label, "", str(result.total_listed), ""),
+        (_("Downloaded"), _GREEN, str(result.downloaded), _RESET),
+        (_("Skipped (exists)"), _DIM, str(result.skipped), _RESET),
+        (_("Failed"), failed_color, str(result.failed), _RESET),
+        (_("Total Size"), "", _format_bytes(result.total_bytes), ""),
+    ]
+
+    # Calculate max label length for alignment
+    max_label_len = max(len(label) for label, _, _, _ in stats)
+
     lines = [
         f"{_BOLD}{_('DataBox Sync Result')}{_RESET}",
         "=" * 50,
-        f"{_('Status:')}       {status_color}{status}{_RESET}",
-        f"{_('Output Dir:')}   {output_dir}",
+        f"{_('Status'):<{max_label_len}}: {status_color}{status}{_RESET}",
+        f"{_('Output Dir'):<{max_label_len}}: {output_dir}",
         "",
         f"{_BOLD}{_('Statistics')}{_RESET}",
         "-" * 30,
-        f"{_('Total Listed:')}   {result.total_listed}",
-        f"{_('Downloaded:')}     {_GREEN}{result.downloaded}{_RESET}",
-        f"{_('Skipped:')}        {_DIM}{result.skipped}{_RESET}",
-        f"{_('Failed:')}         {failed_color}{result.failed}{_RESET}",
-        f"{_('Total Size:')}     {_format_bytes(result.total_bytes)}",
     ]
+
+    for label, color_start, value, color_end in stats:
+        lines.append(f"{label:<{max_label_len}}: {color_start}{value}{color_end}")
+
     lines.extend(_get_sync_notices(result))
     return "\n".join(lines)
 
@@ -251,7 +269,9 @@ def format_sync_result_json(result: SyncResult, output_dir: str) -> str:
         {
             "success": result.is_success,
             "output_dir": output_dir,
+            "total_retrieved": result.total_retrieved,
             "total_listed": result.total_listed,
+            "applied_filters": list(result.applied_filters),
             "downloaded": result.downloaded,
             "skipped": result.skipped,
             "failed": result.failed,

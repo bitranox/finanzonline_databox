@@ -908,9 +908,12 @@ def _aggregate_sync_results(results: list[SyncResult]) -> SyncResult:
             failed=0,
             total_bytes=0,
             downloaded_files=(),
+            applied_filters=(),
         )
 
     total_retrieved, total_listed, unread_listed, downloaded, skipped, failed, total_bytes = _sum_sync_stats(results)
+    # All chunks have the same filters, take from first result
+    applied_filters = results[0].applied_filters if results else ()
     return SyncResult(
         total_retrieved=total_retrieved,
         total_listed=total_listed,
@@ -920,6 +923,7 @@ def _aggregate_sync_results(results: list[SyncResult]) -> SyncResult:
         failed=failed,
         total_bytes=total_bytes,
         downloaded_files=_collect_downloaded_files(results),
+        applied_filters=applied_filters,
     )
 
 

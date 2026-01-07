@@ -451,17 +451,46 @@ print(f"Gesamt Bytes: {result.total_bytes}")
 Ergebnis einer Sync-Operation.
 
 ```python
-result.total_retrieved  # Rohanzahl von API vor Filterung
-result.total_listed     # Einträge nach Filterung
-result.unread_listed    # Ungelesene Einträge in gefilterter Liste
-result.downloaded       # Erfolgreich heruntergeladen
-result.skipped          # Übersprungen (existieren bereits)
-result.failed           # Fehlgeschlagen beim Herunterladen
-result.total_bytes      # Gesamt heruntergeladene Bytes
+result.total_retrieved   # Rohanzahl von API vor Filterung
+result.total_listed      # Einträge nach Filterung
+result.unread_listed     # Ungelesene Einträge in gefilterter Liste
+result.downloaded        # Erfolgreich heruntergeladen
+result.skipped           # Übersprungen (Datei existiert bereits lokal)
+result.failed            # Fehlgeschlagen beim Herunterladen
+result.total_bytes       # Gesamt heruntergeladene Bytes
+result.downloaded_files  # Tupel von (DataboxEntry, Path) für heruntergeladene Dateien
+result.applied_filters   # Tupel von angewendeten Filternamen (z.B. ("Unread", "UID:E1"))
 
 # Properties
 result.is_success        # True wenn failed == 0
 result.has_new_downloads # True wenn downloaded > 0
+```
+
+**Attribute:**
+
+| Attribut           | Typ                                    | Beschreibung                                       |
+|--------------------|----------------------------------------|----------------------------------------------------|
+| `total_retrieved`  | `int`                                  | Rohanzahl von API vor Filterung                    |
+| `total_listed`     | `int`                                  | Anzahl der Einträge nach Filterung                 |
+| `unread_listed`    | `int`                                  | Anzahl der ungelesenen Einträge in gefilterter Liste|
+| `downloaded`       | `int`                                  | Anzahl erfolgreich heruntergeladener Dateien       |
+| `skipped`          | `int`                                  | Anzahl übersprungener Dateien (existieren bereits) |
+| `failed`           | `int`                                  | Anzahl fehlgeschlagener Downloads                  |
+| `total_bytes`      | `int`                                  | Gesamt heruntergeladene Bytes                      |
+| `downloaded_files` | `tuple[tuple[DataboxEntry, Path], ...]`| Heruntergeladene Dateien mit ihren Pfaden          |
+| `applied_filters`  | `tuple[str, ...]`                      | Angewendete Filternamen für Anzeige                |
+
+**Beispiel Statistik-Ausgabe:**
+
+Wenn `SyncDataboxUseCase.execute()` abgeschlossen ist, zeigt die formatierte Ausgabe ausgerichtete Statistiken:
+
+```
+Abgerufen                           : 7
+Nach Filter [Unread, UID:E1]        : 3
+Heruntergeladen                     : 2
+Übersprungen (vorhanden)            : 1
+Fehlgeschlagen                      : 0
+Gesamtgröße                         : 125,4 KB
 ```
 
 ---

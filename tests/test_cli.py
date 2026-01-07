@@ -754,6 +754,7 @@ class TestSyncCommand:
         mock_result = MagicMock()
         mock_result.is_success = True
         mock_result.has_new_downloads = False
+        mock_result.total_retrieved = 5
         mock_result.total_listed = 5
         mock_result.downloaded = 3
         mock_result.skipped = 2

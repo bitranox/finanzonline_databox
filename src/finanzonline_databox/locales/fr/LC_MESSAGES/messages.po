@@ -310,21 +310,31 @@ msgstr "Horodatage :"
 msgid "Statistics"
 msgstr "Statistiques"
 
+#: src/finanzonline_databox/adapters/output/formatters.py:230
+msgid "Retrieved:"
+msgstr "Récupérés :"
+
+#: src/finanzonline_databox/adapters/output/formatters.py:231
+msgid "After Filter:"
+msgstr "Après filtre :"
+
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:99
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:149
-#: src/finanzonline_databox/adapters/output/formatters.py:242
 msgid "Total Listed:"
 msgstr "Total Listés :"
 
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:100
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:150
-#: src/finanzonline_databox/adapters/output/formatters.py:243
+#: src/finanzonline_databox/adapters/output/formatters.py:232
 msgid "Downloaded:"
 msgstr "Téléchargés :"
 
+#: src/finanzonline_databox/adapters/output/formatters.py:233
+msgid "Skipped (exists):"
+msgstr "Ignorés (existants) :"
+
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:101
 #: src/finanzonline_databox/adapters/notification/email_adapter.py:151
-#: src/finanzonline_databox/adapters/output/formatters.py:244
 msgid "Skipped:"
 msgstr "Ignorés :"
 
@@ -643,3 +653,25 @@ msgstr "Cliquez pour développer"
 msgid "Chunk %d (days %d-%d): %d from API, %d after filter - %d unread"
 msgstr "Bloc %d (jours %d-%d): %d de l'API, %d après filtre - %d non lues"
 
+
+msgid "Status"
+msgstr "Statut"
+
+msgid "Output Dir"
+msgstr "Rép. Sortie"
+
+msgid "Retrieved"
+msgstr "Récupérés"
+
+msgid "After Filter"
+msgstr "Après filtre"
+
+
+msgid "Skipped (exists)"
+msgstr "Ignorés (existants)"
+
+msgid "Failed"
+msgstr "Échoués"
+
+msgid "Total Size"
+msgstr "Taille Totale"

@@ -421,6 +421,14 @@ class SyncDataboxUseCase:
         except OSError as exc:
             raise filesystem_error_from_oserror(exc, path=output_dir, operation="create directory") from exc
 
+        # Build list of applied filters for display
+        applied_filters: list[str] = []
+        if read_filter != ReadFilter.ALL:
+            applied_filters.append(read_filter.value.capitalize())
+        if anbringen_filter:
+            applied_filters.append(f"UID:{anbringen_filter}")
+        filters_tuple = tuple(applied_filters)
+
         session = _login_session(self._session_client, credentials)
 
         try:
@@ -428,11 +436,13 @@ class SyncDataboxUseCase:
 
             if not list_result.is_success:
                 logger.error("Failed to list entries: %s", list_result.msg)
-                return SyncResult(total_retrieved=0, total_listed=0, unread_listed=0, downloaded=0, skipped=0, failed=0, total_bytes=0)
+                return SyncResult(
+                    total_retrieved=0, total_listed=0, unread_listed=0, downloaded=0, skipped=0, failed=0, total_bytes=0, applied_filters=filters_tuple
+                )
 
             raw_count = len(list_result.entries)
             entries = _filter_sync_entries(list_result.entries, anbringen_filter, read_filter)
-            return self._download_entries(session.session_id, credentials, entries, output_dir, skip_existing, raw_count)
+            return self._download_entries(session.session_id, credentials, entries, output_dir, skip_existing, raw_count, filters_tuple)
         finally:
             logger.debug("Logging out from FinanzOnline")
             _logout_session(self._session_client, session.session_id, credentials)
@@ -471,6 +481,7 @@ class SyncDataboxUseCase:
         output_dir: Path,
         skip_existing: bool,
         raw_count: int,
+        applied_filters: tuple[str, ...],
     ) -> SyncResult:
         """Download all entries to output directory.
 
@@ -481,6 +492,7 @@ class SyncDataboxUseCase:
             output_dir: Directory to save files.
             skip_existing: Skip files that already exist.
             raw_count: Raw count from API before filtering.
+            applied_filters: Names of filters that were applied.
 
         Returns:
             SyncResult with download statistics.
@@ -516,6 +528,7 @@ class SyncDataboxUseCase:
             failed=failed,
             total_bytes=total_bytes,
             downloaded_files=tuple(downloaded_files),
+            applied_filters=applied_filters,
         )
 
     def _download_single_entry(
@@ -586,6 +599,7 @@ class SyncResult:
         failed: Number of entries that failed to download.
         total_bytes: Total bytes downloaded.
         downloaded_files: Tuples of (DataboxEntry, Path) for each downloaded file.
+        applied_filters: Names of filters that were applied (e.g., "Unread", "UID:123").
     """
 
     total_retrieved: int
@@ -596,6 +610,7 @@ class SyncResult:
     failed: int
     total_bytes: int
     downloaded_files: tuple[tuple[DataboxEntry, Path], ...] = ()
+    applied_filters: tuple[str, ...] = ()
 
     @property
     def is_success(self) -> bool:

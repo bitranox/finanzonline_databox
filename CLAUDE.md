@@ -199,6 +199,26 @@ Key domain models for the DataBox service:
 | `failed` | `int` | Number of entries that failed to download |
 | `total_bytes` | `int` | Total bytes downloaded |
 | `downloaded_files` | `tuple` | Tuples of (DataboxEntry, Path) for each downloaded file |
+| `applied_filters` | `tuple[str, ...]` | Names of filters applied (e.g., "Unread", "UID:123") |
+
+### Sync Statistics Output
+
+The sync command displays statistics with aligned colons:
+
+```
+Statistics
+------------------------------
+Retrieved                  : 7
+After Filter [Unread]      : 0
+Downloaded                 : 0
+Skipped (exists)           : 0
+Failed                     : 0
+Total Size                 : 0 B
+```
+
+- **Retrieved**: Total entries from API (`total_retrieved`)
+- **After Filter [filters]**: Entries after filtering, shows applied filter names
+- **Skipped (exists)**: Files skipped because they already exist locally
 
 ## DataBox Return Codes
 

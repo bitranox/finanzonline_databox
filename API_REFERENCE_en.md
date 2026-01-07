@@ -442,17 +442,46 @@ print(f"Total bytes: {result.total_bytes}")
 Result of a sync operation.
 
 ```python
-result.total_retrieved  # Raw count from API before filtering
-result.total_listed     # Entries after filtering
-result.unread_listed    # Unread entries in filtered list
-result.downloaded       # Successfully downloaded
-result.skipped          # Skipped (already exist)
-result.failed           # Failed to download
-result.total_bytes      # Total bytes downloaded
+result.total_retrieved   # Raw count from API before filtering
+result.total_listed      # Entries after filtering
+result.unread_listed     # Unread entries in filtered list
+result.downloaded        # Successfully downloaded
+result.skipped           # Skipped (file already exists locally)
+result.failed            # Failed to download
+result.total_bytes       # Total bytes downloaded
+result.downloaded_files  # Tuple of (DataboxEntry, Path) for downloaded files
+result.applied_filters   # Tuple of applied filter names (e.g., ("Unread", "UID:E1"))
 
 # Properties
 result.is_success        # True if failed == 0
 result.has_new_downloads # True if downloaded > 0
+```
+
+**Attributes:**
+
+| Attribute          | Type                                   | Description                                      |
+|--------------------|----------------------------------------|--------------------------------------------------|
+| `total_retrieved`  | `int`                                  | Raw count from API before filtering              |
+| `total_listed`     | `int`                                  | Number of entries after filtering                |
+| `unread_listed`    | `int`                                  | Number of unread entries in filtered list        |
+| `downloaded`       | `int`                                  | Number of successfully downloaded files          |
+| `skipped`          | `int`                                  | Number of skipped files (already exist locally)  |
+| `failed`           | `int`                                  | Number of failed downloads                       |
+| `total_bytes`      | `int`                                  | Total bytes downloaded                           |
+| `downloaded_files` | `tuple[tuple[DataboxEntry, Path], ...]`| Downloaded files with their paths                |
+| `applied_filters`  | `tuple[str, ...]`                      | Applied filter names for display                 |
+
+**Statistics Output Example:**
+
+When `SyncDataboxUseCase.execute()` completes, the formatted output shows aligned statistics:
+
+```
+Retrieved                       : 7
+After Filter [Unread, UID:E1]   : 3
+Downloaded                      : 2
+Skipped (exists)                : 1
+Failed                          : 0
+Total Size                      : 125.4 KB
 ```
 
 ---

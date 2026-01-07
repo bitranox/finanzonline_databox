@@ -5,12 +5,36 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 
 
+## [1.2.10] - 2026-01-07
+
+### Added
+
+- Added `applied_filters` field to `SyncResult` dataclass to track which filters were applied
+- Added `applied_filters` to JSON output format for programmatic access
+
+### Changed
+
+- Improved sync statistics display with clearer labels and aligned colons:
+  - "Retrieved" shows total entries from API (`total_retrieved`)
+  - "After Filter [Unread, UID:xxx]" shows entries after filter with applied filter names
+  - "Skipped (exists)" clarifies that skipped means file already exists locally
+- Updated API reference documentation (EN/DE) with new `SyncResult` fields and statistics output example
+
 ## [1.2.9] - 2026-01-07
 
 ### Changed
 
 - Use `lib_log_rich.flush()` API instead of internal queue access for log flushing
 - Bumped `lib_log_rich` dependency to `>=6.2.0` for `flush()` support
+
+### Fixed
+
+- Improved sync statistics display with clearer labels and aligned colons:
+  - "Retrieved" shows total entries from API (`total_retrieved`)
+  - "After Filter [Unread, UID:xxx]" shows entries after filter with applied filter names
+  - "Skipped (exists)" clarifies that skipped means file already exists locally
+- Added `applied_filters` field to `SyncResult` to track which filters were applied
+- Added `applied_filters` field to JSON output format
 
 ## [1.2.8] - 2026-01-07
 
