@@ -80,6 +80,12 @@ TracebackState = tuple[bool, bool]
 logger = logging.getLogger(__name__)
 
 
+def _flush_all_log_handlers() -> None:
+    """Flush all handlers of all loggers to ensure log output appears before subsequent prints."""
+    for handler in logging.root.handlers:
+        handler.flush()
+
+
 @dataclass(frozen=True, slots=True)
 class CliContext:
     """Typed context object for CLI command invocations.
@@ -1592,6 +1598,7 @@ def cli_sync(
                 use_case, fo_config.credentials, output_dir, erltyp, reference, read_filter_enum, skip_existing, ts_zust_von, ts_zust_bis
             )
 
+            _flush_all_log_handlers()
             click.echo(_format_sync_result(result, str(output_dir), output_format))
             _send_sync_notifications_if_enabled(no_email, config, fo_config, result, str(output_dir), recipients_list, document_recipients_list)
 

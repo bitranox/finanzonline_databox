@@ -5,6 +5,12 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 
 
+## [1.2.7] - 2026-01-07
+
+### Fixed
+
+- Fixed log output ordering: flush all log handlers before printing sync statistics to ensure chunk progress logs appear before the summary
+
 ## [1.2.6] - 2026-01-07
 
 ### Added
