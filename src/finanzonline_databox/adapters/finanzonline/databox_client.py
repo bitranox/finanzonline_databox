@@ -27,7 +27,7 @@ from datetime import date, datetime
 from typing import TYPE_CHECKING, Any, cast
 
 from zeep import Client
-from zeep.exceptions import Fault, TransportError
+from zeep.exceptions import Fault, TransportError, XMLSyntaxError
 from zeep.transports import Transport
 
 from finanzonline_databox._datetime_utils import local_now
@@ -54,6 +54,52 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 DATABOX_SERVICE_WSDL = "https://finanzonline.bmf.gv.at/fon/ws/databoxService.wsdl"
+
+# Maximum length of HTML content to include in diagnostics (for email)
+_MAX_HTML_CONTENT_LENGTH = 4000
+
+
+def _is_maintenance_page(content: str | bytes | None) -> bool:
+    """Detect if content is a FinanzOnline maintenance page.
+
+    Args:
+        content: Raw HTML content (string or bytes).
+
+    Returns:
+        True if content appears to be a maintenance page.
+
+    Examples:
+        >>> _is_maintenance_page('<html><a href="/wartung/error.css">Error</a></html>')
+        True
+        >>> _is_maintenance_page('<html><body>Normal response</body></html>')
+        False
+        >>> _is_maintenance_page(None)
+        False
+    """
+    if not content:
+        return False
+    content_str = content.decode("utf-8", errors="replace") if isinstance(content, bytes) else content
+    content_lower = content_str.lower()
+    return "/wartung/" in content_lower
+
+
+def _extract_xml_error_content(exc: XMLSyntaxError) -> str:
+    """Extract HTML/XML content from XMLSyntaxError for diagnostics.
+
+    Args:
+        exc: The XMLSyntaxError exception.
+
+    Returns:
+        Truncated content string for inclusion in error diagnostics.
+    """
+    content = getattr(exc, "content", None)
+    if not content:
+        return str(exc)
+
+    content_str = content.decode("utf-8", errors="replace") if isinstance(content, bytes) else str(content)
+    if len(content_str) > _MAX_HTML_CONTENT_LENGTH:
+        return content_str[:_MAX_HTML_CONTENT_LENGTH] + "\n... [truncated]"
+    return content_str
 
 
 def _build_list_diagnostics(
@@ -297,6 +343,15 @@ def _handle_list_exception(
         logger.error("Transport error during databox list: %s", exc)
         raise DataboxOperationError(f"Connection error: {exc}", retryable=True, diagnostics=diagnostics) from exc
 
+    if isinstance(exc, XMLSyntaxError):
+        html_content = getattr(exc, "content", None)
+        is_maintenance = _is_maintenance_page(html_content)
+        error_type = "DataBox in Wartung" if is_maintenance else "Invalid XML Response"
+        error_detail = _extract_xml_error_content(exc)
+        diagnostics = _build_list_diagnostics(session_id, credentials, request, response, error=error_detail)
+        logger.error("%s during databox list: %s", error_type, exc)
+        raise DataboxOperationError(error_type, diagnostics=diagnostics, retryable=is_maintenance) from exc
+
     logger.error("Unexpected error during databox list: %s", exc)
     raise DataboxOperationError(f"Unexpected error: {exc}", diagnostics=diagnostics) from exc
 
@@ -333,6 +388,15 @@ def _handle_download_exception(
     if isinstance(exc, TransportError):
         logger.error("Transport error during databox download: %s", exc)
         raise DataboxOperationError(f"Connection error: {exc}", retryable=True, diagnostics=diagnostics) from exc
+
+    if isinstance(exc, XMLSyntaxError):
+        html_content = getattr(exc, "content", None)
+        is_maintenance = _is_maintenance_page(html_content)
+        error_type = "DataBox in Wartung" if is_maintenance else "Invalid XML Response"
+        error_detail = _extract_xml_error_content(exc)
+        diagnostics = _build_download_diagnostics(session_id, credentials, request, response, error=error_detail)
+        logger.error("%s during databox download: %s", error_type, exc)
+        raise DataboxOperationError(error_type, diagnostics=diagnostics, retryable=is_maintenance) from exc
 
     logger.error("Unexpected error during databox download: %s", exc)
     raise DataboxOperationError(f"Unexpected error: {exc}", diagnostics=diagnostics) from exc

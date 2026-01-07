@@ -5,6 +5,22 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 
 
+## [1.2.3] - 2026-01-07
+
+### Added
+
+- Added `XMLSyntaxError` handling in SOAP clients to detect when FinanzOnline returns HTML instead of XML
+- Added maintenance page detection: when HTML response contains `/wartung/`, error type is set to "DataBox in Wartung"
+- Added HTML content display in error notification emails - server response is shown in a collapsible section
+- Added `_is_maintenance_page()` and `_extract_xml_error_content()` helpers in databox_client.py and session_client.py
+
+### Changed
+
+- Error emails now include the full HTML server response in diagnostics when XML parsing fails
+- Email subject shows "DataBox ERROR: sync - DataBox in Wartung" when maintenance page is detected
+- Maintenance errors are now marked as retryable
+- Diagnostic values in HTML emails are now properly HTML-escaped to prevent rendering issues
+
 ## [1.2.2] - 2025-12-28
 
 ### Added

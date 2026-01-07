@@ -18,6 +18,7 @@ Adapters layer - integrates with btx_lib_mail for email delivery.
 
 from __future__ import annotations
 
+import html
 import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -58,15 +59,45 @@ def _format_diagnostics_plain(diagnostics: Diagnostics | None) -> list[str]:
     return lines
 
 
+def _is_html_content(value: str) -> bool:
+    """Check if value appears to be HTML content."""
+    lower = value.lower()
+    return "<html" in lower or "<!doctype" in lower
+
+
+def _format_diagnostic_value_html(key: str, value: str) -> str:
+    """Format a single diagnostic value for HTML display.
+
+    Args:
+        key: The diagnostic field name.
+        value: The diagnostic value.
+
+    Returns:
+        HTML table row for the diagnostic entry.
+    """
+    label = key.replace("_", " ").title()
+    label_td = f'<td style="padding: 6px 15px; font-weight: bold; color: #666; font-size: 0.9em;">{label}:</td>'
+
+    # For HTML content (server responses), display in a scrollable pre block
+    if _is_html_content(value):
+        escaped = html.escape(value)
+        value_td = f"""<td style="padding: 6px 15px;">
+            <details>
+                <summary style="cursor: pointer; color: #856404; font-weight: bold;">{_("Server Response (HTML)")} - {_("Click to expand")}</summary>
+                <pre style="font-family: monospace; font-size: 0.8em; background-color: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; max-height: 400px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; margin-top: 8px;">{escaped}</pre>
+            </details>
+        </td>"""
+    else:
+        value_td = f'<td style="padding: 6px 15px; font-family: monospace; font-size: 0.85em; word-break: break-all;">{html.escape(value)}</td>'
+
+    return f"<tr>{label_td}{value_td}</tr>"
+
+
 def _format_diagnostics_html(diagnostics: Diagnostics | None) -> str:
     """Format diagnostics as HTML section."""
     if not diagnostics or diagnostics.is_empty:
         return ""
-    diag_rows = "".join(
-        f'<tr><td style="padding: 6px 15px; font-weight: bold; color: #666; font-size: 0.9em;">{k.replace("_", " ").title()}:</td>'
-        f'<td style="padding: 6px 15px; font-family: monospace; font-size: 0.85em; word-break: break-all;">{v}</td></tr>'
-        for k, v in diagnostics.items()
-    )
+    diag_rows = "".join(_format_diagnostic_value_html(k, v) for k, v in diagnostics.items())
     return f"""<h3 style="color: #856404; border-bottom: 1px solid #ffc107; padding-bottom: 8px; margin-top: 30px;">{_("Diagnostic Information")}</h3>
         <table style="width: 100%; border-collapse: collapse; margin: 10px 0; background-color: #fff3cd; border-radius: 4px;">{diag_rows}</table>"""
 
