@@ -594,10 +594,6 @@ msgstr "Erreur d'opération DataBox"
 msgid "Filesystem Error"
 msgstr "Erreur système de fichiers"
 
-#: src/finanzonline_databox/cli.py
-msgid "DataBox Error"
-msgstr "Erreur DataBox"
-
 # Filesystem error hints
 #: src/finanzonline_databox/cli.py
 msgid "Use --output to specify a different directory, or check file permissions."
@@ -618,4 +614,27 @@ msgstr "Utilisez --filename pour spécifier un nom de fichier plus court."
 #: src/finanzonline_databox/cli.py
 msgid "Hint:"
 msgstr "Conseil:"
+
+# Maintenance and XML error messages
+#: src/finanzonline_databox/adapters/finanzonline/databox_client.py
+#: src/finanzonline_databox/adapters/finanzonline/session_client.py
+msgid "DataBox in maintenance mode"
+msgstr "DataBox en mode maintenance"
+
+#: src/finanzonline_databox/adapters/finanzonline/databox_client.py
+#: src/finanzonline_databox/adapters/finanzonline/session_client.py
+msgid "Invalid XML Response"
+msgstr "Réponse XML invalide"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py
+msgid "Server Message"
+msgstr "Message du serveur"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py
+msgid "HTML Source Code"
+msgstr "Code source HTML"
+
+#: src/finanzonline_databox/adapters/notification/email_adapter.py
+msgid "Click to expand"
+msgstr "Cliquez pour développer"
 

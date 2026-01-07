@@ -78,13 +78,17 @@ def _format_diagnostic_value_html(key: str, value: str) -> str:
     label = key.replace("_", " ").title()
     label_td = f'<td style="padding: 6px 15px; font-weight: bold; color: #666; font-size: 0.9em;">{label}:</td>'
 
-    # For HTML content (server responses), display in a scrollable pre block
+    # For HTML content (server responses), render the HTML and show source code
     if _is_html_content(value):
         escaped = html.escape(value)
         value_td = f"""<td style="padding: 6px 15px;">
+            <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; background: white; max-height: 400px; overflow-y: auto; border-radius: 4px;">
+                <strong style="color: #856404;">{_("Server Message")}:</strong>
+                <div style="margin-top: 8px;">{value}</div>
+            </div>
             <details>
-                <summary style="cursor: pointer; color: #856404; font-weight: bold;">{_("Server Response (HTML)")} - {_("Click to expand")}</summary>
-                <pre style="font-family: monospace; font-size: 0.8em; background-color: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; max-height: 400px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; margin-top: 8px;">{escaped}</pre>
+                <summary style="cursor: pointer; color: #666; font-size: 0.85em;">{_("HTML Source Code")} - {_("Click to expand")}</summary>
+                <pre style="font-family: monospace; font-size: 0.8em; background-color: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; max-height: 300px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; margin-top: 8px;">{escaped}</pre>
             </details>
         </td>"""
     else:

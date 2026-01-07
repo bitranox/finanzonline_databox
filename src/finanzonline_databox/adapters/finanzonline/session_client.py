@@ -29,6 +29,7 @@ from zeep.transports import Transport
 
 from finanzonline_databox._format_utils import mask_credential
 from finanzonline_databox.domain.errors import AuthenticationError, SessionError
+from finanzonline_databox.i18n import _
 from finanzonline_databox.domain.models import (
     Diagnostics,
     RC_DATE_PARAMS_REQUIRED,
@@ -179,7 +180,7 @@ def _handle_login_exception(
     if isinstance(exc, XMLSyntaxError):
         html_content = getattr(exc, "content", None)
         is_maintenance = _is_maintenance_page(html_content)
-        error_type = "DataBox in Wartung" if is_maintenance else "Invalid XML Response"
+        error_type = _("DataBox in maintenance mode") if is_maintenance else _("Invalid XML Response")
         error_detail = _extract_xml_error_content(exc)
         diagnostics = _build_login_diagnostics(credentials, response, error=error_detail)
         logger.error("%s during login: %s", error_type, exc)

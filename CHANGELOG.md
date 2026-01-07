@@ -5,6 +5,13 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 
 
+## [1.2.4] - 2026-01-07
+
+### Changed
+
+- Error emails now render the HTML server response as formatted content (readable maintenance message) in addition to showing the source code in a collapsible section
+- Renamed i18n keys: "Server Response (HTML)" → "Server Message" and added "HTML Source Code" for the collapsible source section
+
 ## [1.2.3] - 2026-01-07
 
 ### Added

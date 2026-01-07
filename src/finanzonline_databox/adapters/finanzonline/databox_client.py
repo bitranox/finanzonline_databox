@@ -33,6 +33,7 @@ from zeep.transports import Transport
 from finanzonline_databox._datetime_utils import local_now
 from finanzonline_databox._format_utils import mask_credential
 from finanzonline_databox.domain.errors import DataboxOperationError, SessionError
+from finanzonline_databox.i18n import _
 from finanzonline_databox.domain.models import (
     RC_OK,
     RC_SESSION_INVALID,
@@ -346,7 +347,7 @@ def _handle_list_exception(
     if isinstance(exc, XMLSyntaxError):
         html_content = getattr(exc, "content", None)
         is_maintenance = _is_maintenance_page(html_content)
-        error_type = "DataBox in Wartung" if is_maintenance else "Invalid XML Response"
+        error_type = _("DataBox in maintenance mode") if is_maintenance else _("Invalid XML Response")
         error_detail = _extract_xml_error_content(exc)
         diagnostics = _build_list_diagnostics(session_id, credentials, request, response, error=error_detail)
         logger.error("%s during databox list: %s", error_type, exc)
@@ -392,7 +393,7 @@ def _handle_download_exception(
     if isinstance(exc, XMLSyntaxError):
         html_content = getattr(exc, "content", None)
         is_maintenance = _is_maintenance_page(html_content)
-        error_type = "DataBox in Wartung" if is_maintenance else "Invalid XML Response"
+        error_type = _("DataBox in maintenance mode") if is_maintenance else _("Invalid XML Response")
         error_detail = _extract_xml_error_content(exc)
         diagnostics = _build_download_diagnostics(session_id, credentials, request, response, error=error_detail)
         logger.error("%s during databox download: %s", error_type, exc)
