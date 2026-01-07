@@ -5,11 +5,17 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 
 
+## [1.2.8] - 2026-01-07
+
+### Fixed
+
+- Fixed log output ordering: use `lib_log_rich.runtime.queue.wait_until_idle()` to drain the async console queue before printing sync statistics, ensuring chunk progress logs appear before the summary
+
 ## [1.2.7] - 2026-01-07
 
 ### Fixed
 
-- Fixed log output ordering: flush all log handlers before printing sync statistics to ensure chunk progress logs appear before the summary
+- Attempted fix for log output ordering (incomplete - only flushed standard handlers, not lib_log_rich async queue)
 
 ## [1.2.6] - 2026-01-07
 

@@ -81,7 +81,19 @@ logger = logging.getLogger(__name__)
 
 
 def _flush_all_log_handlers() -> None:
-    """Flush all handlers of all loggers to ensure log output appears before subsequent prints."""
+    """Flush all handlers to ensure log output appears before subsequent prints.
+
+    lib_log_rich uses a queue-based async console adapter. This function
+    waits for the queue to drain before returning, ensuring all pending
+    log messages are written to the console.
+    """
+    # Wait for lib_log_rich's queue to drain (async console adapter)
+    if lib_log_rich.runtime.is_initialised():
+        runtime = lib_log_rich.runtime.current_runtime()
+        if runtime.queue is not None:
+            runtime.queue.wait_until_idle(timeout=2.0)
+
+    # Flush standard logging handlers as fallback
     for handler in logging.root.handlers:
         handler.flush()
 
