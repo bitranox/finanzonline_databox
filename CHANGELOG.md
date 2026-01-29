@@ -5,6 +5,12 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 
 
+## [1.2.11] - 2026-01-29
+
+### Changed
+
+- Changed `pyright` dev dependency to `pyright[nodejs]` for bundled Node.js runtime support
+
 ## [1.2.10] - 2026-01-07
 
 ### Added
