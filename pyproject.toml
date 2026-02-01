@@ -1,6 +1,6 @@
 [project]
 name = "finanzonline_databox"
-version = "1.2.11"
+version = "1.2.12"
 description = "Python library and CLI for downloading documents from FinanzOnline Austria DataBox"
 readme = "README.md"
 requires-python = ">=3.10"

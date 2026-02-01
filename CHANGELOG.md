@@ -5,6 +5,12 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 
 
+## [1.2.12] - 2026-02-01
+
+### Fixed
+
+- Fixed macOS CI test failures in `test_attachments_are_included` and `test_missing_attachment_raises` caused by `btx_lib_mail` security restrictions blocking `/var` directory (macOS: `/var` → `/private/var` where pytest creates temp files)
+
 ## [1.2.11] - 2026-01-29
 
 ### Changed
