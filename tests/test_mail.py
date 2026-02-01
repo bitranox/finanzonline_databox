@@ -360,7 +360,9 @@ class TestSendEmailSuccess:
         attachment = tmp_path / "test.txt"
         attachment.write_text("Test attachment content")
 
-        with patch("smtplib.SMTP"):
+        # Patch btx_send directly to avoid btx_lib_mail's security restrictions
+        # on macOS temp directories (macOS: /var -> /private/var is blocked)
+        with patch("finanzonline_databox.mail.btx_send", return_value=True) as mock_send:
             result = send_email(
                 config=valid_email_config,
                 recipients="recipient@test.com",
@@ -369,6 +371,7 @@ class TestSendEmailSuccess:
                 attachments=[attachment],
             )
         assert result is True
+        assert mock_send.call_args.kwargs["attachment_file_paths"] == [attachment]
 
     def test_credentials_are_used(self) -> None:
         """SMTP credentials are used when configured."""
@@ -489,7 +492,12 @@ class TestSendEmailErrors:
             raise_on_missing_attachments=True,
         )
 
-        with patch("smtplib.SMTP"):
+        # Patch btx_send to simulate FileNotFoundError for missing attachment
+        # (bypasses btx_lib_mail's security check on macOS temp directories)
+        with patch(
+            "finanzonline_databox.mail.btx_send",
+            side_effect=FileNotFoundError(f"Attachment not found: {nonexistent}"),
+        ):
             with pytest.raises(FileNotFoundError):
                 send_email(
                     config=config,
