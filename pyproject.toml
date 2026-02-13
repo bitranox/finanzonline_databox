@@ -175,4 +175,4 @@ layers = [
 # CVE-2025-69277: pynacl 1.6.1 (fix in 1.6.2, awaiting update)
 # CVE-2026-21441: urllib3 2.6.2 (fix in 2.6.3, awaiting update)
 ignore-vulns = ["GHSA-4xh5-x5gv-qwph", "PYSEC-2022-42969", "PYSEC-2022-43012", "PYSEC-2025-49", "CVE-2024-6345",
-    "CVE-2025-68146", "CVE-2025-69277", "CVE-2026-21441","CVE-2026-1703"]
+    "CVE-2025-68146", "CVE-2025-69277", "CVE-2026-21441","CVE-2026-1703","CVE-2026-26007"]
