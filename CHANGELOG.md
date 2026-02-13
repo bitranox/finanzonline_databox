@@ -5,6 +5,14 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 
 
+## [Unreleased]
+
+## [1.2.13] - 2026-02-13
+
+### Fixed
+
+- Fixed shellcheck (SC1083) and shfmt formatting issues in `reset_git_history.sh`
+
 ## [1.2.12] - 2026-02-01
 
 ### Fixed
