@@ -12,6 +12,7 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 ### Fixed
 
 - Fixed shellcheck (SC1083) and shfmt formatting issues in `reset_git_history.sh`
+- Added missing `tests/__init__.py` so `from tests.fakes import ...` works with bare `pytest` (not only `python -m pytest`)
 
 ## [1.2.12] - 2026-02-01
 
