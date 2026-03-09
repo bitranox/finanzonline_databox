@@ -7,6 +7,23 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+## [1.2.14] - 2026-03-09
+
+### Fixed
+
+- Fixed `test_list_with_unread_option` failing due to CliRunner merging log output into stdout
+- Added warning logs for three silent error-swallowing patterns in config parsing (`parse_string_list`, `_parse_email_format`, output dir resolution)
+
+### Changed
+
+- Extracted duplicate SOAP helpers (`is_maintenance_page`, `extract_xml_error_content`) into shared `_soap_utils.py` module
+- Merged duplicate `_build_list_diagnostics`/`_build_download_diagnostics` into single `_build_diagnostics`
+- Merged duplicate `_handle_list_exception`/`_handle_download_exception` into single `_handle_operation_exception`
+- Deduplicated `parse_string_list` — single definition in `config_schema.py`, re-exported from `config.py`
+- Simplified missing-fields validation in `load_finanzonline_config` using dict comprehension
+- Removed dead `if TYPE_CHECKING: pass` block from `databox_client.py`
+- Updated pip-audit ignore list for system-level vulnerabilities (CVE-2025-8869, CVE-2026-25990)
+
 ## [1.2.13] - 2026-02-13
 
 ### Fixed

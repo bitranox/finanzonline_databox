@@ -24,7 +24,7 @@ import base64
 import binascii
 import logging
 from datetime import date, datetime
-from typing import TYPE_CHECKING, Any, cast
+from typing import Any, cast
 
 from zeep import Client
 from zeep.exceptions import Fault, TransportError, XMLSyntaxError
@@ -32,6 +32,7 @@ from zeep.transports import Transport
 
 from finanzonline_databox._datetime_utils import local_now
 from finanzonline_databox._format_utils import mask_credential
+from finanzonline_databox.adapters.finanzonline._soap_utils import extract_xml_error_content, is_maintenance_page
 from finanzonline_databox.domain.errors import DataboxOperationError, SessionError
 from finanzonline_databox.i18n import _
 from finanzonline_databox.domain.models import (
@@ -48,74 +49,26 @@ from finanzonline_databox.domain.models import (
     ReadStatus,
 )
 
-if TYPE_CHECKING:
-    pass
-
-
 logger = logging.getLogger(__name__)
 
 DATABOX_SERVICE_WSDL = "https://finanzonline.bmf.gv.at/fon/ws/databoxService.wsdl"
 
-# Maximum length of HTML content to include in diagnostics (for email)
-_MAX_HTML_CONTENT_LENGTH = 4000
 
-
-def _is_maintenance_page(content: str | bytes | None) -> bool:
-    """Detect if content is a FinanzOnline maintenance page.
-
-    Args:
-        content: Raw HTML content (string or bytes).
-
-    Returns:
-        True if content appears to be a maintenance page.
-
-    Examples:
-        >>> _is_maintenance_page('<html><a href="/wartung/error.css">Error</a></html>')
-        True
-        >>> _is_maintenance_page('<html><body>Normal response</body></html>')
-        False
-        >>> _is_maintenance_page(None)
-        False
-    """
-    if not content:
-        return False
-    content_str = content.decode("utf-8", errors="replace") if isinstance(content, bytes) else content
-    content_lower = content_str.lower()
-    return "/wartung/" in content_lower
-
-
-def _extract_xml_error_content(exc: XMLSyntaxError) -> str:
-    """Extract HTML/XML content from XMLSyntaxError for diagnostics.
-
-    Args:
-        exc: The XMLSyntaxError exception.
-
-    Returns:
-        Truncated content string for inclusion in error diagnostics.
-    """
-    content = getattr(exc, "content", None)
-    if not content:
-        return str(exc)
-
-    content_str = content.decode("utf-8", errors="replace") if isinstance(content, bytes) else str(content)
-    if len(content_str) > _MAX_HTML_CONTENT_LENGTH:
-        return content_str[:_MAX_HTML_CONTENT_LENGTH] + "\n... [truncated]"
-    return content_str
-
-
-def _build_list_diagnostics(
+def _build_diagnostics(
+    operation: str,
     session_id: str,
     credentials: FinanzOnlineCredentials,
-    request: DataboxListRequest,
+    request: DataboxListRequest | DataboxDownloadRequest,
     response: Any | None = None,
     error: str | None = None,
 ) -> Diagnostics:
-    """Build diagnostic information for list operation.
+    """Build diagnostic information for a databox operation.
 
     Args:
+        operation: SOAP operation name (e.g., 'getDatabox', 'getDataboxEntry').
         session_id: Active session ID (will be masked).
         credentials: The credentials used.
-        request: The list request.
+        request: The list or download request.
         response: Optional SOAP response object.
         error: Optional error message.
 
@@ -130,51 +83,13 @@ def _build_list_diagnostics(
         response_message = str(getattr(response, "msg", "") or "")
 
     return Diagnostics(
-        operation="getDatabox",
+        operation=operation,
         tid=credentials.tid,
         benid=credentials.benid,
         pin=mask_credential(credentials.pin),
         session_id=mask_credential(session_id),
-        erltyp=request.erltyp,
-        return_code=return_code,
-        response_message=response_message,
-        error_detail=error or "",
-    )
-
-
-def _build_download_diagnostics(
-    session_id: str,
-    credentials: FinanzOnlineCredentials,
-    request: DataboxDownloadRequest,
-    response: Any | None = None,
-    error: str | None = None,
-) -> Diagnostics:
-    """Build diagnostic information for download operation.
-
-    Args:
-        session_id: Active session ID (will be masked).
-        credentials: The credentials used.
-        request: The download request.
-        response: Optional SOAP response object.
-        error: Optional error message.
-
-    Returns:
-        Diagnostics object with diagnostic information.
-    """
-    return_code = ""
-    response_message = ""
-
-    if response is not None:
-        return_code = str(getattr(response, "rc", ""))
-        response_message = str(getattr(response, "msg", "") or "")
-
-    return Diagnostics(
-        operation="getDataboxEntry",
-        tid=credentials.tid,
-        benid=credentials.benid,
-        pin=mask_credential(credentials.pin),
-        session_id=mask_credential(session_id),
-        applkey=request.applkey,
+        erltyp=getattr(request, "erltyp", ""),
+        applkey=getattr(request, "applkey", ""),
         return_code=return_code,
         response_message=response_message,
         error_detail=error or "",
@@ -270,7 +185,8 @@ def _decode_content(
         content = base64.b64decode(raw_content)
     except binascii.Error as exc:
         request = DataboxDownloadRequest(applkey=applkey)
-        diagnostics = _build_download_diagnostics(
+        diagnostics = _build_diagnostics(
+            "getDataboxEntry",
             session_id,
             credentials,
             request,
@@ -311,20 +227,22 @@ def _parse_databox_entry(entry: Any) -> DataboxEntry:
     )
 
 
-def _handle_list_exception(
+def _handle_operation_exception(
     exc: Exception,
+    operation: str,
     session_id: str,
     credentials: FinanzOnlineCredentials,
-    request: DataboxListRequest,
+    request: DataboxListRequest | DataboxDownloadRequest,
     response: Any | None,
 ) -> None:
-    """Handle exceptions during list operation and raise appropriate domain error.
+    """Handle exceptions during a databox operation and raise appropriate domain error.
 
     Args:
         exc: The exception that occurred.
+        operation: SOAP operation name (e.g., 'getDatabox', 'getDataboxEntry').
         session_id: Active session ID.
         credentials: FinanzOnline credentials.
-        request: The list request.
+        request: The list or download request.
         response: Optional SOAP response.
 
     Raises:
@@ -334,72 +252,26 @@ def _handle_list_exception(
     if isinstance(exc, (SessionError, DataboxOperationError)):
         raise
 
-    diagnostics = _build_list_diagnostics(session_id, credentials, request, response, error=str(exc))
+    diagnostics = _build_diagnostics(operation, session_id, credentials, request, response, error=str(exc))
 
     if isinstance(exc, Fault):
-        logger.error("SOAP fault during databox list: %s", exc)
+        logger.error("SOAP fault during %s: %s", operation, exc)
         raise DataboxOperationError(f"SOAP fault: {exc.message}", diagnostics=diagnostics) from exc
 
     if isinstance(exc, TransportError):
-        logger.error("Transport error during databox list: %s", exc)
+        logger.error("Transport error during %s: %s", operation, exc)
         raise DataboxOperationError(f"Connection error: {exc}", retryable=True, diagnostics=diagnostics) from exc
 
     if isinstance(exc, XMLSyntaxError):
         html_content = getattr(exc, "content", None)
-        is_maintenance = _is_maintenance_page(html_content)
+        is_maintenance = is_maintenance_page(html_content)
         error_type = _("DataBox in maintenance mode") if is_maintenance else _("Invalid XML Response")
-        error_detail = _extract_xml_error_content(exc)
-        diagnostics = _build_list_diagnostics(session_id, credentials, request, response, error=error_detail)
-        logger.error("%s during databox list: %s", error_type, exc)
+        error_detail = extract_xml_error_content(exc)
+        diagnostics = _build_diagnostics(operation, session_id, credentials, request, response, error=error_detail)
+        logger.error("%s during %s: %s", error_type, operation, exc)
         raise DataboxOperationError(error_type, diagnostics=diagnostics, retryable=is_maintenance) from exc
 
-    logger.error("Unexpected error during databox list: %s", exc)
-    raise DataboxOperationError(f"Unexpected error: {exc}", diagnostics=diagnostics) from exc
-
-
-def _handle_download_exception(
-    exc: Exception,
-    session_id: str,
-    credentials: FinanzOnlineCredentials,
-    request: DataboxDownloadRequest,
-    response: Any | None,
-) -> None:
-    """Handle exceptions during download operation and raise appropriate domain error.
-
-    Args:
-        exc: The exception that occurred.
-        session_id: Active session ID.
-        credentials: FinanzOnline credentials.
-        request: The download request.
-        response: Optional SOAP response.
-
-    Raises:
-        SessionError: For session-related errors.
-        DataboxOperationError: For all other errors.
-    """
-    if isinstance(exc, (SessionError, DataboxOperationError)):
-        raise
-
-    diagnostics = _build_download_diagnostics(session_id, credentials, request, response, error=str(exc))
-
-    if isinstance(exc, Fault):
-        logger.error("SOAP fault during databox download: %s", exc)
-        raise DataboxOperationError(f"SOAP fault: {exc.message}", diagnostics=diagnostics) from exc
-
-    if isinstance(exc, TransportError):
-        logger.error("Transport error during databox download: %s", exc)
-        raise DataboxOperationError(f"Connection error: {exc}", retryable=True, diagnostics=diagnostics) from exc
-
-    if isinstance(exc, XMLSyntaxError):
-        html_content = getattr(exc, "content", None)
-        is_maintenance = _is_maintenance_page(html_content)
-        error_type = _("DataBox in maintenance mode") if is_maintenance else _("Invalid XML Response")
-        error_detail = _extract_xml_error_content(exc)
-        diagnostics = _build_download_diagnostics(session_id, credentials, request, response, error=error_detail)
-        logger.error("%s during databox download: %s", error_type, exc)
-        raise DataboxOperationError(error_type, diagnostics=diagnostics, retryable=is_maintenance) from exc
-
-    logger.error("Unexpected error during databox download: %s", exc)
+    logger.error("Unexpected error during %s: %s", operation, exc)
     raise DataboxOperationError(f"Unexpected error: {exc}", diagnostics=diagnostics) from exc
 
 
@@ -462,7 +334,7 @@ class DataboxClient:
             response = self._execute_list_query(session_id, credentials, request)
             return self._process_list_response(session_id, credentials, request, response)
         except Exception as e:
-            _handle_list_exception(e, session_id, credentials, request, response)
+            _handle_operation_exception(e, "getDatabox", session_id, credentials, request, response)
             raise  # Unreachable but satisfies type checker
 
     def _execute_list_query(
@@ -505,10 +377,8 @@ class DataboxClient:
         """Raise SessionError if session is invalid."""
         if return_code != RC_SESSION_INVALID:
             return
-        if isinstance(request, DataboxListRequest):
-            diagnostics = _build_list_diagnostics(session_id, credentials, request, response)
-        else:
-            diagnostics = _build_download_diagnostics(session_id, credentials, request, response)
+        operation = "getDatabox" if isinstance(request, DataboxListRequest) else "getDataboxEntry"
+        diagnostics = _build_diagnostics(operation, session_id, credentials, request, response)
         raise SessionError(f"Session invalid or expired: {message}", return_code=return_code, diagnostics=diagnostics)
 
     def _process_list_response(
@@ -560,7 +430,7 @@ class DataboxClient:
             response = self._execute_download_query(session_id, credentials, request)
             return self._process_download_response(session_id, credentials, request, response)
         except Exception as e:
-            _handle_download_exception(e, session_id, credentials, request, response)
+            _handle_operation_exception(e, "getDataboxEntry", session_id, credentials, request, response)
             raise  # Unreachable but satisfies type checker
 
     def _execute_download_query(

@@ -19,8 +19,7 @@ from zeep.exceptions import Fault, TransportError
 from finanzonline_databox.adapters.finanzonline.databox_client import (
     DATABOX_SERVICE_WSDL,
     DataboxClient,
-    _build_download_diagnostics,
-    _build_list_diagnostics,
+    _build_diagnostics,
     _decode_content,
     _extract_response_message,
     _get_str_attr,
@@ -255,13 +254,13 @@ class TestParseDataboxEntry:
         assert result.status == ReadStatus.READ
 
 
-class TestBuildListDiagnostics:
-    """Tests for _build_list_diagnostics helper."""
+class TestBuildDiagnostics:
+    """Tests for _build_diagnostics helper."""
 
-    def test_creates_diagnostics_from_request(self, valid_credentials: Any) -> None:
-        """Creates diagnostics with masked values."""
+    def test_creates_list_diagnostics(self, valid_credentials: Any) -> None:
+        """Creates diagnostics with masked values for list operation."""
         request = DataboxListRequest(erltyp="B")
-        diag = _build_list_diagnostics("SESSION123456", valid_credentials, request)
+        diag = _build_diagnostics("getDatabox", "SESSION123456", valid_credentials, request)
 
         assert diag.operation == "getDatabox"
         assert diag.erltyp == "B"
@@ -274,19 +273,15 @@ class TestBuildListDiagnostics:
         response.rc = 0
         response.msg = "Success"
 
-        diag = _build_list_diagnostics("SESSION123", valid_credentials, request, response=response)
+        diag = _build_diagnostics("getDatabox", "SESSION123", valid_credentials, request, response=response)
 
         assert diag.return_code == "0"
         assert diag.response_message == "Success"
 
-
-class TestBuildDownloadDiagnostics:
-    """Tests for _build_download_diagnostics helper."""
-
-    def test_creates_diagnostics_from_request(self, valid_credentials: Any) -> None:
-        """Creates diagnostics with masked values."""
+    def test_creates_download_diagnostics(self, valid_credentials: Any) -> None:
+        """Creates diagnostics with masked values for download operation."""
         request = DataboxDownloadRequest(applkey="abc123def456")
-        diag = _build_download_diagnostics("SESSION123456", valid_credentials, request)
+        diag = _build_diagnostics("getDataboxEntry", "SESSION123456", valid_credentials, request)
 
         assert diag.operation == "getDataboxEntry"
         assert diag.applkey == "abc123def456"

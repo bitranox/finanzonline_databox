@@ -20,18 +20,21 @@ System Role:
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 
 from lib_layered_config import Config, read_config
 
 from . import __init__conf__
-from .config_schema import ConfigSchema
+from .config_schema import ConfigSchema, parse_string_list
 from .domain.errors import ConfigurationError
 from .domain.models import FinanzOnlineCredentials
 from .enums import EmailFormat
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from .i18n import Language
@@ -39,24 +42,6 @@ if TYPE_CHECKING:
 # =============================================================================
 # Configuration Parsing Helpers
 # =============================================================================
-
-
-def parse_string_list(raw: object) -> list[str]:
-    """Parse a string list from config, handling JSON strings from .env files."""
-    import json
-
-    if isinstance(raw, list):
-        return [str(item) for item in cast(list[object], raw) if item]
-
-    if isinstance(raw, str) and raw.startswith("["):
-        try:
-            parsed = json.loads(raw)
-            if isinstance(parsed, list):
-                return [str(item) for item in cast(list[object], parsed) if item]
-        except json.JSONDecodeError:
-            pass
-
-    return []
 
 
 def _parse_email_format(raw: Any, default: EmailFormat) -> EmailFormat:
@@ -77,7 +62,7 @@ def _parse_email_format(raw: Any, default: EmailFormat) -> EmailFormat:
         try:
             return EmailFormat(normalized)
         except ValueError:
-            pass
+            logger.warning("Invalid email format %r, falling back to %r", raw, default.value)
 
     return default
 
@@ -327,15 +312,8 @@ def load_finanzonline_config(config: Config) -> FinanzOnlineConfig:
     herstellerid = fo_section.herstellerid
 
     # Validate required fields
-    missing: list[str] = []
-    if not tid:
-        missing.append("finanzonline.tid")
-    if not benid:
-        missing.append("finanzonline.benid")
-    if not pin:
-        missing.append("finanzonline.pin")
-    if not herstellerid:
-        missing.append("finanzonline.herstellerid")
+    fields = {"tid": tid, "benid": benid, "pin": pin, "herstellerid": herstellerid}
+    missing = [f"finanzonline.{name}" for name, value in fields.items() if not value]
 
     if missing:
         raise ConfigurationError(f"Missing required FinanzOnline configuration: {', '.join(missing)}. Configure via config file or environment variables.")

@@ -506,10 +506,10 @@ class TestListCommand:
         result = cli_runner.invoke(cli, ["list", "--unread", "--format", "json"])
         assert result.exit_code == CliExitCode.SUCCESS
 
-        # Verify that only unread entry is in output
+        # Extract JSON object from output (CliRunner merges log lines into stdout)
         import json
 
-        output_data = json.loads(result.output)
+        output_data = json.loads(result.output[result.output.index("{") :])
         assert output_data["count"] == 1
         assert output_data["entries"][0]["applkey"] == "abc123def456"
 

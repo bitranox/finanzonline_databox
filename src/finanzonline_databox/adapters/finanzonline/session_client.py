@@ -28,6 +28,7 @@ from zeep.exceptions import Fault, TransportError, XMLSyntaxError
 from zeep.transports import Transport
 
 from finanzonline_databox._format_utils import mask_credential
+from finanzonline_databox.adapters.finanzonline._soap_utils import extract_xml_error_content, is_maintenance_page
 from finanzonline_databox.domain.errors import AuthenticationError, SessionError
 from finanzonline_databox.i18n import _
 from finanzonline_databox.domain.models import (
@@ -43,44 +44,6 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 SESSION_SERVICE_WSDL = "https://finanzonline.bmf.gv.at/fonws/ws/sessionService.wsdl"
-
-# Maximum length of HTML content to include in diagnostics (for email)
-_MAX_HTML_CONTENT_LENGTH = 4000
-
-
-def _is_maintenance_page(content: str | bytes | None) -> bool:
-    """Detect if content is a FinanzOnline maintenance page.
-
-    Args:
-        content: Raw HTML content (string or bytes).
-
-    Returns:
-        True if content appears to be a maintenance page.
-    """
-    if not content:
-        return False
-    content_str = content.decode("utf-8", errors="replace") if isinstance(content, bytes) else content
-    content_lower = content_str.lower()
-    return "/wartung/" in content_lower
-
-
-def _extract_xml_error_content(exc: XMLSyntaxError) -> str:
-    """Extract HTML/XML content from XMLSyntaxError for diagnostics.
-
-    Args:
-        exc: The XMLSyntaxError exception.
-
-    Returns:
-        Truncated content string for inclusion in error diagnostics.
-    """
-    content = getattr(exc, "content", None)
-    if not content:
-        return str(exc)
-
-    content_str = content.decode("utf-8", errors="replace") if isinstance(content, bytes) else str(content)
-    if len(content_str) > _MAX_HTML_CONTENT_LENGTH:
-        return content_str[:_MAX_HTML_CONTENT_LENGTH] + "\n... [truncated]"
-    return content_str
 
 
 def _format_login_request(credentials: FinanzOnlineCredentials) -> dict[str, str]:
@@ -179,9 +142,9 @@ def _handle_login_exception(
 
     if isinstance(exc, XMLSyntaxError):
         html_content = getattr(exc, "content", None)
-        is_maintenance = _is_maintenance_page(html_content)
+        is_maintenance = is_maintenance_page(html_content)
         error_type = _("DataBox in maintenance mode") if is_maintenance else _("Invalid XML Response")
-        error_detail = _extract_xml_error_content(exc)
+        error_detail = extract_xml_error_content(exc)
         diagnostics = _build_login_diagnostics(credentials, response, error=error_detail)
         logger.error("%s during login: %s", error_type, exc)
         raise SessionError(error_type, diagnostics=diagnostics) from exc

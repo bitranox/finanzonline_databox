@@ -37,12 +37,15 @@ Examples
 from __future__ import annotations
 
 import json
+import logging
 from typing import Any, cast
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+logger = logging.getLogger(__name__)
 
-def _parse_string_list(value: Any) -> list[str]:
+
+def parse_string_list(value: Any) -> list[str]:
     """Parse a value into a list of strings.
 
     Handles JSON strings from .env files (e.g., '["item1", "item2"]').
@@ -58,8 +61,8 @@ def _parse_string_list(value: Any) -> list[str]:
             if isinstance(parsed, list):
                 parsed_items = cast(list[object], parsed)
                 return [str(item) for item in parsed_items if item]
-        except json.JSONDecodeError:
-            pass
+        except json.JSONDecodeError as exc:
+            logger.warning("Malformed JSON string list %r, returning empty list: %s", value, exc)
 
     return []
 
@@ -129,7 +132,7 @@ class FinanzOnlineConfigSchema(BaseModel):
     @classmethod
     def parse_recipients(cls, v: Any) -> list[str]:
         """Parse recipients list, handling JSON strings from .env files."""
-        return _parse_string_list(v)
+        return parse_string_list(v)
 
 
 class EmailConfigSchema(BaseModel):
@@ -163,7 +166,7 @@ class EmailConfigSchema(BaseModel):
     @classmethod
     def parse_list_fields(cls, v: Any) -> list[str]:
         """Parse list fields, handling JSON strings from .env files."""
-        return _parse_string_list(v)
+        return parse_string_list(v)
 
     @field_validator("timeout", mode="before")
     @classmethod

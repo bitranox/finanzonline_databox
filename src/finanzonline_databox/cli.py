@@ -760,8 +760,8 @@ def _resolve_output_dir(
         fo_config = load_finanzonline_config(config)
         if fo_config.output_dir is not None:
             return fo_config.output_dir
-    except ConfigurationError:
-        pass  # Credentials may be missing, but we can still use default output_dir
+    except ConfigurationError as exc:
+        logger.warning("Could not load config for output_dir, using default: %s", exc)
 
     return Path(default)
 
