@@ -532,6 +532,8 @@ class TestSendEmailErrors:
 
 
 @pytest.mark.os_agnostic
+@pytest.mark.local_only
+@pytest.mark.integration
 class TestRealSmtpIntegration:
     """Integration tests with real SMTP server (when configured)."""
 

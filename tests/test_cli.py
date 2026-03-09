@@ -284,7 +284,7 @@ class TestConfigDeployCommand:
         assert result.exit_code != 0
         assert "target" in result.output.lower() or "required" in result.output.lower()
 
-    @patch("finanzonline_databox.cli.deploy_configuration")
+    @patch("finanzonline_databox.cli._commands.deploy_configuration")
     def test_config_deploy_with_user_target(self, mock_deploy: MagicMock, cli_runner: CliRunner, tmp_path: Path) -> None:
         """Config-deploy with user target calls deploy_configuration."""
         mock_deploy.return_value = [str(tmp_path / "config.toml")]
@@ -293,7 +293,7 @@ class TestConfigDeployCommand:
         assert result.exit_code == 0
         mock_deploy.assert_called_once()
 
-    @patch("finanzonline_databox.cli.deploy_configuration")
+    @patch("finanzonline_databox.cli._commands.deploy_configuration")
     def test_config_deploy_no_files_created(self, mock_deploy: MagicMock, cli_runner: CliRunner) -> None:
         """Shows message when no files were created."""
         mock_deploy.return_value = []
@@ -302,7 +302,7 @@ class TestConfigDeployCommand:
         assert result.exit_code == 0
         assert "No files were created" in result.output or "already exist" in result.output
 
-    @patch("finanzonline_databox.cli.deploy_configuration")
+    @patch("finanzonline_databox.cli._commands.deploy_configuration")
     def test_config_deploy_permission_error(self, mock_deploy: MagicMock, cli_runner: CliRunner) -> None:
         """Shows permission error message on PermissionError."""
         mock_deploy.side_effect = PermissionError("Permission denied")
@@ -315,7 +315,7 @@ class TestConfigDeployCommand:
 class TestListCommand:
     """Tests for 'list' command."""
 
-    @patch("finanzonline_databox.cli.load_finanzonline_config")
+    @patch("finanzonline_databox.cli._commands.load_finanzonline_config")
     def test_list_config_error_shows_help(self, mock_load_config: MagicMock, cli_runner: CliRunner) -> None:
         """List command shows config help on configuration error."""
         mock_load_config.side_effect = ConfigurationError("tid is required")
@@ -324,10 +324,10 @@ class TestListCommand:
         assert result.exit_code == CliExitCode.CONFIG_ERROR
         assert "tid" in result.stderr.lower() or "config" in result.stderr.lower()
 
-    @patch("finanzonline_databox.cli.load_finanzonline_config")
-    @patch("finanzonline_databox.cli.FinanzOnlineSessionClient")
-    @patch("finanzonline_databox.cli.DataboxClient")
-    @patch("finanzonline_databox.cli.ListDataboxUseCase")
+    @patch("finanzonline_databox.cli._commands.load_finanzonline_config")
+    @patch("finanzonline_databox.cli._commands.FinanzOnlineSessionClient")
+    @patch("finanzonline_databox.cli._commands.DataboxClient")
+    @patch("finanzonline_databox.cli._commands.ListDataboxUseCase")
     def test_list_success_human_format(
         self,
         mock_use_case_cls: MagicMock,
@@ -358,10 +358,10 @@ class TestListCommand:
         result = cli_runner.invoke(cli, ["list"])
         assert result.exit_code == CliExitCode.SUCCESS
 
-    @patch("finanzonline_databox.cli.load_finanzonline_config")
-    @patch("finanzonline_databox.cli.FinanzOnlineSessionClient")
-    @patch("finanzonline_databox.cli.DataboxClient")
-    @patch("finanzonline_databox.cli.ListDataboxUseCase")
+    @patch("finanzonline_databox.cli._commands.load_finanzonline_config")
+    @patch("finanzonline_databox.cli._commands.FinanzOnlineSessionClient")
+    @patch("finanzonline_databox.cli._commands.DataboxClient")
+    @patch("finanzonline_databox.cli._commands.ListDataboxUseCase")
     def test_list_success_json_format(
         self,
         mock_use_case_cls: MagicMock,
@@ -406,10 +406,10 @@ class TestListCommand:
         result = cli_runner.invoke(cli, ["list", "--days", "32"])
         assert result.exit_code != 0
 
-    @patch("finanzonline_databox.cli.load_finanzonline_config")
-    @patch("finanzonline_databox.cli.FinanzOnlineSessionClient")
-    @patch("finanzonline_databox.cli.DataboxClient")
-    @patch("finanzonline_databox.cli.ListDataboxUseCase")
+    @patch("finanzonline_databox.cli._commands.load_finanzonline_config")
+    @patch("finanzonline_databox.cli._commands.FinanzOnlineSessionClient")
+    @patch("finanzonline_databox.cli._commands.DataboxClient")
+    @patch("finanzonline_databox.cli._commands.ListDataboxUseCase")
     def test_list_with_days_option(
         self,
         mock_use_case_cls: MagicMock,
@@ -443,10 +443,10 @@ class TestListCommand:
         assert request.ts_zust_von is not None
         assert request.ts_zust_bis is not None
 
-    @patch("finanzonline_databox.cli.load_finanzonline_config")
-    @patch("finanzonline_databox.cli.FinanzOnlineSessionClient")
-    @patch("finanzonline_databox.cli.DataboxClient")
-    @patch("finanzonline_databox.cli.ListDataboxUseCase")
+    @patch("finanzonline_databox.cli._commands.load_finanzonline_config")
+    @patch("finanzonline_databox.cli._commands.FinanzOnlineSessionClient")
+    @patch("finanzonline_databox.cli._commands.DataboxClient")
+    @patch("finanzonline_databox.cli._commands.ListDataboxUseCase")
     def test_list_with_unread_option(
         self,
         mock_use_case_cls: MagicMock,
@@ -568,7 +568,7 @@ class TestFilterUnreadEntries:
 class TestDownloadCommand:
     """Tests for 'download' command."""
 
-    @patch("finanzonline_databox.cli.load_finanzonline_config")
+    @patch("finanzonline_databox.cli._commands.load_finanzonline_config")
     def test_download_config_error(self, mock_load_config: MagicMock, cli_runner: CliRunner) -> None:
         """Download command shows error on configuration error."""
         mock_load_config.side_effect = ConfigurationError("Missing credentials")
@@ -576,11 +576,11 @@ class TestDownloadCommand:
         result = cli_runner.invoke(cli, ["download", "abc123def456"])
         assert result.exit_code == CliExitCode.CONFIG_ERROR
 
-    @patch("finanzonline_databox.cli.load_finanzonline_config")
-    @patch("finanzonline_databox.cli.FinanzOnlineSessionClient")
-    @patch("finanzonline_databox.cli.DataboxClient")
-    @patch("finanzonline_databox.cli.ListDataboxUseCase")
-    @patch("finanzonline_databox.cli.DownloadEntryUseCase")
+    @patch("finanzonline_databox.cli._commands.load_finanzonline_config")
+    @patch("finanzonline_databox.cli._commands.FinanzOnlineSessionClient")
+    @patch("finanzonline_databox.cli._commands.DataboxClient")
+    @patch("finanzonline_databox.cli._commands.ListDataboxUseCase")
+    @patch("finanzonline_databox.cli._commands.DownloadEntryUseCase")
     def test_download_success(
         self,
         mock_download_use_case_cls: MagicMock,
@@ -625,11 +625,11 @@ class TestDownloadCommand:
         assert result.exit_code == CliExitCode.SUCCESS
         assert "Downloaded" in result.output or "Size" in result.output
 
-    @patch("finanzonline_databox.cli.load_finanzonline_config")
-    @patch("finanzonline_databox.cli.FinanzOnlineSessionClient")
-    @patch("finanzonline_databox.cli.DataboxClient")
-    @patch("finanzonline_databox.cli.ListDataboxUseCase")
-    @patch("finanzonline_databox.cli.DownloadEntryUseCase")
+    @patch("finanzonline_databox.cli._commands.load_finanzonline_config")
+    @patch("finanzonline_databox.cli._commands.FinanzOnlineSessionClient")
+    @patch("finanzonline_databox.cli._commands.DataboxClient")
+    @patch("finanzonline_databox.cli._commands.ListDataboxUseCase")
+    @patch("finanzonline_databox.cli._commands.DownloadEntryUseCase")
     def test_download_failure(
         self,
         mock_download_use_case_cls: MagicMock,
@@ -681,7 +681,7 @@ class TestDownloadCommand:
 class TestSyncCommand:
     """Tests for 'sync' command."""
 
-    @patch("finanzonline_databox.cli.load_finanzonline_config")
+    @patch("finanzonline_databox.cli._commands.load_finanzonline_config")
     def test_sync_config_error(self, mock_load_config: MagicMock, cli_runner: CliRunner) -> None:
         """Sync command shows error on configuration error."""
         mock_load_config.side_effect = ConfigurationError("Missing credentials")
@@ -689,10 +689,10 @@ class TestSyncCommand:
         result = cli_runner.invoke(cli, ["sync"])
         assert result.exit_code == CliExitCode.CONFIG_ERROR
 
-    @patch("finanzonline_databox.cli.load_finanzonline_config")
-    @patch("finanzonline_databox.cli.FinanzOnlineSessionClient")
-    @patch("finanzonline_databox.cli.DataboxClient")
-    @patch("finanzonline_databox.cli.SyncDataboxUseCase")
+    @patch("finanzonline_databox.cli._commands.load_finanzonline_config")
+    @patch("finanzonline_databox.cli._commands.FinanzOnlineSessionClient")
+    @patch("finanzonline_databox.cli._commands.DataboxClient")
+    @patch("finanzonline_databox.cli._commands.SyncDataboxUseCase")
     def test_sync_success_human_format(
         self,
         mock_use_case_cls: MagicMock,
@@ -728,10 +728,10 @@ class TestSyncCommand:
         result = cli_runner.invoke(cli, ["sync", "--output", str(tmp_path), "--no-email"])
         assert result.exit_code == CliExitCode.SUCCESS
 
-    @patch("finanzonline_databox.cli.load_finanzonline_config")
-    @patch("finanzonline_databox.cli.FinanzOnlineSessionClient")
-    @patch("finanzonline_databox.cli.DataboxClient")
-    @patch("finanzonline_databox.cli.SyncDataboxUseCase")
+    @patch("finanzonline_databox.cli._commands.load_finanzonline_config")
+    @patch("finanzonline_databox.cli._commands.FinanzOnlineSessionClient")
+    @patch("finanzonline_databox.cli._commands.DataboxClient")
+    @patch("finanzonline_databox.cli._commands.SyncDataboxUseCase")
     def test_sync_success_json_format(
         self,
         mock_use_case_cls: MagicMock,
@@ -769,11 +769,11 @@ class TestSyncCommand:
         assert result.exit_code == CliExitCode.SUCCESS
         assert "{" in result.output
 
-    @patch("finanzonline_databox.cli.load_finanzonline_config")
-    @patch("finanzonline_databox.cli.FinanzOnlineSessionClient")
-    @patch("finanzonline_databox.cli.DataboxClient")
-    @patch("finanzonline_databox.cli.SyncDataboxUseCase")
-    @patch("finanzonline_databox.cli._send_sync_notification")
+    @patch("finanzonline_databox.cli._commands.load_finanzonline_config")
+    @patch("finanzonline_databox.cli._commands.FinanzOnlineSessionClient")
+    @patch("finanzonline_databox.cli._commands.DataboxClient")
+    @patch("finanzonline_databox.cli._commands.SyncDataboxUseCase")
+    @patch("finanzonline_databox.cli._notifications._send_sync_notification")
     def test_sync_sends_notification_on_downloads(
         self,
         mock_send_notification: MagicMock,
@@ -811,11 +811,11 @@ class TestSyncCommand:
         assert result.exit_code == CliExitCode.SUCCESS
         mock_send_notification.assert_called_once()
 
-    @patch("finanzonline_databox.cli.load_finanzonline_config")
-    @patch("finanzonline_databox.cli.FinanzOnlineSessionClient")
-    @patch("finanzonline_databox.cli.DataboxClient")
-    @patch("finanzonline_databox.cli.SyncDataboxUseCase")
-    @patch("finanzonline_databox.cli._send_sync_notification")
+    @patch("finanzonline_databox.cli._commands.load_finanzonline_config")
+    @patch("finanzonline_databox.cli._commands.FinanzOnlineSessionClient")
+    @patch("finanzonline_databox.cli._commands.DataboxClient")
+    @patch("finanzonline_databox.cli._commands.SyncDataboxUseCase")
+    @patch("finanzonline_databox.cli._notifications._send_sync_notification")
     def test_sync_no_email_flag_skips_notification(
         self,
         mock_send_notification: MagicMock,
@@ -852,10 +852,10 @@ class TestSyncCommand:
         assert result.exit_code == CliExitCode.SUCCESS
         mock_send_notification.assert_not_called()
 
-    @patch("finanzonline_databox.cli.load_finanzonline_config")
-    @patch("finanzonline_databox.cli.FinanzOnlineSessionClient")
-    @patch("finanzonline_databox.cli.DataboxClient")
-    @patch("finanzonline_databox.cli.SyncDataboxUseCase")
+    @patch("finanzonline_databox.cli._commands.load_finanzonline_config")
+    @patch("finanzonline_databox.cli._commands.FinanzOnlineSessionClient")
+    @patch("finanzonline_databox.cli._commands.DataboxClient")
+    @patch("finanzonline_databox.cli._commands.SyncDataboxUseCase")
     def test_sync_with_failures_returns_error_code(
         self,
         mock_use_case_cls: MagicMock,

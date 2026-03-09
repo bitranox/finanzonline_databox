@@ -1,6 +1,6 @@
 [project]
 name = "finanzonline_databox"
-version = "1.2.14"
+version = "1.2.15"
 description = "Python library and CLI for downloading documents from FinanzOnline Austria DataBox"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -103,6 +103,8 @@ markers = [
   "os_macos: test exercises macOS-only behavior",
   "os_posix: test exercises behavior requiring POSIX semantics",
   "os_linux: test exercises Linux-only behavior",
+  "local_only: test requires local infrastructure (not run in CI)",
+  "integration: test exercises real external services",
 ]
 
 [tool.coverage.run]
@@ -115,8 +117,8 @@ source = ["src/finanzonline_databox"]
 omit = [
   "tests/*",
 ]
-# Lowered from 85% - databox_client.py SOAP tests need mocking
-fail_under = 82
+# Actual coverage ~90%; buffer for SOAP adapter and notification paths
+fail_under = 87
 show_missing = true
 
 [tool.coverage.json]
@@ -159,6 +161,15 @@ coverage-report-file = "coverage.xml"
 src-path = "src"
 [tool.importlinter]
 root_package = "finanzonline_databox"
+
+[[tool.importlinter.contracts]]
+name = "Clean Architecture layers"
+type = "layers"
+layers = [
+  "finanzonline_databox.adapters",
+  "finanzonline_databox.application",
+  "finanzonline_databox.domain",
+]
 
 [[tool.importlinter.contracts]]
 name = "CLI depends on behaviors only"

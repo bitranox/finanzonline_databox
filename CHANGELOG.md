@@ -7,6 +7,15 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+## [1.2.15] - 2026-03-09
+
+### Changed
+
+- Split monolithic `cli.py` (1641 lines) into `cli/` package with focused submodules (`_app`, `_commands`, `_error_handling`, `_helpers`, `_notifications`)
+- Added Clean Architecture import-linter contract enforcing domain/application/adapter layer boundaries
+- Raised test coverage threshold from 82% to 87% (actual coverage ~90%)
+- Marked real SMTP integration tests with `local_only` and `integration` markers
+
 ## [1.2.14] - 2026-03-09
 
 ### Fixed
