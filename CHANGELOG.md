@@ -7,6 +7,16 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+## [1.2.16] - 2026-03-26
+
+### Fixed
+
+- Fixed TOML syntax error in `pyproject.toml` (missing comma in `ignore-vulns` array)
+
+### Changed
+
+- Updated pip-audit CVE exclusion list (added CVE-2026-4539, CVE-2026-25645)
+
 ## [1.2.15] - 2026-03-09
 
 ### Changed
