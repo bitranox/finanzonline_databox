@@ -44,6 +44,7 @@ from ..domain.return_codes import CliExitCode
 from ..enums import DeployTarget, OutputFormat, ReadFilter
 from ..i18n import _
 from ._app import CLICK_CONTEXT_SETTINGS, _flush_all_log_handlers, _get_cli_context, cli  # pyright: ignore[reportPrivateUsage]
+from .typed_click import argument, option
 from ._error_handling import _handle_command_exception  # pyright: ignore[reportPrivateUsage]
 from ._helpers import (  # pyright: ignore[reportPrivateUsage]
     _apply_list_filters,
@@ -95,19 +96,19 @@ def _handle_deploy_error(exc: Exception) -> None:
 
 
 @cli.command("config", context_settings=CLICK_CONTEXT_SETTINGS)
-@click.option(
+@option(
     "--format",
     type=click.Choice(list(OutputFormat), case_sensitive=False),
     default=OutputFormat.HUMAN,
     help=_("Output format (human-readable or JSON)"),
 )
-@click.option(
+@option(
     "--section",
     type=str,
     default=None,
     help=_("Show only a specific configuration section (e.g., 'lib_log_rich')"),
 )
-@click.option(
+@option(
     "--profile",
     type=str,
     default=None,
@@ -140,7 +141,7 @@ def cli_config(ctx: click.Context, format: str, section: str | None, profile: st
 
 
 @cli.command("config-deploy", context_settings=CLICK_CONTEXT_SETTINGS)
-@click.option(
+@option(
     "--target",
     "targets",
     type=click.Choice(list(DeployTarget), case_sensitive=False),
@@ -148,13 +149,13 @@ def cli_config(ctx: click.Context, format: str, section: str | None, profile: st
     required=True,
     help=_("Target configuration layer(s) to deploy to (can specify multiple)"),
 )
-@click.option(
+@option(
     "--force",
     is_flag=True,
     default=False,
     help=_("Overwrite existing configuration files"),
 )
-@click.option(
+@option(
     "--profile",
     type=str,
     default=None,
@@ -194,35 +195,35 @@ def cli_config_deploy(ctx: click.Context, targets: tuple[str, ...], force: bool,
 
 
 @cli.command("list", context_settings=CLICK_CONTEXT_SETTINGS)
-@click.option(
+@option(
     "--erltyp",
     "-t",
     type=str,
     default="",
     help=_("Document type filter (B=Bescheide, M=Mitteilungen, I=Info, P=Protokolle, empty=all unread)"),
 )
-@click.option(
+@option(
     "--from",
     "date_from",
     type=str,
     default=None,
     help=_("Start date filter (YYYY-MM-DD, max 31 days ago)"),
 )
-@click.option(
+@option(
     "--to",
     "date_to",
     type=str,
     default=None,
     help=_("End date filter (YYYY-MM-DD, max 7 days after start)"),
 )
-@click.option(
+@option(
     "--days",
     "-d",
     type=int,
     default=None,
     help=_("List documents from last N days (overrides --from/--to, max 31)"),
 )
-@click.option(
+@option(
     "--unread",
     "-u",
     "read_filter",
@@ -230,27 +231,27 @@ def cli_config_deploy(ctx: click.Context, targets: tuple[str, ...], force: bool,
     default=ReadFilter.UNREAD.value,
     help=_("Show only unread documents (default)"),
 )
-@click.option(
+@option(
     "--read",
     "read_filter",
     flag_value=ReadFilter.READ.value,
     help=_("Show only read documents"),
 )
-@click.option(
+@option(
     "--all",
     "-a",
     "read_filter",
     flag_value=ReadFilter.ALL.value,
     help=_("Show all documents"),
 )
-@click.option(
+@option(
     "--reference",
     "-r",
     type=str,
     default="",
     help=_("Reference filter (anbringen, e.g., UID, E1)"),
 )
-@click.option(
+@option(
     "--format",
     "output_format",
     type=click.Choice(list(OutputFormat), case_sensitive=False),
@@ -332,15 +333,15 @@ def cli_list(
 
 
 @cli.command("download", context_settings=CLICK_CONTEXT_SETTINGS)
-@click.argument("applkey")
-@click.option(
+@argument("applkey")
+@option(
     "--output",
     "-o",
     type=click.Path(exists=False, dir_okay=True, file_okay=False),
     default=None,
     help=_("Output directory for downloaded file (default: config or current directory)"),
 )
-@click.option(
+@option(
     "--filename",
     "-f",
     type=str,
@@ -413,34 +414,34 @@ def cli_download(
 
 
 @cli.command("sync", context_settings=CLICK_CONTEXT_SETTINGS)
-@click.option(
+@option(
     "--output",
     "-o",
     type=click.Path(exists=False, dir_okay=True, file_okay=False),
     default=None,
     help=_("Output directory for downloaded files (default: config or ./databox)"),
 )
-@click.option(
+@option(
     "--erltyp",
     "-t",
     type=str,
     default="",
     help=_("Document type filter (B=Bescheide, M=Mitteilungen, I=Info, P=Protokolle, empty=all)"),
 )
-@click.option(
+@option(
     "--reference",
     "-r",
     type=str,
     default="",
     help=_("Reference filter (anbringen, e.g., UID, E1)"),
 )
-@click.option(
+@option(
     "--days",
     type=int,
     default=31,
     help=_("Number of days to look back (default: 31, max: 31)"),
 )
-@click.option(
+@option(
     "--unread",
     "-u",
     "read_filter",
@@ -448,44 +449,44 @@ def cli_download(
     default=ReadFilter.UNREAD.value,
     help=_("Sync only unread documents (default)"),
 )
-@click.option(
+@option(
     "--read",
     "read_filter",
     flag_value=ReadFilter.READ.value,
     help=_("Sync only read documents"),
 )
-@click.option(
+@option(
     "--all",
     "-a",
     "read_filter",
     flag_value=ReadFilter.ALL.value,
     help=_("Sync all documents"),
 )
-@click.option(
+@option(
     "--skip-existing/--no-skip-existing",
     default=True,
     help=_("Skip files that already exist (default: skip)"),
 )
-@click.option(
+@option(
     "--no-email",
     is_flag=True,
     default=False,
     help=_("Disable email notification (default: email enabled)"),
 )
-@click.option(
+@option(
     "--format",
     "output_format",
     type=click.Choice(list(OutputFormat), case_sensitive=False),
     default=OutputFormat.HUMAN,
     help=_("Output format (default: human)"),
 )
-@click.option(
+@option(
     "--recipient",
     "recipients",
     multiple=True,
     help=_("Email recipient for sync summary (can specify multiple, uses config default if not specified)"),
 )
-@click.option(
+@option(
     "--document-recipient",
     "document_recipients",
     multiple=True,

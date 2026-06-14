@@ -36,6 +36,7 @@ from ..behaviors import emit_greeting, noop_main, raise_intentional_failure
 from ..config import get_config, load_app_config
 from ..i18n import _, setup_locale
 from ..logging_setup import init_logging
+from .typed_click import option, version_option
 
 #: Shared Click context flags so help output stays consistent across commands.
 CLICK_CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}  # noqa: C408
@@ -172,18 +173,18 @@ def _run_cli(argv: Sequence[str] | None) -> int:
     context_settings=CLICK_CONTEXT_SETTINGS,
     invoke_without_command=True,
 )
-@click.version_option(
+@version_option(
     version=__init__conf__.version,
     prog_name=__init__conf__.shell_command,
     message=f"{__init__conf__.shell_command} version {__init__conf__.version}",
 )
-@click.option(
+@option(
     "--traceback/--no-traceback",
     is_flag=True,
     default=False,
     help=_("Show full Python traceback on errors"),
 )
-@click.option(
+@option(
     "--profile",
     type=str,
     default=None,
