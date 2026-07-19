@@ -7,6 +7,14 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+## [1.2.18] 2026-07-19
+
+### Changed
+- Bump `btx_lib_mail` floor to `>=1.4.0` and wrap the SMTP password in
+  `pydantic.SecretStr` when building the `ConfMail` transport config, matching
+  btx_lib_mail 1.4.0 which now stores `smtp_password` as a `SecretStr`.
+- Declare the `pydantic` dependency that the mail adapter now imports directly.
+
 ## [1.2.17] 2026-06-14
 
 ### Changed
@@ -44,7 +52,7 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 - Extracted duplicate SOAP helpers (`is_maintenance_page`, `extract_xml_error_content`) into shared `_soap_utils.py` module
 - Merged duplicate `_build_list_diagnostics`/`_build_download_diagnostics` into single `_build_diagnostics`
 - Merged duplicate `_handle_list_exception`/`_handle_download_exception` into single `_handle_operation_exception`
-- Deduplicated `parse_string_list` — single definition in `config_schema.py`, re-exported from `config.py`
+- Deduplicated `parse_string_list`  -  single definition in `config_schema.py`, re-exported from `config.py`
 - Simplified missing-fields validation in `load_finanzonline_config` using dict comprehension
 - Removed dead `if TYPE_CHECKING: pass` block from `databox_client.py`
 - Updated pip-audit ignore list for system-level vulnerabilities (CVE-2025-8869, CVE-2026-25990)
