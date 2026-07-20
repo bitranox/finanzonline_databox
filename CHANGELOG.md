@@ -16,6 +16,11 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
   mail tests that stood in a `MagicMock` for `smtplib.SMTP` no longer satisfied
   the wire protocol and every send failed. They now inject a `Transport`
   double at the library's own port.
+- Bump the `filelock` dependency floor to `>=3.31.1`.
+
+### Documentation
+- List `btx_lib_mail` and `orjson` under Key Dependencies, which had been
+  omitted despite both being declared dependencies.
 
 ## [1.2.18] 2026-07-19
 

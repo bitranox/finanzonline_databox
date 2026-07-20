@@ -101,23 +101,23 @@ finanzonline_databox/
 
 ## Common Make Targets
 
-| Target            | Description                                                                     |
-|-------------------|---------------------------------------------------------------------------------|
-| `build`           | Build wheel/sdist artifacts                                                     |
-| `bump`            | Bump version (VERSION=X.Y.Z or PART=major\|minor\|patch) and update changelog  |
-| `bump-major`      | Increment major version ((X+1).0.0)                                            |
-| `bump-minor`      | Increment minor version (X.Y.Z -> X.(Y+1).0)                                    |
-| `bump-patch`      | Increment patch version (X.Y.Z -> X.Y.(Z+1))                                    |
-| `clean`           | Remove caches, coverage, and build artifacts (includes `dist/` and `build/`)   |
-| `dev`             | Install package with dev extras                                                |
-| `help`            | Show make targets                                                              |
-| `install`         | Editable install                                                               |
-| `menu`            | Interactive TUI menu                                                           |
-| `push`            | Commit changes and push to GitHub (no CI monitoring)                           |
-| `release`         | Tag vX.Y.Z, push, sync packaging, run gh release if available                  |
-| `run`             | Run module entry (`python -m ... --help`)                                      |
-| `test`            | Lint, format, type-check, run tests with coverage, upload to Codecov           |
-| `version-current` | Print current version from `pyproject.toml`                                    |
+| Target            | Description                                                                   |
+|-------------------|-------------------------------------------------------------------------------|
+| `build`           | Build wheel/sdist artifacts                                                   |
+| `bump`            | Bump version (VERSION=X.Y.Z or PART=major\|minor\|patch) and update changelog |
+| `bump-major`      | Increment major version ((X+1).0.0)                                           |
+| `bump-minor`      | Increment minor version (X.Y.Z -> X.(Y+1).0)                                  |
+| `bump-patch`      | Increment patch version (X.Y.Z -> X.Y.(Z+1))                                  |
+| `clean`           | Remove caches, coverage, and build artifacts (includes `dist/` and `build/`)  |
+| `dev`             | Install package with dev extras                                               |
+| `help`            | Show make targets                                                             |
+| `install`         | Editable install                                                              |
+| `menu`            | Interactive TUI menu                                                          |
+| `push`            | Commit changes and push to GitHub (no CI monitoring)                          |
+| `release`         | Tag vX.Y.Z, push, sync packaging, run gh release if available                 |
+| `run`             | Run module entry (`python -m ... --help`)                                     |
+| `test`            | Lint, format, type-check, run tests with coverage, upload to Codecov          |
+| `version-current` | Print current version from `pyproject.toml`                                   |
 
 ## Coding Style & Naming Conventions
 
@@ -136,16 +136,16 @@ use skill `bitranox:python-clean-architecture` when designing and implementing f
 
 ## CLI Commands
 
-| Command         | Description                                              |
-|-----------------|----------------------------------------------------------|
-| `list`          | List DataBox documents with optional filters             |
-| `download`      | Download a single document by applkey                    |
-| `sync`          | Sync all new documents to a local directory              |
-| `config`        | Display current configuration                            |
-| `config-deploy` | Deploy configuration files to user/app/host              |
-| `info`          | Display package information                              |
-| `hello`         | Test success path                                        |
-| `fail`          | Test error handling                                      |
+| Command         | Description                                  |
+|-----------------|----------------------------------------------|
+| `list`          | List DataBox documents with optional filters |
+| `download`      | Download a single document by applkey        |
+| `sync`          | Sync all new documents to a local directory  |
+| `config`        | Display current configuration                |
+| `config-deploy` | Deploy configuration files to user/app/host  |
+| `info`          | Display package information                  |
+| `hello`         | Test success path                            |
+| `fail`          | Test error handling                          |
 
 ## Key Dependencies
 
@@ -156,6 +156,9 @@ use skill `bitranox:python-clean-architecture` when designing and implementing f
 - `rich-click` - CLI framework with rich output
 - `zeep` - SOAP client for FinanzOnline web services
 - `filelock` - File locking for rate limit files
+- `btx_lib_mail` - SMTP delivery for notification emails; its `Transport` port is the
+  seam the mail tests inject a double into, so they never patch `smtplib`
+- `orjson` - Fast JSON serialization
 
 ## Commit & Push Policy
 
@@ -190,17 +193,17 @@ Key domain models for the DataBox service:
 
 ### SyncResult Fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `total_retrieved` | `int` | Raw count of entries returned by API before filtering |
-| `total_listed` | `int` | Entries after filtering (by read status, reference, etc.) |
-| `unread_listed` | `int` | Number of unread entries in the filtered list |
-| `downloaded` | `int` | Number of entries successfully downloaded |
-| `skipped` | `int` | Number of entries skipped (already exist locally) |
-| `failed` | `int` | Number of entries that failed to download |
-| `total_bytes` | `int` | Total bytes downloaded |
-| `downloaded_files` | `tuple` | Tuples of (DataboxEntry, Path) for each downloaded file |
-| `applied_filters` | `tuple[str, ...]` | Names of filters applied (e.g., "Unread", "UID:123") |
+| Field              | Type              | Description                                               |
+|--------------------|-------------------|-----------------------------------------------------------|
+| `total_retrieved`  | `int`             | Raw count of entries returned by API before filtering     |
+| `total_listed`     | `int`             | Entries after filtering (by read status, reference, etc.) |
+| `unread_listed`    | `int`             | Number of unread entries in the filtered list             |
+| `downloaded`       | `int`             | Number of entries successfully downloaded                 |
+| `skipped`          | `int`             | Number of entries skipped (already exist locally)         |
+| `failed`           | `int`             | Number of entries that failed to download                 |
+| `total_bytes`      | `int`             | Total bytes downloaded                                    |
+| `downloaded_files` | `tuple`           | Tuples of (DataboxEntry, Path) for each downloaded file   |
+| `applied_filters`  | `tuple[str, ...]` | Names of filters applied (e.g., "Unread", "UID:123")      |
 
 ### Sync Statistics Output
 

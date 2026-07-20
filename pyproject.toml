@@ -12,7 +12,7 @@ dependencies = [
     "btx_lib_mail>=1.5.0",
     "pydantic>=2.13.4",
     "zeep>=4.3.3",
-    "filelock>=3.31.0",
+    "filelock>=3.31.1",
     "orjson>=3.11.9",
 ]
 license = { text = "MIT" }
