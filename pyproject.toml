@@ -1,6 +1,6 @@
 [project]
 name = "finanzonline_databox"
-version = "1.2.18"
+version = "1.2.19"
 description = "Python library and CLI for downloading documents from FinanzOnline Austria DataBox"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -9,7 +9,7 @@ dependencies = [
     "lib_cli_exit_tools>=2.3.2",
     "lib_log_rich>=6.3.5",
     "lib_layered_config>=5.6.0",
-    "btx_lib_mail>=1.4.0",
+    "btx_lib_mail>=1.5.0",
     "pydantic>=2.13.4",
     "zeep>=4.3.3",
     "filelock>=3.31.0",

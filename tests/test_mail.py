@@ -7,11 +7,13 @@ email operations.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
-from unittest.mock import MagicMock, patch
+from typing import IO, Any
+from unittest.mock import patch
 
 import pytest
+from btx_lib_mail.lib_mail import DeliveryOptions
 
 from finanzonline_databox.mail import (
     EmailConfig,
@@ -19,6 +21,62 @@ from finanzonline_databox.mail import (
     send_email,
     send_notification,
 )
+
+# ============================================================================
+# Transport doubles
+# ============================================================================
+#
+# btx_lib_mail delivers through an injectable Transport port. Substituting a
+# double there exercises the real composition, failover and validation code;
+# patching smtplib instead would only stand in for the wire protocol, which a
+# mock cannot do faithfully now that delivery streams via BDAT/DATA.
+
+
+@dataclass(frozen=True, slots=True)
+class Delivery:
+    """One recorded delivery attempt."""
+
+    host: str
+    sender: str
+    recipient: str
+    message: bytes
+    options: DeliveryOptions
+
+
+class RecordingTransport:
+    """Transport double that accepts every delivery and records it."""
+
+    def __init__(self) -> None:
+        self.deliveries: list[Delivery] = []
+
+    def deliver(
+        self,
+        *,
+        host: str,
+        sender: str,
+        recipient: str,
+        message: IO[bytes],
+        delivery: DeliveryOptions,
+    ) -> None:
+        message.seek(0)
+        self.deliveries.append(Delivery(host, sender, recipient, message.read(), delivery))
+
+    @property
+    def recipients(self) -> list[str]:
+        return [item.recipient for item in self.deliveries]
+
+
+class FailingTransport:
+    """Transport double that rejects every delivery with a given error."""
+
+    def __init__(self, error: Exception) -> None:
+        self._error = error
+        self.attempted_hosts: list[str] = []
+
+    def deliver(self, *, host: str, delivery: DeliveryOptions, **_: object) -> None:
+        self.attempted_hosts.append(host)
+        raise self._error
+
 
 # ============================================================================
 # EmailConfig: Default Values
@@ -306,50 +364,69 @@ class TestSendEmailSuccess:
     """Email sending succeeds under normal conditions."""
 
     def test_simple_message_is_delivered(self, valid_email_config: Any) -> None:
-        """Basic email with required fields is sent."""
-        with patch("smtplib.SMTP"):
-            result = send_email(
-                config=valid_email_config,
-                recipients="recipient@test.com",
-                subject="Test Subject",
-                body="Test body",
-            )
+        """Basic email with required fields reaches the recipient."""
+        transport = RecordingTransport()
+
+        result = send_email(
+            config=valid_email_config,
+            recipients="recipient@test.com",
+            subject="Test Subject",
+            body="Test body",
+            transport=transport,
+        )
+
         assert result is True
+        assert transport.recipients == ["recipient@test.com"]
+        assert b"Test Subject" in transport.deliveries[0].message
 
     def test_html_body_is_included(self, valid_email_config: Any) -> None:
-        """Email with HTML body is sent as multipart."""
-        with patch("smtplib.SMTP"):
-            result = send_email(
-                config=valid_email_config,
-                recipients="recipient@test.com",
-                subject="Test Subject",
-                body="Plain text",
-                body_html="<h1>HTML</h1>",
-            )
+        """Email with HTML body carries both alternatives."""
+        transport = RecordingTransport()
+
+        result = send_email(
+            config=valid_email_config,
+            recipients="recipient@test.com",
+            subject="Test Subject",
+            body="Plain text",
+            body_html="<h1>HTML</h1>",
+            transport=transport,
+        )
+
         assert result is True
+        message = transport.deliveries[0].message
+        assert b"Plain text" in message
+        assert b"<h1>HTML</h1>" in message
 
     def test_multiple_recipients_are_accepted(self, valid_email_config: Any) -> None:
-        """Email can be sent to multiple recipients."""
-        with patch("smtplib.SMTP"):
-            result = send_email(
-                config=valid_email_config,
-                recipients=["user1@test.com", "user2@test.com"],
-                subject="Test Subject",
-                body="Test body",
-            )
+        """Each recipient receives its own delivery."""
+        transport = RecordingTransport()
+
+        result = send_email(
+            config=valid_email_config,
+            recipients=["user1@test.com", "user2@test.com"],
+            subject="Test Subject",
+            body="Test body",
+            transport=transport,
+        )
+
         assert result is True
+        assert transport.recipients == ["user1@test.com", "user2@test.com"]
 
     def test_sender_override_is_applied(self, valid_email_config: Any) -> None:
         """from_address parameter overrides config default."""
-        with patch("smtplib.SMTP"):
-            result = send_email(
-                config=valid_email_config,
-                recipients="recipient@test.com",
-                subject="Test Subject",
-                body="Test body",
-                from_address="override@test.com",
-            )
+        transport = RecordingTransport()
+
+        result = send_email(
+            config=valid_email_config,
+            recipients="recipient@test.com",
+            subject="Test Subject",
+            body="Test body",
+            from_address="override@test.com",
+            transport=transport,
+        )
+
         assert result is True
+        assert transport.deliveries[0].sender == "override@test.com"
 
     def test_attachments_are_included(
         self,
@@ -374,22 +451,25 @@ class TestSendEmailSuccess:
         assert mock_send.call_args.kwargs["attachment_file_paths"] == [attachment]
 
     def test_credentials_are_used(self) -> None:
-        """SMTP credentials are used when configured."""
+        """SMTP credentials reach the transport when configured."""
         config = EmailConfig(
             smtp_hosts=["smtp.test.com:587"],
             from_address="sender@test.com",
             smtp_username="testuser",
             smtp_password="testpass",
         )
+        transport = RecordingTransport()
 
-        with patch("smtplib.SMTP"):
-            result = send_email(
-                config=config,
-                recipients="recipient@test.com",
-                subject="Test Subject",
-                body="Test body",
-            )
+        result = send_email(
+            config=config,
+            recipients="recipient@test.com",
+            subject="Test Subject",
+            body="Test body",
+            transport=transport,
+        )
+
         assert result is True
+        assert transport.deliveries[0].options.credentials == ("testuser", "testpass")
 
 
 # ============================================================================
@@ -402,26 +482,35 @@ class TestSendNotificationSuccess:
     """Notification sending works for simple text messages."""
 
     def test_plain_text_is_delivered(self, valid_email_config: Any) -> None:
-        """Notification sends plain-text email."""
-        with patch("smtplib.SMTP"):
-            result = send_notification(
-                config=valid_email_config,
-                recipients="admin@test.com",
-                subject="Alert",
-                message="System notification",
-            )
+        """Notification sends the message as plain-text body."""
+        transport = RecordingTransport()
+
+        result = send_notification(
+            config=valid_email_config,
+            recipients="admin@test.com",
+            subject="Alert",
+            message="System notification",
+            transport=transport,
+        )
+
         assert result is True
+        assert transport.recipients == ["admin@test.com"]
+        assert b"System notification" in transport.deliveries[0].message
 
     def test_multiple_recipients_are_accepted(self, valid_email_config: Any) -> None:
-        """Notification can be sent to multiple recipients."""
-        with patch("smtplib.SMTP"):
-            result = send_notification(
-                config=valid_email_config,
-                recipients=["admin1@test.com", "admin2@test.com"],
-                subject="Alert",
-                message="System notification",
-            )
+        """Notification reaches every recipient."""
+        transport = RecordingTransport()
+
+        result = send_notification(
+            config=valid_email_config,
+            recipients=["admin1@test.com", "admin2@test.com"],
+            subject="Alert",
+            message="System notification",
+            transport=transport,
+        )
+
         assert result is True
+        assert transport.recipients == ["admin1@test.com", "admin2@test.com"]
 
 
 # ============================================================================
@@ -435,52 +524,48 @@ class TestSendEmailErrors:
 
     def test_smtp_connection_failure_raises(self, valid_email_config: Any) -> None:
         """SMTP connection failure raises RuntimeError."""
-        with patch("smtplib.SMTP") as mock_smtp:
-            mock_smtp.side_effect = ConnectionError("Cannot connect to SMTP server")
+        transport = FailingTransport(ConnectionError("Cannot connect to SMTP server"))
 
-            with pytest.raises(RuntimeError, match="failed.*on all of following hosts"):
-                send_email(
-                    config=valid_email_config,
-                    recipients="recipient@test.com",
-                    subject="Test",
-                    body="Hello",
-                )
+        with pytest.raises(RuntimeError, match="failed.*on all of following hosts"):
+            send_email(
+                config=valid_email_config,
+                recipients="recipient@test.com",
+                subject="Test",
+                body="Hello",
+                transport=transport,
+            )
 
     def test_authentication_failure_raises(self) -> None:
         """SMTP authentication failure raises RuntimeError."""
-        mock_instance = MagicMock()
-        mock_instance.login.side_effect = Exception("Authentication failed")
-
         config = EmailConfig(
             smtp_hosts=["smtp.test.com:587"],
             from_address="sender@test.com",
             smtp_username="user@test.com",
             smtp_password="wrong_password",
         )
+        transport = FailingTransport(Exception("Authentication failed"))
 
-        with patch("smtplib.SMTP") as mock_smtp:
-            mock_smtp.return_value.__enter__.return_value = mock_instance
-
-            with pytest.raises(RuntimeError, match="failed.*on all of following hosts"):
-                send_email(
-                    config=config,
-                    recipients="recipient@test.com",
-                    subject="Test",
-                    body="Hello",
-                )
+        with pytest.raises(RuntimeError, match="failed.*on all of following hosts"):
+            send_email(
+                config=config,
+                recipients="recipient@test.com",
+                subject="Test",
+                body="Hello",
+                transport=transport,
+            )
 
     def test_recipient_validation_failure_raises(self, valid_email_config: Any) -> None:
         """Invalid recipient raises RuntimeError."""
-        with patch("smtplib.SMTP") as mock_smtp:
-            mock_smtp.side_effect = ValueError("Invalid recipient address")
+        transport = FailingTransport(ValueError("Invalid recipient address"))
 
-            with pytest.raises(RuntimeError, match="following recipients failed"):
-                send_email(
-                    config=valid_email_config,
-                    recipients="recipient@test.com",
-                    subject="Test",
-                    body="Hello",
-                )
+        with pytest.raises(RuntimeError, match="following recipients failed"):
+            send_email(
+                config=valid_email_config,
+                recipients="recipient@test.com",
+                subject="Test",
+                body="Hello",
+                transport=transport,
+            )
 
     def test_missing_attachment_raises(self, tmp_path: Path) -> None:
         """Missing attachment raises FileNotFoundError when configured."""
@@ -508,22 +593,23 @@ class TestSendEmailErrors:
                 )
 
     def test_all_smtp_hosts_failing_raises(self) -> None:
-        """All SMTP hosts failing raises RuntimeError."""
+        """Every host is tried before RuntimeError is raised."""
         config = EmailConfig(
             smtp_hosts=["smtp1.test.com:587", "smtp2.test.com:587"],
             from_address="sender@test.com",
         )
+        transport = FailingTransport(ConnectionError("Connection refused"))
 
-        with patch("smtplib.SMTP") as mock_smtp:
-            mock_smtp.side_effect = ConnectionError("Connection refused")
+        with pytest.raises(RuntimeError, match="following recipients failed"):
+            send_email(
+                config=config,
+                recipients="recipient@test.com",
+                subject="Test",
+                body="Hello",
+                transport=transport,
+            )
 
-            with pytest.raises(RuntimeError, match="following recipients failed"):
-                send_email(
-                    config=config,
-                    recipients="recipient@test.com",
-                    subject="Test",
-                    body="Hello",
-                )
+        assert transport.attempted_hosts == ["smtp1.test.com:587", "smtp2.test.com:587"]
 
 
 # ============================================================================

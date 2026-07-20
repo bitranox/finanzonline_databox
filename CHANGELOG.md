@@ -7,6 +7,16 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+## [1.2.19] 2026-07-20
+
+### Changed
+- Bump the `btx_lib_mail` floor to `>=1.5.0` and forward its `transport`
+  delivery seam through `send_email` and `send_notification`. btx_lib_mail
+  1.5.0 streams messages over BDAT/DATA instead of `smtplib.sendmail`, so the
+  mail tests that stood in a `MagicMock` for `smtplib.SMTP` no longer satisfied
+  the wire protocol and every send failed. They now inject a `Transport`
+  double at the library's own port.
+
 ## [1.2.18] 2026-07-19
 
 ### Changed

@@ -24,7 +24,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from btx_lib_mail.lib_mail import ConfMail
+from btx_lib_mail.lib_mail import ConfMail, Transport
 from btx_lib_mail.lib_mail import send as btx_send
 from pydantic import SecretStr
 
@@ -224,6 +224,7 @@ def send_email(
     body_html: str = "",
     from_address: str | None = None,
     attachments: Sequence[Path] | None = None,
+    transport: Transport | None = None,
 ) -> bool:
     """Send an email using configured SMTP settings.
 
@@ -235,6 +236,9 @@ def send_email(
         body_html: HTML body (optional).
         from_address: Override sender (uses config default if None).
         attachments: Optional file paths to attach.
+        transport: Delivery seam. Defaults to btx_lib_mail's SMTP transport;
+            tests inject a double here rather than patching :mod:`smtplib`,
+            whose wire protocol a mock cannot faithfully stand in for.
 
     Returns:
         True on success.
@@ -270,6 +274,7 @@ def send_email(
             credentials=_resolve_credentials(config),
             use_starttls=config.use_starttls,
             timeout=config.timeout,
+            transport=transport,
         )
         logger.info("Email sent successfully", extra={"from": sender, "recipients": normalized_recipients})
         return result
@@ -285,6 +290,7 @@ def send_notification(
     recipients: str | Sequence[str],
     subject: str,
     message: str,
+    transport: Transport | None = None,
 ) -> bool:
     """Send a simple plain-text notification email.
 
@@ -296,6 +302,7 @@ def send_notification(
         recipients: Single recipient address or sequence of addresses.
         subject: Email subject line.
         message: Plain-text notification message.
+        transport: Delivery seam forwarded to :func:`send_email`.
 
     Returns:
         Always True when delivery succeeds. Failures raise exceptions.
@@ -308,19 +315,20 @@ def send_notification(
         Sends email via SMTP. Logs send attempts.
 
     Example:
-        >>> from unittest.mock import patch
         >>> config = EmailConfig(
         ...     smtp_hosts=["smtp.example.com"],
         ...     from_address="alerts@example.com"
         ... )
-        >>> with patch("smtplib.SMTP"):
-        ...     result = send_notification(
-        ...         config=config,
-        ...         recipients="admin@example.com",
-        ...         subject="System Alert",
-        ...         message="Deployment completed successfully"
-        ...     )
-        >>> result
+        >>> class _NullTransport:
+        ...     def deliver(self, **kwargs: object) -> None:
+        ...         pass
+        >>> send_notification(
+        ...     config=config,
+        ...     recipients="admin@example.com",
+        ...     subject="System Alert",
+        ...     message="Deployment completed successfully",
+        ...     transport=_NullTransport(),
+        ... )
         True
     """
     return send_email(
@@ -328,6 +336,7 @@ def send_notification(
         recipients=recipients,
         subject=subject,
         body=message,
+        transport=transport,
     )
 
 
