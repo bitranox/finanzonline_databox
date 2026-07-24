@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
@@ -28,6 +27,8 @@ from finanzonline_databox.domain.return_codes import CliExitCode
 from finanzonline_databox.mail import EmailConfig
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from click.testing import CliRunner
 
 pytestmark = pytest.mark.os_agnostic
@@ -38,7 +39,7 @@ class TestTracebackPreferences:
 
     def test_apply_traceback_enabled(self) -> None:
         """Enabling tracebacks sets both flags to True."""
-        apply_traceback_preferences(True)
+        apply_traceback_preferences(enabled=True)
         import lib_cli_exit_tools
 
         assert lib_cli_exit_tools.config.traceback is True
@@ -46,7 +47,7 @@ class TestTracebackPreferences:
 
     def test_apply_traceback_disabled(self) -> None:
         """Disabling tracebacks sets both flags to False."""
-        apply_traceback_preferences(False)
+        apply_traceback_preferences(enabled=False)
         import lib_cli_exit_tools
 
         assert lib_cli_exit_tools.config.traceback is False
@@ -54,10 +55,10 @@ class TestTracebackPreferences:
 
     def test_snapshot_and_restore_state(self) -> None:
         """Snapshot captures state that can be restored."""
-        apply_traceback_preferences(True)
+        apply_traceback_preferences(enabled=True)
         state = snapshot_traceback_state()
 
-        apply_traceback_preferences(False)
+        apply_traceback_preferences(enabled=False)
         import lib_cli_exit_tools
 
         assert lib_cli_exit_tools.config.traceback is False
@@ -334,6 +335,7 @@ class TestListCommand:
         mock_databox_cls: MagicMock,
         mock_session_cls: MagicMock,
         mock_load_config: MagicMock,
+        *,
         cli_runner: CliRunner,
     ) -> None:
         """List command outputs human-readable format by default."""
@@ -368,6 +370,7 @@ class TestListCommand:
         mock_databox_cls: MagicMock,
         mock_session_cls: MagicMock,
         mock_load_config: MagicMock,
+        *,
         cli_runner: CliRunner,
     ) -> None:
         """List command outputs JSON format when requested."""
@@ -416,6 +419,7 @@ class TestListCommand:
         mock_databox_cls: MagicMock,
         mock_session_cls: MagicMock,
         mock_load_config: MagicMock,
+        *,
         cli_runner: CliRunner,
     ) -> None:
         """List command with --days sets correct date range."""
@@ -453,6 +457,7 @@ class TestListCommand:
         mock_databox_cls: MagicMock,
         mock_session_cls: MagicMock,
         mock_load_config: MagicMock,
+        *,
         cli_runner: CliRunner,
     ) -> None:
         """List command with --unread filters to unread entries only."""
@@ -588,6 +593,7 @@ class TestDownloadCommand:
         mock_databox_cls: MagicMock,
         mock_session_cls: MagicMock,
         mock_load_config: MagicMock,
+        *,
         cli_runner: CliRunner,
         tmp_path: Path,
     ) -> None:
@@ -637,6 +643,7 @@ class TestDownloadCommand:
         mock_databox_cls: MagicMock,
         mock_session_cls: MagicMock,
         mock_load_config: MagicMock,
+        *,
         cli_runner: CliRunner,
         tmp_path: Path,
     ) -> None:
@@ -699,6 +706,7 @@ class TestSyncCommand:
         mock_databox_cls: MagicMock,
         mock_session_cls: MagicMock,
         mock_load_config: MagicMock,
+        *,
         cli_runner: CliRunner,
         tmp_path: Path,
     ) -> None:
@@ -738,6 +746,7 @@ class TestSyncCommand:
         mock_databox_cls: MagicMock,
         mock_session_cls: MagicMock,
         mock_load_config: MagicMock,
+        *,
         cli_runner: CliRunner,
         tmp_path: Path,
     ) -> None:
@@ -781,6 +790,7 @@ class TestSyncCommand:
         mock_databox_cls: MagicMock,
         mock_session_cls: MagicMock,
         mock_load_config: MagicMock,
+        *,
         cli_runner: CliRunner,
         tmp_path: Path,
     ) -> None:
@@ -823,6 +833,7 @@ class TestSyncCommand:
         mock_databox_cls: MagicMock,
         mock_session_cls: MagicMock,
         mock_load_config: MagicMock,
+        *,
         cli_runner: CliRunner,
         tmp_path: Path,
     ) -> None:
@@ -862,6 +873,7 @@ class TestSyncCommand:
         mock_databox_cls: MagicMock,
         mock_session_cls: MagicMock,
         mock_load_config: MagicMock,
+        *,
         cli_runner: CliRunner,
         tmp_path: Path,
     ) -> None:

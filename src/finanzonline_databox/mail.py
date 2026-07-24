@@ -5,9 +5,9 @@ application's configuration system and logging infrastructure. Isolates
 email functionality behind a domain-appropriate interface.
 
 Contents:
-    * :class:`EmailConfig` – Configuration container for email settings
-    * :func:`send_email` – Primary email sending interface
-    * :func:`send_notification` – Convenience wrapper for simple notifications
+    * :class:`EmailConfig` - Configuration container for email settings
+    * :func:`send_email` - Primary email sending interface
+    * :func:`send_notification` - Convenience wrapper for simple notifications
 
 System Role:
     Acts as the email adapter layer, bridging btx_lib_mail with the application's
@@ -19,10 +19,8 @@ from __future__ import annotations
 
 import logging
 import re
-from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from btx_lib_mail.lib_mail import ConfMail, Transport
 from btx_lib_mail.lib_mail import send as btx_send
@@ -30,11 +28,19 @@ from pydantic import SecretStr
 
 from finanzonline_databox.config_schema import EmailConfigSchema
 
+if TYPE_CHECKING:
+    from collections.abc import Mapping, Sequence
+    from pathlib import Path
+
 logger = logging.getLogger(__name__)
 
 # Basic email regex pattern: local@domain (allows localhost)
 # Catches obvious mistakes while allowing development addresses
 _EMAIL_PATTERN = re.compile(r"^[^\s@]+@[^\s@]+$")
+
+_HOST_PORT_PART_COUNT = 2
+_MIN_TCP_PORT = 1
+_MAX_TCP_PORT = 65535
 
 
 def _is_valid_email(email: str) -> bool:
@@ -83,7 +89,7 @@ def _validate_smtp_host(host: str) -> None:
         return
 
     parts = host.split(":")
-    if len(parts) != 2:
+    if len(parts) != _HOST_PORT_PART_COUNT:
         raise ValueError(f"Invalid SMTP host format (expected 'host:port'): {host!r}")
 
     _validate_smtp_port(parts[1], host)
@@ -104,7 +110,7 @@ def _validate_smtp_port(port_str: str, host: str) -> None:
     except ValueError as e:
         raise ValueError(f"Port must be numeric in {host!r}") from e
 
-    if not (1 <= port <= 65535):
+    if not (_MIN_TCP_PORT <= port <= _MAX_TCP_PORT):
         raise ValueError(f"Port must be 1-65535 in {host!r}")
 
 
@@ -280,7 +286,7 @@ def send_email(
         return result
 
     except Exception as e:
-        logger.error("Failed to send email", extra={"error": str(e), "from": sender, "recipients": normalized_recipients}, exc_info=True)
+        logger.exception("Failed to send email", extra={"error": str(e), "from": sender, "recipients": normalized_recipients})
         raise
 
 
@@ -386,7 +392,7 @@ def load_email_config_from_dict(config_dict: Mapping[str, Any]) -> EmailConfig:
 
 __all__ = [
     "EmailConfig",
+    "load_email_config_from_dict",
     "send_email",
     "send_notification",
-    "load_email_config_from_dict",
 ]

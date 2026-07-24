@@ -30,12 +30,12 @@ from zeep.transports import Transport
 from finanzonline_databox._format_utils import mask_credential
 from finanzonline_databox.adapters.finanzonline._soap_utils import extract_xml_error_content, is_maintenance_page
 from finanzonline_databox.domain.errors import AuthenticationError, SessionError
-from finanzonline_databox.i18n import _
 from finanzonline_databox.domain.models import (
-    Diagnostics,
     RC_DATE_PARAMS_REQUIRED,
+    Diagnostics,
     SessionInfo,
 )
+from finanzonline_databox.i18n import _
 
 if TYPE_CHECKING:
     from finanzonline_databox.domain.models import FinanzOnlineCredentials
@@ -128,7 +128,7 @@ def _handle_login_exception(
         SessionError: For all other session errors.
     """
     if isinstance(exc, (AuthenticationError, SessionError)):
-        raise
+        raise exc
 
     diagnostics = _build_login_diagnostics(credentials, response, error=str(exc))
 
@@ -223,9 +223,9 @@ class FinanzOnlineSessionClient:
 
     def _process_login_response(self, credentials: FinanzOnlineCredentials, response: Any) -> SessionInfo:
         """Process SOAP login response and build result."""
-        return_code = int(cast(int, response.rc))
-        message = str(cast(str, response.msg) or "")
-        session_id = str(cast(str, response.id) or "") if hasattr(response, "id") else ""
+        return_code = int(cast("int", response.rc))
+        message = str(cast("str", response.msg) or "")
+        session_id = str(cast("str", response.id) or "") if hasattr(response, "id") else ""
 
         logger.debug("Login response: rc=%d, msg=%s", return_code, message)
 
@@ -262,7 +262,7 @@ class FinanzOnlineSessionClient:
             )
 
             logger.debug("Logout response: %s", _format_response_for_logging(response))
-            return_code = int(cast(int, response.rc)) if hasattr(response, "rc") else -1
+            return_code = int(cast("int", response.rc)) if hasattr(response, "rc") else -1
 
             return return_code == 0
 

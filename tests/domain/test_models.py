@@ -63,7 +63,7 @@ class TestFinanzOnlineCredentials:
 
     def test_empty_tid_raises(self) -> None:
         """Should raise ValueError for empty tid."""
-        with pytest.raises(ValueError, match="tid.*required"):
+        with pytest.raises(ValueError, match=r"tid.*required"):
             FinanzOnlineCredentials(tid="", benid="TESTUSER", pin="secretpin", herstellerid="ATU12345678")
 
     def test_tid_too_short_raises(self) -> None:
@@ -78,7 +78,7 @@ class TestFinanzOnlineCredentials:
 
     def test_empty_benid_raises(self) -> None:
         """Should raise ValueError for empty benid."""
-        with pytest.raises(ValueError, match="benid.*required"):
+        with pytest.raises(ValueError, match=r"benid.*required"):
             FinanzOnlineCredentials(tid="123456789", benid="", pin="secretpin", herstellerid="ATU12345678")
 
     def test_benid_too_short_raises(self) -> None:
@@ -88,7 +88,7 @@ class TestFinanzOnlineCredentials:
 
     def test_empty_pin_raises(self) -> None:
         """Should raise ValueError for empty pin."""
-        with pytest.raises(ValueError, match="pin.*required"):
+        with pytest.raises(ValueError, match=r"pin.*required"):
             FinanzOnlineCredentials(tid="123456789", benid="TESTUSER", pin="", herstellerid="ATU12345678")
 
     def test_pin_too_short_raises(self) -> None:
@@ -98,7 +98,7 @@ class TestFinanzOnlineCredentials:
 
     def test_empty_herstellerid_raises(self) -> None:
         """Should raise ValueError for empty herstellerid."""
-        with pytest.raises(ValueError, match="herstellerid.*required"):
+        with pytest.raises(ValueError, match=r"herstellerid.*required"):
             FinanzOnlineCredentials(tid="123456789", benid="TESTUSER", pin="secretpin", herstellerid="")
 
     def test_herstellerid_too_short_raises(self) -> None:
@@ -321,7 +321,7 @@ class TestDataboxDownloadRequest:
 
     def test_empty_applkey_raises(self) -> None:
         """Should raise ValueError for empty applkey."""
-        with pytest.raises(ValueError, match="applkey.*required"):
+        with pytest.raises(ValueError, match=r"applkey.*required"):
             DataboxDownloadRequest(applkey="")
 
     def test_applkey_too_short_raises(self) -> None:

@@ -13,6 +13,6 @@ from .databox_client import FakeDataboxClient
 from .session_client import FakeSessionClient
 
 __all__ = [
-    "FakeSessionClient",
     "FakeDataboxClient",
+    "FakeSessionClient",
 ]

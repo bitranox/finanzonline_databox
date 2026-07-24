@@ -96,7 +96,10 @@ def _format_entry_line(entry: DataboxEntry, index: int) -> str:
     status = _format_status(entry, width=8)
     date_str = entry.datbesch.strftime("%Y-%m-%d")
     idx_str = f"[{index + 1}]"
-    return f"{_DIM}{idx_str:4}{_RESET} {_CYAN}{entry.erltyp:5}{_RESET} {date_str:11} {entry.anbringen:11} {status}{entry.filebez[:40]:42} {_DIM}{entry.applkey}{_RESET}"
+    return (
+        f"{_DIM}{idx_str:4}{_RESET} {_CYAN}{entry.erltyp:5}{_RESET} {date_str:11} {entry.anbringen:11} "
+        f"{status}{entry.filebez[:40]:42} {_DIM}{entry.applkey}{_RESET}"
+    )
 
 
 def format_entries_human(entries: list[DataboxEntry] | tuple[DataboxEntry, ...]) -> str:
@@ -220,10 +223,7 @@ def format_sync_result_human(result: SyncResult, output_dir: str) -> str:
     failed_color = _RED if result.failed > 0 else _DIM
 
     # Build filter label with applied filters
-    if result.applied_filters:
-        filter_label = f"{_('After Filter')} [{', '.join(result.applied_filters)}]"
-    else:
-        filter_label = _("After Filter")
+    filter_label = f"{_('After Filter')} [{', '.join(result.applied_filters)}]" if result.applied_filters else _("After Filter")
 
     # Define statistics with labels and values for aligned output
     stats: list[tuple[str, str, str, str]] = [

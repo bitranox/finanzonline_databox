@@ -7,8 +7,10 @@ Preferred over mocks because it tests actual behavior.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
-from finanzonline_databox.domain.models import FinanzOnlineCredentials, SessionInfo
+if TYPE_CHECKING:
+    from finanzonline_databox.domain.models import FinanzOnlineCredentials, SessionInfo
 
 
 @dataclass
@@ -42,9 +44,9 @@ class FakeSessionClient:
             return self.login_response
 
         # Default success response
-        from finanzonline_databox.domain.models import SessionInfo as SI
+        from finanzonline_databox.domain.models import SessionInfo
 
-        return SI(
+        return SessionInfo(
             session_id="FAKE_SESSION_123",
             return_code=0,
             message="Login successful",

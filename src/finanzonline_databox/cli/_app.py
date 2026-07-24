@@ -7,29 +7,27 @@ and the ``main()`` entry point.
 
 Contents
 --------
-* :class:`CliContext` – typed context object for CLI commands.
-* :func:`cli` – root command group with global options.
-* :func:`main` – entry point for console scripts and ``python -m`` execution.
+* :class:`CliContext` - typed context object for CLI commands.
+* :func:`cli` - root command group with global options.
+* :func:`main` - entry point for console scripts and ``python -m`` execution.
 
 System Role
 -----------
-CLI adapter layer — top-level command group and entry point wiring.
+CLI adapter layer - top-level command group and entry point wiring.
 """
 
 # pyright: reportUnusedFunction=false
 from __future__ import annotations
 
 import logging
-from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 import lib_cli_exit_tools
 import lib_log_rich
 import lib_log_rich.runtime
 import rich_click as click
 from click.core import ParameterSource
-from lib_layered_config import Config
 
 from .. import __init__conf__
 from ..behaviors import emit_greeting, noop_main, raise_intentional_failure
@@ -38,8 +36,13 @@ from ..i18n import _, setup_locale
 from ..logging_setup import init_logging
 from .typed_click import option, version_option
 
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from lib_layered_config import Config
+
 #: Shared Click context flags so help output stays consistent across commands.
-CLICK_CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}  # noqa: C408
+CLICK_CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 
 #: Character budget used when printing truncated tracebacks.
 TRACEBACK_SUMMARY_LIMIT: Final[int] = 500
@@ -90,14 +93,14 @@ def _get_cli_context(ctx: click.Context) -> CliContext:
     return ctx.obj  # type: ignore[return-value]
 
 
-def apply_traceback_preferences(enabled: bool) -> None:
+def apply_traceback_preferences(*, enabled: bool) -> None:
     """Synchronise shared traceback flags with the requested preference.
 
     Args:
         enabled: ``True`` enables full tracebacks with colour.
 
     Example:
-        >>> apply_traceback_preferences(True)
+        >>> apply_traceback_preferences(enabled=True)
         >>> bool(lib_cli_exit_tools.config.traceback)
         True
     """
@@ -160,9 +163,9 @@ def _run_cli(argv: Sequence[str] | None) -> int:
             argv=list(argv) if argv is not None else None,
             prog_name=__init__conf__.shell_command,
         )
-    except BaseException as exc:  # noqa: BLE001 - handled by shared printers
+    except BaseException as exc:
         tracebacks_enabled = bool(getattr(lib_cli_exit_tools.config, "traceback", False))
-        apply_traceback_preferences(tracebacks_enabled)
+        apply_traceback_preferences(enabled=tracebacks_enabled)
         length_limit = TRACEBACK_VERBOSE_LIMIT if tracebacks_enabled else TRACEBACK_SUMMARY_LIMIT
         lib_cli_exit_tools.print_exception_message(trace_back=tracebacks_enabled, length_limit=length_limit)
         return lib_cli_exit_tools.get_system_exit_code(exc)
@@ -191,7 +194,7 @@ def _run_cli(argv: Sequence[str] | None) -> int:
     help=_("Load configuration from a named profile (e.g., 'production', 'test')"),
 )
 @click.pass_context
-def cli(ctx: click.Context, traceback: bool, profile: str | None) -> None:
+def cli(ctx: click.Context, *, traceback: bool, profile: str | None) -> None:
     """Root command storing global flags and syncing shared traceback state.
 
     Loads configuration once with the profile and stores it in the Click context
@@ -212,7 +215,7 @@ def cli(ctx: click.Context, traceback: bool, profile: str | None) -> None:
     setup_locale(app_config.language)
     init_logging(config)
     _store_cli_context(ctx, traceback=traceback, config=config, profile=profile)
-    apply_traceback_preferences(traceback)
+    apply_traceback_preferences(enabled=traceback)
 
     if ctx.invoked_subcommand is None:
         # No subcommand: show help unless --traceback was explicitly passed

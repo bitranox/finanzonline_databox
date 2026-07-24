@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import gettext
 import logging
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
@@ -83,9 +84,21 @@ class Language(str, Enum):
 
 DEFAULT_LANGUAGE = Language.ENGLISH
 
-# Module-level state for current translation
-_current_translation: gettext.GNUTranslations | gettext.NullTranslations | None = None
-_current_language: Language = DEFAULT_LANGUAGE
+
+@dataclass
+class _TranslationState:
+    """Mutable holder for the active gettext translation and language.
+
+    Mutating attributes on this single module-level instance (instead of
+    reassigning bare module globals) keeps ``setup_locale`` free of the
+    ``global`` statement.
+    """
+
+    translation: gettext.GNUTranslations | gettext.NullTranslations | None = None
+    language: Language = DEFAULT_LANGUAGE
+
+
+_state = _TranslationState()
 
 
 def _get_locale_dir() -> Path:
@@ -105,35 +118,32 @@ def setup_locale(language: Language | str = DEFAULT_LANGUAGE) -> None:
         Sets the module-level translation object used by _() function.
         Logs a debug message indicating the active language.
     """
-    global _current_translation, _current_language
-
     # Convert string to Language enum if needed
     lang: Language
     if isinstance(language, Language):
         lang = language
+    elif not Language.is_supported(language):
+        logger.warning(
+            "Unsupported language '%s', falling back to '%s'",
+            language,
+            DEFAULT_LANGUAGE.value,
+        )
+        lang = DEFAULT_LANGUAGE
     else:
-        if not Language.is_supported(language):
-            logger.warning(
-                "Unsupported language '%s', falling back to '%s'",
-                language,
-                DEFAULT_LANGUAGE.value,
-            )
-            lang = DEFAULT_LANGUAGE
-        else:
-            lang = Language.from_string(language)
+        lang = Language.from_string(language)
 
-    _current_language = lang
+    _state.language = lang
 
     # English is the source language, no translation needed
     if lang == Language.ENGLISH:
-        _current_translation = gettext.NullTranslations()
+        _state.translation = gettext.NullTranslations()
         logger.debug("Locale initialized: en (source language)")
         return
 
     # Try to load translation for the requested language
     locale_dir = _get_locale_dir()
     try:
-        _current_translation = gettext.translation(
+        _state.translation = gettext.translation(
             "messages",
             localedir=str(locale_dir),
             languages=[lang.value],
@@ -145,8 +155,8 @@ def setup_locale(language: Language | str = DEFAULT_LANGUAGE) -> None:
             lang.value,
             DEFAULT_LANGUAGE.value,
         )
-        _current_translation = gettext.NullTranslations()
-        _current_language = DEFAULT_LANGUAGE
+        _state.translation = gettext.NullTranslations()
+        _state.language = DEFAULT_LANGUAGE
 
 
 def _(message: str) -> str:
@@ -164,12 +174,12 @@ def _(message: str) -> str:
         >>> _("UID is valid")
         'UID is valid'
     """
-    if _current_translation is None:
+    if _state.translation is None:
         return message
-    return _current_translation.gettext(message)
+    return _state.translation.gettext(message)
 
 
-def N_(message: str) -> str:  # noqa: N802 - Standard gettext convention
+def N_(message: str) -> str:
     """Mark a string for translation extraction without translating.
 
     Use this for strings that are defined at module level (like dictionary
@@ -194,13 +204,13 @@ def get_current_language() -> Language:
     Returns:
         The Language enum member for the active language.
     """
-    return _current_language
+    return _state.language
 
 
 __all__ = [
     "DEFAULT_LANGUAGE",
-    "Language",
     "N_",
+    "Language",
     "_",
     "get_current_language",
     "setup_locale",

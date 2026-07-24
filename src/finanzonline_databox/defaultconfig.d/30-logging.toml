@@ -92,7 +92,7 @@
 #   - short_loc: Like short but with local timezone
 # Example: console_format_preset = "short"
 
-# console_format_template = "{timestamp} {level_icon} {LEVEL:>8} {logger_name} — {message} {context_fields}"
+# console_format_template = "{timestamp} {level_icon} {LEVEL:>8} {logger_name} - {message} {context_fields}"
 # Purpose: Custom console output template (overrides preset)
 # Type: string (Python str.format template)
 # Default: None (uses preset)
@@ -310,7 +310,7 @@
 # .env: LIB_LOG_RICH__DUMP_FORMAT_PRESET=short
 # Example: dump_format_preset = "short"
 
-# dump_format_template = "{timestamp} {level_icon} {LEVEL:>8} {logger_name} — {message}"
+# dump_format_template = "{timestamp} {level_icon} {LEVEL:>8} {logger_name} - {message}"
 # Purpose: Custom template for text dumps (overrides preset)
 # Type: string (Python str.format template)
 # Default: None (uses preset)

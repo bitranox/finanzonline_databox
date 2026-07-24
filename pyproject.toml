@@ -1,6 +1,6 @@
 [project]
 name = "finanzonline_databox"
-version = "1.2.19"
+version = "1.2.20"
 description = "Python library and CLI for downloading documents from FinanzOnline Austria DataBox"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -12,7 +12,7 @@ dependencies = [
     "btx_lib_mail>=1.5.0",
     "pydantic>=2.13.4",
     "zeep>=4.3.3",
-    "filelock>=3.31.1",
+    "filelock>=3.32.0",
     "orjson>=3.11.9",
 ]
 license = { text = "MIT" }
@@ -49,7 +49,7 @@ Issues = "https://github.com/bitranox/finanzonline_databox/issues"
 dev = [
   "pytest>=9.1.1",
   "pytest-cov>=7.1.0",
-  "ruff>=0.15.22",
+  "ruff>=0.16.0",
   "pyright[nodejs]>=1.1.411",
   "bandit>=1.9.4",
   # 1.5.1 was yanked upstream (unintended breaking changes), so 1.5.0 is the newest usable
@@ -94,12 +94,60 @@ include = [
 line-length = 160
 target-version = "py310"
 
+[tool.ruff.lint]
+# Explicit select pins the lint policy: ruff 0.16.0 widened its own default rule set from
+# ~213 to ~920 rules when no select is configured, which is what turned this repo's CI red
+# (a ruff-version regression, not a code regression). Matches the curated list used by the
+# bitranox py-cli template and sibling repos derived from it.
+select = [
+  "E", "W",     # pycodestyle
+  "F",           # pyflakes
+  "I",           # isort
+  "N",           # pep8-naming
+  "UP",          # pyupgrade
+  "B",           # bugbear
+  "A",           # builtins shadowing
+  "C4",          # comprehension simplification
+  "SIM",         # simplification
+  "TCH",         # type-checking imports
+  "RUF",         # ruff-specific
+  "G",           # logging format (catches f-string in logger)
+  "T20",         # print statements
+  "PTH",         # pathlib preference
+  "PLC", "PLE",  # pylint conventions/errors
+  "S",           # flake8-bandit security checks
+  "PERF",        # performance anti-patterns
+  "ERA",         # eradicate dead/commented-out code
+  "FBT",         # boolean trap (boolean positional args)
+  "PLR",         # pylint refactor
+  "PLW",         # pylint warnings
+]
+
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
 # ignore the "unused import sys" in the jupyter notebook - which we need (it is a linter hickup)
-"notebooks/*.ipynb" = ["F401"]
+# T201: notebooks are demonstrations - printing results to the cell output is the whole point.
+"notebooks/*.ipynb" = ["F401", "T201"]
+# Tests: assert is standard, test fixtures have passwords, magic values are clearer inline, temp paths are fine.
+# PLC0415: local/deferred imports are a deliberate test idiom - several tests import inside the test
+# body to exercise import-time and cache behaviour, so moving them to module top would defeat intent.
+"tests/*.py" = ["T20", "S101", "S105", "S106", "S108", "FBT001", "FBT003", "PLR0913", "PLR2004", "PLC0415"]
+# CLI: Click framework injects many options per command; PLR0917 (positional count) is fixed via
+# keyword-only params, but the total-argument-count rule PLR0913 still fires by design.
+"src/finanzonline_databox/cli/*.py" = ["PLR0913"]
+# Application use cases: orchestration methods naturally take several collaborators/flags.
+"src/finanzonline_databox/application/*.py" = ["PLR0913"]
+# Adapters: SOAP/email adapters carry many diagnostic/delivery fields by design.
+"src/finanzonline_databox/adapters/**/*.py" = ["PLR0913"]
+# mail.py: send_email's options are already keyword-only (no PLR0917); the many named
+# parameters mirror btx_lib_mail's own send() surface.
+"src/finanzonline_databox/mail.py" = ["PLR0913"]
+# i18n.py: N_ is the gettext/xgettext extraction convention (alongside `_`) for marking a
+# string for translation without translating it now; renaming it breaks recognition by
+# standard gettext/pybabel extraction tooling, which looks for the literal name `N_`.
+"src/finanzonline_databox/i18n.py" = ["N802"]
 
 [tool.pyright]
 typeCheckingMode = "strict"

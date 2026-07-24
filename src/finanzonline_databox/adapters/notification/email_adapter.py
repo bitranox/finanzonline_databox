@@ -20,19 +20,20 @@ from __future__ import annotations
 
 import html
 import logging
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from finanzonline_databox._datetime_utils import format_local_time, local_now
 from finanzonline_databox._format_utils import format_bytes as _format_bytes
 from finanzonline_databox._format_utils import get_erltyp_display_name
-from finanzonline_databox.domain.models import DataboxEntry, Diagnostics
+from finanzonline_databox.application.use_cases import SyncResult
 from finanzonline_databox.enums import EmailFormat
 from finanzonline_databox.i18n import _
 from finanzonline_databox.mail import EmailConfig, send_email
 
 if TYPE_CHECKING:
-    from finanzonline_databox.application.use_cases import SyncResult
+    from pathlib import Path
+
+    from finanzonline_databox.domain.models import DataboxEntry, Diagnostics
 
 
 logger = logging.getLogger(__name__)
@@ -43,11 +44,25 @@ _HTML_DOCTYPE = '<!DOCTYPE html>\n<html>\n<head>\n    <meta charset="utf-8">\n  
 _HTML_BODY_STYLE = "font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;"
 _HTML_TABLE_STYLE = "width: 100%; border-collapse: collapse; margin: 20px 0;"
 _HTML_TD_STYLE = "padding: 8px 15px;"
+_DIAG_CONTENT_BOX_STYLE = (
+    "border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; background: white; max-height: 400px; overflow-y: auto; border-radius: 4px;"
+)
+_DIAG_PRE_STYLE = (
+    "font-family: monospace; font-size: 0.8em; background-color: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; "
+    "max-height: 300px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; margin-top: 8px;"
+)
+_NOTICE_SUCCESS_STYLE = "background-color: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px; padding: 15px; margin: 20px 0; color: #155724;"
+_NOTICE_WARNING_STYLE = "background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 15px; margin: 20px 0; color: #856404;"
+_STRIPE_ROW_STYLE = "background-color: #f8f9fa;"
+_FILE_TYPE_BADGE_STYLE = "background-color: #007bff; color: white; padding: 2px 8px; border-radius: 3px; font-size: 0.9em;"
 
 
 def _get_html_footer() -> str:
     """Get translated HTML footer."""
-    return f'<p style="color: #7f8c8d; font-size: 0.9em; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">{_("This is an automated message from finanzonline-databox.")}</p>'
+    return (
+        '<p style="color: #7f8c8d; font-size: 0.9em; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">'
+        f"{_('This is an automated message from finanzonline-databox.')}</p>"
+    )
 
 
 def _format_diagnostics_plain(diagnostics: Diagnostics | None) -> list[str]:
@@ -82,13 +97,13 @@ def _format_diagnostic_value_html(key: str, value: str) -> str:
     if _is_html_content(value):
         escaped = html.escape(value)
         value_td = f"""<td style="padding: 6px 15px;">
-            <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; background: white; max-height: 400px; overflow-y: auto; border-radius: 4px;">
+            <div style="{_DIAG_CONTENT_BOX_STYLE}">
                 <strong style="color: #856404;">{_("Server Message")}:</strong>
                 <div style="margin-top: 8px;">{value}</div>
             </div>
             <details>
                 <summary style="cursor: pointer; color: #666; font-size: 0.85em;">{_("HTML Source Code")} - {_("Click to expand")}</summary>
-                <pre style="font-family: monospace; font-size: 0.8em; background-color: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; max-height: 300px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; margin-top: 8px;">{escaped}</pre>
+                <pre style="{_DIAG_PRE_STYLE}">{escaped}</pre>
             </details>
         </td>"""
     else:
@@ -188,10 +203,10 @@ def format_sync_result_html(result: SyncResult, output_dir: str) -> str:
 
     notices = ""
     if result.downloaded > 0:
-        notices += f'<div style="background-color: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px; padding: 15px; margin: 20px 0; color: #155724;">{_("New documents have been downloaded to your DataBox folder.")}</div>'
+        notices += f'<div style="{_NOTICE_SUCCESS_STYLE}">{_("New documents have been downloaded to your DataBox folder.")}</div>'
 
     if result.failed > 0:
-        notices += f'<div style="background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 15px; margin: 20px 0; color: #856404;">{_("WARNING: Some downloads failed. Please check the logs for details.")}</div>'
+        notices += f'<div style="{_NOTICE_WARNING_STYLE}">{_("WARNING: Some downloads failed. Please check the logs for details.")}</div>'
 
     title = _("DataBox Sync Result")
     return f"""{_HTML_DOCTYPE.format(title=title)}
@@ -208,6 +223,7 @@ def format_sync_result_html(result: SyncResult, output_dir: str) -> str:
 
 def _build_error_base_lines(
     operation: str,
+    *,
     error_type: str,
     error_message: str,
     return_code: int | None,
@@ -233,6 +249,7 @@ def _build_error_base_lines(
 def format_error_plain(
     error_type: str,
     error_message: str,
+    *,
     operation: str = "sync",
     return_code: int | None = None,
     retryable: bool = False,
@@ -252,7 +269,9 @@ def format_error_plain(
         Plain text error notification.
     """
     timestamp = format_local_time(local_now())
-    lines = _build_error_base_lines(operation, error_type, error_message, return_code, retryable, timestamp)
+    lines = _build_error_base_lines(
+        operation, error_type=error_type, error_message=error_message, return_code=return_code, retryable=retryable, timestamp=timestamp
+    )
     lines.extend(_format_diagnostics_plain(diagnostics))
     lines.extend(["", "-" * 50, _("This is an automated error notification from finanzonline-databox.")])
     return "\n".join(lines)
@@ -260,6 +279,7 @@ def format_error_plain(
 
 def _build_error_html_rows(
     operation: str,
+    *,
     error_type: str,
     error_message: str,
     return_code: int | None,
@@ -271,13 +291,15 @@ def _build_error_html_rows(
     rows = f"""
         <tr><td style="{_HTML_TD_STYLE} font-weight: bold;">{_("Operation:")}</td><td style="{_HTML_TD_STYLE}">{operation}</td></tr>
         <tr><td style="{_HTML_TD_STYLE} font-weight: bold;">{_("Status:")}</td><td style="{_HTML_TD_STYLE}">{error_span}</td></tr>
-        <tr><td style="{_HTML_TD_STYLE} font-weight: bold;">{_("Error Type:")}</td><td style="{_HTML_TD_STYLE}" style="color: #dc3545; font-weight: bold;">{error_type}</td></tr>
+        <tr><td style="{_HTML_TD_STYLE} font-weight: bold;">{_("Error Type:")}</td>
+        <td style="{_HTML_TD_STYLE} color: #dc3545; font-weight: bold;">{error_type}</td></tr>
         <tr><td style="{_HTML_TD_STYLE} font-weight: bold;">{_("Message:")}</td><td style="{_HTML_TD_STYLE}">{error_message}</td></tr>
     """
     if return_code is not None:
         rows += f'<tr><td style="{_HTML_TD_STYLE} font-weight: bold;">{_("Return Code:")}</td><td style="{_HTML_TD_STYLE}">{return_code}</td></tr>'
     rows += f"""
-        <tr><td style="{_HTML_TD_STYLE} font-weight: bold;">{_("Retryable:")}</td><td style="{_HTML_TD_STYLE}">{_("Yes - try again later") if retryable else _("No")}</td></tr>
+        <tr><td style="{_HTML_TD_STYLE} font-weight: bold;">{_("Retryable:")}</td>
+        <td style="{_HTML_TD_STYLE}">{_("Yes - try again later") if retryable else _("No")}</td></tr>
         <tr><td style="{_HTML_TD_STYLE} font-weight: bold;">{_("Timestamp:")}</td><td style="{_HTML_TD_STYLE}">{timestamp}</td></tr>
     """
     return rows
@@ -286,6 +308,7 @@ def _build_error_html_rows(
 def format_error_html(
     error_type: str,
     error_message: str,
+    *,
     operation: str = "sync",
     return_code: int | None = None,
     retryable: bool = False,
@@ -305,9 +328,14 @@ def format_error_html(
         HTML error notification.
     """
     timestamp = format_local_time(local_now())
-    rows = _build_error_html_rows(operation, error_type, error_message, return_code, retryable, timestamp)
+    rows = _build_error_html_rows(
+        operation, error_type=error_type, error_message=error_message, return_code=return_code, retryable=retryable, timestamp=timestamp
+    )
     diag_section = _format_diagnostics_html(diagnostics)
-    footer = f'<p style="color: #7f8c8d; font-size: 0.9em; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">{_("This is an automated error notification from finanzonline-databox.")}</p>'
+    footer = (
+        '<p style="color: #7f8c8d; font-size: 0.9em; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">'
+        f"{_('This is an automated error notification from finanzonline-databox.')}</p>"
+    )
 
     return f"""{_HTML_DOCTYPE.format(title=_("DataBox Error"))}
 <body style="{_HTML_BODY_STYLE}">
@@ -389,16 +417,20 @@ def format_document_email_html(entry: DataboxEntry) -> str:
 
     rows = f"""
         <tr><td style="{_HTML_TD_STYLE} font-weight: bold; width: 140px;">{_("Type:")}</td><td style="{_HTML_TD_STYLE}">{type_name}</td></tr>
-        <tr style="background-color: #f8f9fa;"><td style="{_HTML_TD_STYLE} font-weight: bold;">{_("Description:")}</td><td style="{_HTML_TD_STYLE}">{entry.filebez or entry.name}</td></tr>
+        <tr style="{_STRIPE_ROW_STYLE}"><td style="{_HTML_TD_STYLE} font-weight: bold;">{_("Description:")}</td>
+        <td style="{_HTML_TD_STYLE}">{entry.filebez or entry.name}</td></tr>
         <tr><td style="{_HTML_TD_STYLE} font-weight: bold;">{_("Tax Number:")}</td><td style="{_HTML_TD_STYLE}"><code>{entry.stnr}</code></td></tr>
-        <tr style="background-color: #f8f9fa;"><td style="{_HTML_TD_STYLE} font-weight: bold;">{_("Reference:")}</td><td style="{_HTML_TD_STYLE}">{entry.anbringen}</td></tr>
+        <tr style="{_STRIPE_ROW_STYLE}"><td style="{_HTML_TD_STYLE} font-weight: bold;">{_("Reference:")}</td>
+        <td style="{_HTML_TD_STYLE}">{entry.anbringen}</td></tr>
         <tr><td style="{_HTML_TD_STYLE} font-weight: bold;">{_("Period:")}</td><td style="{_HTML_TD_STYLE}">{period}</td></tr>
-        <tr style="background-color: #f8f9fa;"><td style="{_HTML_TD_STYLE} font-weight: bold;">{_("Document Date:")}</td><td style="{_HTML_TD_STYLE}">{entry.datbesch.strftime("%Y-%m-%d")}</td></tr>
+        <tr style="{_STRIPE_ROW_STYLE}"><td style="{_HTML_TD_STYLE} font-weight: bold;">{_("Document Date:")}</td>
+        <td style="{_HTML_TD_STYLE}">{entry.datbesch.strftime("%Y-%m-%d")}</td></tr>
         <tr><td style="{_HTML_TD_STYLE} font-weight: bold;">{_("Delivered:")}</td><td style="{_HTML_TD_STYLE}">{timestamp}</td></tr>
-        <tr style="background-color: #f8f9fa;"><td style="{_HTML_TD_STYLE} font-weight: bold;">{_("File Type:")}</td><td style="{_HTML_TD_STYLE}"><span style="background-color: #007bff; color: white; padding: 2px 8px; border-radius: 3px; font-size: 0.9em;">{entry.fileart}</span></td></tr>
+        <tr style="{_STRIPE_ROW_STYLE}"><td style="{_HTML_TD_STYLE} font-weight: bold;">{_("File Type:")}</td>
+        <td style="{_HTML_TD_STYLE}"><span style="{_FILE_TYPE_BADGE_STYLE}">{entry.fileart}</span></td></tr>
     """
 
-    attachment_notice = f'<div style="background-color: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px; padding: 15px; margin: 20px 0; color: #155724;">{_("The document is attached to this email.")}</div>'
+    attachment_notice = f'<div style="{_NOTICE_SUCCESS_STYLE}">{_("The document is attached to this email.")}</div>'
 
     title = _("FinanzOnline DataBox - Document Notification")
     return f"""{_HTML_DOCTYPE.format(title=title)}
@@ -473,8 +505,6 @@ class EmailNotificationAdapter:
             return False
 
         # Create a simple sync result for formatting
-        from finanzonline_databox.application.use_cases import SyncResult
-
         result = SyncResult(
             total_retrieved=entries_downloaded,
             total_listed=entries_downloaded,
@@ -560,6 +590,7 @@ class EmailNotificationAdapter:
         self,
         error_type: str,
         error_message: str,
+        *,
         operation: str,
         recipients: list[str],
         return_code: int | None = None,
@@ -587,8 +618,8 @@ class EmailNotificationAdapter:
         subject = f"DataBox ERROR: {operation} - {error_type}"
 
         plain_body, html_body = self._get_body_parts(
-            format_error_plain(error_type, error_message, operation, return_code, retryable, diagnostics),
-            format_error_html(error_type, error_message, operation, return_code, retryable, diagnostics),
+            format_error_plain(error_type, error_message, operation=operation, return_code=return_code, retryable=retryable, diagnostics=diagnostics),
+            format_error_html(error_type, error_message, operation=operation, return_code=return_code, retryable=retryable, diagnostics=diagnostics),
         )
 
         logger.info(

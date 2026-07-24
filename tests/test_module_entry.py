@@ -4,15 +4,17 @@ from __future__ import annotations
 
 import runpy
 import sys
-from collections.abc import Callable
 from dataclasses import dataclass
-from typing import TextIO
+from typing import TYPE_CHECKING, TextIO
 
 import lib_cli_exit_tools
 import pytest
 
 from finanzonline_databox import __init__conf__
 from finanzonline_databox import cli as cli_mod
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 @dataclass(slots=True)

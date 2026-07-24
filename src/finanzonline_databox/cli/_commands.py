@@ -7,22 +7,22 @@ commands on the root CLI group.
 
 Contents
 --------
-* :func:`cli_config` – display merged configuration.
-* :func:`cli_config_deploy` – deploy default configuration files.
-* :func:`cli_list` – list DataBox entries.
-* :func:`cli_download` – download a single document.
-* :func:`cli_sync` – sync all new documents to a local directory.
+* :func:`cli_config` - display merged configuration.
+* :func:`cli_config_deploy` - deploy default configuration files.
+* :func:`cli_list` - list DataBox entries.
+* :func:`cli_download` - download a single document.
+* :func:`cli_sync` - sync all new documents to a local directory.
 
 System Role
 -----------
-CLI adapter layer — command wiring and argument handling.
+CLI adapter layer - command wiring and argument handling.
 """
 
 # pyright: reportPrivateUsage=false
 from __future__ import annotations
 
 import logging
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import lib_log_rich.runtime
 import rich_click as click
@@ -44,7 +44,6 @@ from ..domain.return_codes import CliExitCode
 from ..enums import DeployTarget, OutputFormat, ReadFilter
 from ..i18n import _
 from ._app import CLICK_CONTEXT_SETTINGS, _flush_all_log_handlers, _get_cli_context, cli  # pyright: ignore[reportPrivateUsage]
-from .typed_click import argument, option
 from ._error_handling import _handle_command_exception  # pyright: ignore[reportPrivateUsage]
 from ._helpers import (  # pyright: ignore[reportPrivateUsage]
     _apply_list_filters,
@@ -59,6 +58,10 @@ from ._helpers import (  # pyright: ignore[reportPrivateUsage]
     _resolve_output_dir,
 )
 from ._notifications import _send_sync_notifications_if_enabled  # pyright: ignore[reportPrivateUsage]
+from .typed_click import argument, option
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -98,6 +101,7 @@ def _handle_deploy_error(exc: Exception) -> None:
 @cli.command("config", context_settings=CLICK_CONTEXT_SETTINGS)
 @option(
     "--format",
+    "format_",
     type=click.Choice(list(OutputFormat), case_sensitive=False),
     default=OutputFormat.HUMAN,
     help=_("Output format (human-readable or JSON)"),
@@ -115,7 +119,7 @@ def _handle_deploy_error(exc: Exception) -> None:
     help=_("Override profile from root command (e.g., 'production', 'test')"),
 )
 @click.pass_context
-def cli_config(ctx: click.Context, format: str, section: str | None, profile: str | None) -> None:
+def cli_config(ctx: click.Context, *, format_: str, section: str | None, profile: str | None) -> None:
     """Display the current merged configuration from all sources.
 
     Shows configuration loaded from defaults, application/user config files,
@@ -133,11 +137,11 @@ def cli_config(ctx: click.Context, format: str, section: str | None, profile: st
         config = cli_ctx.config
         effective_profile = cli_ctx.profile
 
-    output_format = OutputFormat(format.lower())
+    output_format = OutputFormat(format_.lower())
     extra = {"command": "config", "format": output_format, "profile": effective_profile}
     with lib_log_rich.runtime.bind(job_id="cli-config", extra=extra):
         logger.info("Displaying configuration", extra={"format": output_format, "section": section, "profile": effective_profile})
-        display_config(config, format=output_format, section=section)
+        display_config(config, output_format=output_format, section=section)
 
 
 @cli.command("config-deploy", context_settings=CLICK_CONTEXT_SETTINGS)
@@ -162,7 +166,7 @@ def cli_config(ctx: click.Context, format: str, section: str | None, profile: st
     help=_("Override profile from root command (e.g., 'production', 'test')"),
 )
 @click.pass_context
-def cli_config_deploy(ctx: click.Context, targets: tuple[str, ...], force: bool, profile: str | None) -> None:
+def cli_config_deploy(ctx: click.Context, *, targets: tuple[str, ...], force: bool, profile: str | None) -> None:
     r"""Deploy default configuration to system or user directories.
 
     Creates configuration files in platform-specific locations:
@@ -261,6 +265,7 @@ def cli_config_deploy(ctx: click.Context, targets: tuple[str, ...], force: bool,
 @click.pass_context
 def cli_list(
     ctx: click.Context,
+    *,
     erltyp: str,
     date_from: str | None,
     date_to: str | None,
@@ -392,7 +397,9 @@ def cli_download(
             session_client = FinanzOnlineSessionClient(timeout=fo_config.session_timeout)
             databox_client = DataboxClient(timeout=fo_config.query_timeout)
 
-            output_path = _resolve_download_filename(output_dir, filename, applkey, fo_config.credentials, session_client, databox_client)
+            output_path = _resolve_download_filename(
+                output_dir, filename=filename, applkey=applkey, credentials=fo_config.credentials, session_client=session_client, databox_client=databox_client
+            )
 
             download_use_case = DownloadEntryUseCase(session_client, databox_client)
             result, saved_path = download_use_case.execute(
@@ -495,6 +502,7 @@ def cli_download(
 @click.pass_context
 def cli_sync(
     ctx: click.Context,
+    *,
     output: str | None,
     erltyp: str,
     reference: str,
@@ -569,12 +577,28 @@ def cli_sync(
             )
 
             result = _execute_chunked_sync(
-                use_case, fo_config.credentials, output_dir, erltyp, reference, read_filter_enum, skip_existing, ts_zust_von, ts_zust_bis
+                use_case,
+                credentials=fo_config.credentials,
+                output_dir=output_dir,
+                erltyp=erltyp,
+                reference=reference,
+                read_filter=read_filter_enum,
+                skip_existing=skip_existing,
+                ts_zust_von=ts_zust_von,
+                ts_zust_bis=ts_zust_bis,
             )
 
             _flush_all_log_handlers()
             click.echo(_format_sync_result(result, str(output_dir), output_format))
-            _send_sync_notifications_if_enabled(no_email, config, fo_config, result, str(output_dir), recipients_list, document_recipients_list)
+            _send_sync_notifications_if_enabled(
+                no_email=no_email,
+                config=config,
+                fo_config=fo_config,
+                result=result,
+                output_dir=str(output_dir),
+                recipients=recipients_list,
+                document_recipients=document_recipients_list,
+            )
 
             raise SystemExit(CliExitCode.SUCCESS if result.is_success else CliExitCode.DOWNLOAD_ERROR)
 

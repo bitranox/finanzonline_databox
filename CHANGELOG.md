@@ -7,6 +7,46 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+## [1.2.20] 2026-07-24 14:03:32
+
+### Fixed
+- CI red on latest ruff (0.16.0): the release widened ruff's own default rule set from
+  ~213 to ~920 rules whenever a project has no explicit `[tool.ruff.lint].select`, which
+  this repo never had. Added an explicit curated `select` (matching the bitranox py-cli
+  template) to pin the lint policy instead of drifting with every ruff release.
+- `PLR0917`/`PLR0913` (too many positional/total arguments): made CLI command callbacks,
+  internal helpers, and use-case methods keyword-only past their first natural positional
+  argument, updating every call site. Click already calls command callbacks by keyword
+  (`ctx.invoke(callback, **ctx.params)`), so this is not a behaviour change.
+- `FBT001`/`FBT002` (boolean positional trap): converted boolean parameters to
+  keyword-only across the CLI, application, and adapter layers.
+- Two duplicate `style` attributes on the same `<td>` in the error-notification HTML
+  email (`email_adapter.py`) silently dropped the intended red/bold styling; merged
+  into a single `style` attribute.
+- Doctest `NameError: name 'date' is not defined` in `domain/models.py`: an automated
+  `TC003` import-sorting fix moved `date`/`datetime` into a `TYPE_CHECKING` block that a
+  runtime doctest still relied on; the doctests now self-import what they need.
+
+### Changed
+- Removed non-ASCII en/em dash characters from docstrings and comments across
+  several modules (`RUF002`), replacing them with plain ASCII hyphens.
+- `config_show.display_config` was refactored into small single-purpose helpers
+  (`_display_json`, `_display_human`, `_echo_section`, `_echo_value_line`) to fix
+  `PLR0912` (too many branches) and `PLC0206` (dict iteration without `.items()`) and to
+  remove duplicated TOML-line formatting.
+- `i18n.py`'s module-level translation/language state moved from bare globals mutated
+  via the `global` statement (`PLW0603`) into a single `_TranslationState` dataclass
+  instance whose attributes are mutated instead.
+- Renamed the `display_config`/`cli_config` `format` parameter to `output_format`
+  (`A002`: shadowed the `format` builtin); the `--format` CLI flag is unchanged.
+- Extracted several long HTML style-attribute string literals in `email_adapter.py`
+  into named module-level constants to satisfy the line-length limit and cut
+  duplication (`_DIAG_CONTENT_BOX_STYLE`, `_STRIPE_ROW_STYLE`, etc.).
+- `__init__conf__.print_info` now writes via `click.echo` instead of `print` (`T201`),
+  matching the rest of the codebase's CLI output convention.
+- `logger.error(..., exc_info=True)` in `mail.py` replaced with `logger.exception(...)`
+  (`G201`).
+
 ## [1.2.19] 2026-07-20
 
 ### Changed

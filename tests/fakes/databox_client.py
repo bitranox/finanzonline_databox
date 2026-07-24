@@ -7,14 +7,16 @@ Preferred over mocks because it tests actual behavior.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
-from finanzonline_databox.domain.models import (
-    DataboxDownloadRequest,
-    DataboxDownloadResult,
-    DataboxListRequest,
-    DataboxListResult,
-    FinanzOnlineCredentials,
-)
+if TYPE_CHECKING:
+    from finanzonline_databox.domain.models import (
+        DataboxDownloadRequest,
+        DataboxDownloadResult,
+        DataboxListRequest,
+        DataboxListResult,
+        FinanzOnlineCredentials,
+    )
 
 
 @dataclass
@@ -57,9 +59,9 @@ class FakeDataboxClient:
             return self.list_response
 
         # Default empty success response
-        from finanzonline_databox.domain.models import DataboxListResult as DLR
+        from finanzonline_databox.domain.models import DataboxListResult
 
-        return DLR(rc=0, msg=None, entries=())
+        return DataboxListResult(rc=0, msg=None, entries=())
 
     def download_entry(
         self,
@@ -81,9 +83,9 @@ class FakeDataboxClient:
             return self.download_responses[-1]
 
         # Default success response
-        from finanzonline_databox.domain.models import DataboxDownloadResult as DDR
+        from finanzonline_databox.domain.models import DataboxDownloadResult
 
-        return DDR(rc=0, msg=None, content=b"fake content")
+        return DataboxDownloadResult(rc=0, msg=None, content=b"fake content")
 
     @property
     def list_called(self) -> bool:

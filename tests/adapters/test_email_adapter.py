@@ -326,5 +326,5 @@ class TestEmailNotificationAdapter:
     def test_error_notification_skips_no_recipients(self) -> None:
         """Error notification skips when no recipients."""
         adapter = EmailNotificationAdapter(_make_email_config())
-        result = adapter.send_error("Error", "Message", "sync", [])
+        result = adapter.send_error("Error", "Message", operation="sync", recipients=[])
         assert result is False

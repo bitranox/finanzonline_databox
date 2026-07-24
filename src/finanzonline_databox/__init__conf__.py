@@ -19,12 +19,14 @@ present authoritative project information without invoking packaging APIs.
 
 from __future__ import annotations
 
+import rich_click as click
+
 #: Distribution name declared in ``pyproject.toml``.
 name = "finanzonline_databox"
 #: Human-readable summary shown in CLI help output.
 title = "Python library and CLI for downloading documents from FinanzOnline Austria DataBox"
 #: Current release version pulled from ``pyproject.toml`` by automation.
-version = "1.2.19"
+version = "1.2.20"
 #: Repository homepage presented to users.
 homepage = "https://github.com/bitranox/finanzonline_databox"
 #: Author attribution surfaced in CLI output.
@@ -69,4 +71,4 @@ def print_info() -> None:
     pad = max(len(label) for label, _ in fields)
     lines = [f"Info for {name}:", ""]
     lines.extend(f"    {label.ljust(pad)} = {value}" for label, value in fields)
-    print("\n".join(lines))
+    click.echo("\n".join(lines))

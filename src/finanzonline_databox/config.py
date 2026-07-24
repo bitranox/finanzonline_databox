@@ -5,9 +5,9 @@ configs, host configs, user configs, .env files, and environment variables
 following a deterministic precedence order.
 
 Contents:
-    * :func:`get_config` – loads configuration with lib_layered_config
-    * :func:`get_default_config_path` – returns path to bundled default config
-    * :func:`load_finanzonline_config` – loads FinanzOnline credentials and settings
+    * :func:`get_config` - loads configuration with lib_layered_config
+    * :func:`get_default_config_path` - returns path to bundled default config
+    * :func:`load_finanzonline_config` - loads FinanzOnline credentials and settings
 
     Configuration identifiers (vendor, app, slug) are imported from
     :mod:`finanzonline_databox.__init__conf__` as LAYEREDCONF_* constants.
@@ -21,10 +21,11 @@ System Role:
 from __future__ import annotations
 
 import logging
+import os
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from lib_layered_config import Config, read_config
 
@@ -33,11 +34,9 @@ from .config_schema import ConfigSchema, parse_string_list
 from .domain.errors import ConfigurationError
 from .domain.models import FinanzOnlineCredentials
 from .enums import EmailFormat
+from .i18n import Language
 
 logger = logging.getLogger(__name__)
-
-if TYPE_CHECKING:
-    from .i18n import Language
 
 # =============================================================================
 # Configuration Parsing Helpers
@@ -89,8 +88,6 @@ def _normalize_path_string(path_str: str) -> str:
             "//server/share/folder" -> "//server/share/folder" (unchanged)
             "C:\\Users\\docs" -> "C:\\Users\\docs" (unchanged)
     """
-    import os
-
     if os.name == "nt":  # Windows
         # Replace forward slashes with backslashes for Windows
         return path_str.replace("/", "\\")
@@ -218,9 +215,7 @@ def validate_config(config: Config) -> ConfigSchema:
 
 
 def _default_language() -> Language:
-    """Return default language (avoids circular import at module load)."""
-    from .i18n import Language
-
+    """Return default language."""
     return Language.ENGLISH
 
 
@@ -250,8 +245,6 @@ def load_app_config(config: Config) -> AppConfig:
         >>> app_config.language  # doctest: +SKIP
         Language.ENGLISH
     """
-    from .i18n import Language
-
     # Validate config at boundary using Pydantic schema
     schema = validate_config(config)
 

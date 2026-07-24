@@ -30,6 +30,7 @@ Examples
 >>> creds.tid
 '123456789'
 
+>>> from datetime import date, datetime
 >>> entry = DataboxEntry(
 ...     stnr="12-345/6789", name="Bescheid", anbringen="E1",
 ...     zrvon="2024", zrbis="2024", datbesch=date(2024, 1, 15),
@@ -44,16 +45,15 @@ from __future__ import annotations
 
 import re
 import warnings
-from collections.abc import Iterator
 from dataclasses import dataclass, field
-from datetime import date, datetime
 from enum import IntEnum
 from typing import TYPE_CHECKING, ClassVar
 
 from finanzonline_databox._datetime_utils import local_now as _local_now
 
 if TYPE_CHECKING:
-    pass
+    from collections.abc import Iterator
+    from datetime import date, datetime
 
 
 class ReadStatus(IntEnum):
@@ -327,6 +327,7 @@ class DataboxEntry:
         status: Read status (ReadStatus.UNREAD or ReadStatus.READ).
 
     Examples:
+        >>> from datetime import date, datetime
         >>> entry = DataboxEntry(
         ...     stnr="12-345/6789", name="Bescheid", anbringen="E1",
         ...     zrvon="2024", zrbis="2024", datbesch=date(2024, 1, 15),
@@ -388,6 +389,7 @@ class DataboxEntry:
             Filename from filebez, or format: YYYY-MM-DD_erltyp_anbringen_applkey.ext
 
         Examples:
+            >>> from datetime import date, datetime
             >>> entry = DataboxEntry(
             ...     stnr="", name="", anbringen="UID", zrvon="", zrbis="",
             ...     datbesch=date(2024, 1, 15), erltyp="P", fileart=FileType.XML,

@@ -5,11 +5,11 @@ concern remains self-contained. Keeping these helpers together makes it easy to
 swap in richer logging logic later without touching the transport surface.
 
 Contents:
-    * :func:`emit_greeting` – success-path helper that writes the canonical scaffold
+    * :func:`emit_greeting` - success-path helper that writes the canonical scaffold
       message.
-    * :func:`raise_intentional_failure` – deterministic error hook used by tests and
+    * :func:`raise_intentional_failure` - deterministic error hook used by tests and
       CLI flows to validate traceback handling.
-    * :func:`noop_main` – placeholder entry used when callers expect a ``main``
+    * :func:`noop_main` - placeholder entry used when callers expect a ``main``
       callable despite the domain layer being stubbed today.
 
 System Role:
@@ -120,12 +120,11 @@ def noop_main() -> None:
     """
 
     logger.debug("Executing noop_main placeholder")
-    return None
 
 
 __all__ = [
     "CANONICAL_GREETING",
     "emit_greeting",
-    "raise_intentional_failure",
     "noop_main",
+    "raise_intentional_failure",
 ]

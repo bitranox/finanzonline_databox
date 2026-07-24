@@ -11,7 +11,10 @@ Adapters layer - shared infrastructure utilities.
 
 from __future__ import annotations
 
-from zeep.exceptions import XMLSyntaxError
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from zeep.exceptions import XMLSyntaxError
 
 # Maximum length of HTML content to include in diagnostics (for email)
 _MAX_HTML_CONTENT_LENGTH = 4000

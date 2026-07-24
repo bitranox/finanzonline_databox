@@ -34,7 +34,6 @@ from finanzonline_databox._datetime_utils import local_now
 from finanzonline_databox._format_utils import mask_credential
 from finanzonline_databox.adapters.finanzonline._soap_utils import extract_xml_error_content, is_maintenance_page
 from finanzonline_databox.domain.errors import DataboxOperationError, SessionError
-from finanzonline_databox.i18n import _
 from finanzonline_databox.domain.models import (
     RC_OK,
     RC_SESSION_INVALID,
@@ -48,6 +47,7 @@ from finanzonline_databox.domain.models import (
     FinanzOnlineCredentials,
     ReadStatus,
 )
+from finanzonline_databox.i18n import _
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +56,7 @@ DATABOX_SERVICE_WSDL = "https://finanzonline.bmf.gv.at/fon/ws/databoxService.wsd
 
 def _build_diagnostics(
     operation: str,
+    *,
     session_id: str,
     credentials: FinanzOnlineCredentials,
     request: DataboxListRequest | DataboxDownloadRequest,
@@ -187,10 +188,10 @@ def _decode_content(
         request = DataboxDownloadRequest(applkey=applkey)
         diagnostics = _build_diagnostics(
             "getDataboxEntry",
-            session_id,
-            credentials,
-            request,
-            response,
+            session_id=session_id,
+            credentials=credentials,
+            request=request,
+            response=response,
             error=f"Invalid base64 content: {exc}",
         )
         raise DataboxOperationError(
@@ -229,6 +230,7 @@ def _parse_databox_entry(entry: Any) -> DataboxEntry:
 
 def _handle_operation_exception(
     exc: Exception,
+    *,
     operation: str,
     session_id: str,
     credentials: FinanzOnlineCredentials,
@@ -250,9 +252,9 @@ def _handle_operation_exception(
         DataboxOperationError: For all other errors.
     """
     if isinstance(exc, (SessionError, DataboxOperationError)):
-        raise
+        raise exc
 
-    diagnostics = _build_diagnostics(operation, session_id, credentials, request, response, error=str(exc))
+    diagnostics = _build_diagnostics(operation, session_id=session_id, credentials=credentials, request=request, response=response, error=str(exc))
 
     if isinstance(exc, Fault):
         logger.error("SOAP fault during %s: %s", operation, exc)
@@ -267,7 +269,7 @@ def _handle_operation_exception(
         is_maintenance = is_maintenance_page(html_content)
         error_type = _("DataBox in maintenance mode") if is_maintenance else _("Invalid XML Response")
         error_detail = extract_xml_error_content(exc)
-        diagnostics = _build_diagnostics(operation, session_id, credentials, request, response, error=error_detail)
+        diagnostics = _build_diagnostics(operation, session_id=session_id, credentials=credentials, request=request, response=response, error=error_detail)
         logger.error("%s during %s: %s", error_type, operation, exc)
         raise DataboxOperationError(error_type, diagnostics=diagnostics, retryable=is_maintenance) from exc
 
@@ -334,7 +336,7 @@ class DataboxClient:
             response = self._execute_list_query(session_id, credentials, request)
             return self._process_list_response(session_id, credentials, request, response)
         except Exception as e:
-            _handle_operation_exception(e, "getDatabox", session_id, credentials, request, response)
+            _handle_operation_exception(e, operation="getDatabox", session_id=session_id, credentials=credentials, request=request, response=response)
             raise  # Unreachable but satisfies type checker
 
     def _execute_list_query(
@@ -368,6 +370,7 @@ class DataboxClient:
     def _check_session_valid(
         self,
         return_code: int,
+        *,
         message: str | None,
         session_id: str,
         credentials: FinanzOnlineCredentials,
@@ -378,7 +381,7 @@ class DataboxClient:
         if return_code != RC_SESSION_INVALID:
             return
         operation = "getDatabox" if isinstance(request, DataboxListRequest) else "getDataboxEntry"
-        diagnostics = _build_diagnostics(operation, session_id, credentials, request, response)
+        diagnostics = _build_diagnostics(operation, session_id=session_id, credentials=credentials, request=request, response=response)
         raise SessionError(f"Session invalid or expired: {message}", return_code=return_code, diagnostics=diagnostics)
 
     def _process_list_response(
@@ -389,11 +392,11 @@ class DataboxClient:
         response: Any,
     ) -> DataboxListResult:
         """Process SOAP list response and build result."""
-        return_code = int(cast(int, response.rc))
+        return_code = int(cast("int", response.rc))
         message = _extract_response_message(response)
         logger.debug("List response: rc=%d, msg=%s", return_code, message)
 
-        self._check_session_valid(return_code, message, session_id, credentials, request, response)
+        self._check_session_valid(return_code, message=message, session_id=session_id, credentials=credentials, request=request, response=response)
 
         entries: tuple[DataboxEntry, ...] = ()
         if return_code == RC_OK:
@@ -430,7 +433,7 @@ class DataboxClient:
             response = self._execute_download_query(session_id, credentials, request)
             return self._process_download_response(session_id, credentials, request, response)
         except Exception as e:
-            _handle_operation_exception(e, "getDataboxEntry", session_id, credentials, request, response)
+            _handle_operation_exception(e, operation="getDataboxEntry", session_id=session_id, credentials=credentials, request=request, response=response)
             raise  # Unreachable but satisfies type checker
 
     def _execute_download_query(
@@ -460,11 +463,11 @@ class DataboxClient:
         response: Any,
     ) -> DataboxDownloadResult:
         """Process SOAP download response and build result."""
-        return_code = int(cast(int, response.rc))
+        return_code = int(cast("int", response.rc))
         message = _extract_response_message(response)
         logger.debug("Download response: rc=%d, msg=%s", return_code, message)
 
-        self._check_session_valid(return_code, message, session_id, credentials, request, response)
+        self._check_session_valid(return_code, message=message, session_id=session_id, credentials=credentials, request=request, response=response)
 
         content = _decode_content(response, request.applkey, session_id, credentials) if return_code == RC_OK else None
         return DataboxDownloadResult(rc=return_code, msg=message, content=content, timestamp=local_now())

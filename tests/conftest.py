@@ -20,17 +20,19 @@ from __future__ import annotations
 
 import re
 import sys
-from collections.abc import Callable, Iterator
 from dataclasses import fields
 from datetime import date, datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from unittest.mock import MagicMock
 
 import lib_cli_exit_tools
 import pytest
 from click.testing import CliRunner
 from lib_layered_config import Config
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Iterator
 
 # ============================================================================
 # ANSI escape code handling
@@ -494,6 +496,7 @@ def make_databox_entry() -> Callable[..., Any]:
     from finanzonline_databox.domain.models import DataboxEntry, FileType, ReadStatus
 
     def _factory(
+        *,
         stnr: str = "12-345/6789",
         name: str = "Test Document",
         anbringen: str = "E1",

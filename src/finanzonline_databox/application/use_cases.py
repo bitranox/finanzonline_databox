@@ -29,7 +29,6 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from finanzonline_databox.domain.errors import (
@@ -44,6 +43,8 @@ from finanzonline_databox.domain.models import (
 from finanzonline_databox.enums import ReadFilter
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from finanzonline_databox.application.ports import DataboxPort, SessionPort
     from finanzonline_databox.domain.models import (
         DataboxDownloadResult,
@@ -387,6 +388,7 @@ class SyncDataboxUseCase:
         self,
         credentials: FinanzOnlineCredentials,
         output_dir: Path,
+        *,
         request: DataboxListRequest | None = None,
         skip_existing: bool = True,
         anbringen_filter: str = "",
@@ -442,7 +444,15 @@ class SyncDataboxUseCase:
 
             raw_count = len(list_result.entries)
             entries = _filter_sync_entries(list_result.entries, anbringen_filter, read_filter)
-            return self._download_entries(session.session_id, credentials, entries, output_dir, skip_existing, raw_count, filters_tuple)
+            return self._download_entries(
+                session.session_id,
+                credentials=credentials,
+                entries=entries,
+                output_dir=output_dir,
+                skip_existing=skip_existing,
+                raw_count=raw_count,
+                applied_filters=filters_tuple,
+            )
         finally:
             logger.debug("Logging out from FinanzOnline")
             _logout_session(self._session_client, session.session_id, credentials)
@@ -466,7 +476,7 @@ class SyncDataboxUseCase:
             logger.error("Failed to download %s: %s", entry.applkey, e)
             return (False, 0)
 
-    def _should_skip_entry(self, base_path: Path, skip_existing: bool) -> bool:
+    def _should_skip_entry(self, base_path: Path, *, skip_existing: bool) -> bool:
         """Check if entry should be skipped (already exists)."""
         if skip_existing and base_path.exists():
             logger.debug("Skipping existing: %s", base_path.name)
@@ -476,6 +486,7 @@ class SyncDataboxUseCase:
     def _download_entries(
         self,
         session_id: str,
+        *,
         credentials: FinanzOnlineCredentials,
         entries: tuple[DataboxEntry, ...],
         output_dir: Path,
@@ -504,7 +515,7 @@ class SyncDataboxUseCase:
         for entry in entries:
             base_path = output_dir / entry.suggested_filename
 
-            if self._should_skip_entry(base_path, skip_existing):
+            if self._should_skip_entry(base_path, skip_existing=skip_existing):
                 skipped += 1
                 continue
 

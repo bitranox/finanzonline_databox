@@ -8,10 +8,10 @@ Dieses Dokument beschreibt die Python-API für `finanzonline_databox`.
 import finanzonline_databox
 
 # Paket-Metadaten
-finanzonline_databox.__version__    # "0.0.1"
-finanzonline_databox.__title__      # "Python library and CLI..."
-finanzonline_databox.__author__     # "bitranox"
-finanzonline_databox.__url__        # "https://github.com/bitranox/finanzonline_databox"
+finanzonline_databox.__version__  # "0.0.1"
+finanzonline_databox.__title__  # "Python library and CLI..."
+finanzonline_databox.__author__  # "bitranox"
+finanzonline_databox.__url__  # "https://github.com/bitranox/finanzonline_databox"
 ```
 
 ---
@@ -80,10 +80,10 @@ Authentifizierungsdaten für FinanzOnline-Webservices.
 from finanzonline_databox.domain.models import FinanzOnlineCredentials
 
 credentials = FinanzOnlineCredentials(
-    tid="123456789",      # Teilnehmer-ID (8-12 alphanumerisch)
-    benid="WEBUSER",      # Benutzer-ID (5-12 Zeichen)
-    pin="password123",    # Passwort (5-128 Zeichen)
-    herstellerid="ATU12345678"  # Software-Hersteller UID (10-24 alphanumerisch)
+    tid="123456789",  # Teilnehmer-ID (8-12 alphanumerisch)
+    benid="WEBUSER",  # Benutzer-ID (5-12 Zeichen)
+    pin="password123",  # Passwort (5-128 Zeichen)
+    herstellerid="ATU12345678",  # Software-Hersteller UID (10-24 alphanumerisch)
 )
 ```
 
@@ -113,10 +113,7 @@ request = DataboxListRequest()
 request = DataboxListRequest(erltyp="B")
 
 # Einträge im Datumsbereich auflisten (gibt gelesene und ungelesene zurück)
-request = DataboxListRequest(
-    ts_zust_von=datetime(2024, 1, 1),
-    ts_zust_bis=datetime(2024, 1, 7)
-)
+request = DataboxListRequest(ts_zust_von=datetime(2024, 1, 1), ts_zust_bis=datetime(2024, 1, 7))
 ```
 
 **Attribute:**
@@ -151,14 +148,14 @@ entry = DataboxEntry(
     ts_zust=datetime(2024, 1, 15, 10, 30),
     applkey="abc123def456",
     filebez="Einkommensteuerbescheid",
-    status=""
+    status="",
 )
 
 # Properties
-entry.is_unread           # True (status == "")
-entry.is_read             # False (status == "1")
-entry.is_pdf              # True
-entry.is_xml              # False
+entry.is_unread  # True (status == "")
+entry.is_read  # False (status == "1")
+entry.is_pdf  # True
+entry.is_xml  # False
 entry.suggested_filename  # "2024-01-15_B_E1_abc123def456.pdf"
 ```
 
@@ -189,14 +186,14 @@ Ergebnis des Auflistens von DataBox-Einträgen.
 from finanzonline_databox.domain.models import DataboxListResult
 
 # Beispiel-Ergebnis
-result.rc            # 0 (Erfolg)
-result.msg           # None oder Fehlermeldung
-result.entries       # Tupel von DataboxEntry
-result.timestamp     # datetime (UTC)
+result.rc  # 0 (Erfolg)
+result.msg  # None oder Fehlermeldung
+result.entries  # Tupel von DataboxEntry
+result.timestamp  # datetime (UTC)
 
 # Properties
-result.is_success    # True wenn rc == 0
-result.entry_count   # Anzahl der Einträge
+result.is_success  # True wenn rc == 0
+result.entry_count  # Anzahl der Einträge
 result.unread_count  # Anzahl der ungelesenen Einträge
 ```
 
@@ -237,14 +234,14 @@ Ergebnis des Herunterladens eines Dokuments.
 from finanzonline_databox.domain.models import DataboxDownloadResult
 
 # Beispiel-Ergebnis
-result.rc           # 0 (Erfolg)
-result.msg          # None oder Fehlermeldung
-result.content      # bytes (decodiertes Dokument)
-result.timestamp    # datetime (UTC)
+result.rc  # 0 (Erfolg)
+result.msg  # None oder Fehlermeldung
+result.content  # bytes (decodiertes Dokument)
+result.timestamp  # datetime (UTC)
 
 # Properties
-result.is_success   # True wenn rc == 0 und content ist nicht None
-result.content_size # Größe in Bytes
+result.is_success  # True wenn rc == 0 und content ist nicht None
+result.content_size  # Größe in Bytes
 ```
 
 **Attribute:**
@@ -266,14 +263,8 @@ Use Case zum Auflisten von DataBox-Einträgen.
 
 ```python
 from finanzonline_databox.application.use_cases import ListDataboxUseCase
-from finanzonline_databox.adapters.finanzonline import (
-    FinanzOnlineSessionClient,
-    DataboxClient
-)
-from finanzonline_databox.domain.models import (
-    FinanzOnlineCredentials,
-    DataboxListRequest
-)
+from finanzonline_databox.adapters.finanzonline import FinanzOnlineSessionClient, DataboxClient
+from finanzonline_databox.domain.models import FinanzOnlineCredentials, DataboxListRequest
 
 # Clients erstellen
 session_client = FinanzOnlineSessionClient(timeout=30.0)
@@ -283,12 +274,7 @@ databox_client = DataboxClient(timeout=30.0)
 use_case = ListDataboxUseCase(session_client, databox_client)
 
 # Auflistung ausführen
-credentials = FinanzOnlineCredentials(
-    tid="123456789",
-    benid="WEBUSER",
-    pin="password",
-    herstellerid="ATU12345678"
-)
+credentials = FinanzOnlineCredentials(tid="123456789", benid="WEBUSER", pin="password", herstellerid="ATU12345678")
 
 # Alle ungelesenen auflisten
 result = use_case.execute(credentials)
@@ -330,11 +316,7 @@ use_case = DownloadEntryUseCase(session_client, databox_client)
 result = use_case.execute(credentials, applkey="abc123def456xyz")
 
 # Herunterladen und in Datei speichern
-result = use_case.execute(
-    credentials,
-    applkey="abc123def456xyz",
-    output_path=Path("./dokument.pdf")
-)
+result = use_case.execute(credentials, applkey="abc123def456xyz", output_path=Path("./dokument.pdf"))
 
 if result.is_success:
     print(f"Heruntergeladen: {result.content_size} Bytes")
@@ -369,49 +351,24 @@ from pathlib import Path
 use_case = SyncDataboxUseCase(session_client, databox_client)
 
 # Alle ungelesenen Dokumente synchronisieren
-result = use_case.execute(
-    credentials,
-    output_dir=Path("./databox-archiv")
-)
+result = use_case.execute(credentials, output_dir=Path("./databox-archiv"))
 
 # Nur Bescheide synchronisieren
 request = DataboxListRequest(erltyp="B")
-result = use_case.execute(
-    credentials,
-    output_dir=Path("./bescheide"),
-    request=request
-)
+result = use_case.execute(credentials, output_dir=Path("./bescheide"), request=request)
 
 # Nur Protokolle mit Referenz UID synchronisieren
 request = DataboxListRequest(erltyp="P")
-result = use_case.execute(
-    credentials,
-    output_dir=Path("./uid-protokolle"),
-    request=request,
-    anbringen_filter="UID"
-)
+result = use_case.execute(credentials, output_dir=Path("./uid-protokolle"), request=request, anbringen_filter="UID")
 
 # Nur ungelesene Dokumente synchronisieren
-result = use_case.execute(
-    credentials,
-    output_dir=Path("./ungelesene"),
-    read_filter="unread"
-)
+result = use_case.execute(credentials, output_dir=Path("./ungelesene"), read_filter="unread")
 
 # Nur gelesene Dokumente erneut herunterladen
-result = use_case.execute(
-    credentials,
-    output_dir=Path("./gelesene"),
-    read_filter="read",
-    skip_existing=False
-)
+result = use_case.execute(credentials, output_dir=Path("./gelesene"), read_filter="read", skip_existing=False)
 
 # Alle Dokumente synchronisieren (gelesen und ungelesen)
-result = use_case.execute(
-    credentials,
-    output_dir=Path("./alle-dokumente"),
-    read_filter="all"
-)
+result = use_case.execute(credentials, output_dir=Path("./alle-dokumente"), read_filter="all")
 
 print(f"Heruntergeladen: {result.downloaded}")
 print(f"Übersprungen: {result.skipped}")
@@ -451,19 +408,19 @@ print(f"Gesamt Bytes: {result.total_bytes}")
 Ergebnis einer Sync-Operation.
 
 ```python
-result.total_retrieved   # Rohanzahl von API vor Filterung
-result.total_listed      # Einträge nach Filterung
-result.unread_listed     # Ungelesene Einträge in gefilterter Liste
-result.downloaded        # Erfolgreich heruntergeladen
-result.skipped           # Übersprungen (Datei existiert bereits lokal)
-result.failed            # Fehlgeschlagen beim Herunterladen
-result.total_bytes       # Gesamt heruntergeladene Bytes
+result.total_retrieved  # Rohanzahl von API vor Filterung
+result.total_listed  # Einträge nach Filterung
+result.unread_listed  # Ungelesene Einträge in gefilterter Liste
+result.downloaded  # Erfolgreich heruntergeladen
+result.skipped  # Übersprungen (Datei existiert bereits lokal)
+result.failed  # Fehlgeschlagen beim Herunterladen
+result.total_bytes  # Gesamt heruntergeladene Bytes
 result.downloaded_files  # Tupel von (DataboxEntry, Path) für heruntergeladene Dateien
-result.applied_filters   # Tupel von angewendeten Filternamen (z.B. ("Unread", "UID:E1"))
+result.applied_filters  # Tupel von angewendeten Filternamen (z.B. ("Unread", "UID:E1"))
 
 # Properties
-result.is_success        # True wenn failed == 0
-result.has_new_downloads # True wenn downloaded > 0
+result.is_success  # True wenn failed == 0
+result.has_new_downloads  # True wenn downloaded > 0
 ```
 
 **Attribute:**
@@ -508,12 +465,12 @@ config = EmailConfig(
     smtp_hosts=["smtp.beispiel.at:587"],
     from_address="alerts@beispiel.at",
     smtp_username="benutzer@beispiel.at",  # Optional
-    smtp_password="passwort",               # Optional
+    smtp_password="passwort",  # Optional
     use_starttls=True,
     timeout=30.0,
     raise_on_missing_attachments=True,
     raise_on_invalid_recipient=True,
-    default_recipients=["admin@beispiel.at"]
+    default_recipients=["admin@beispiel.at"],
 )
 ```
 
@@ -541,10 +498,7 @@ Sendet eine E-Mail mit konfigurierten SMTP-Einstellungen.
 from finanzonline_databox.mail import EmailConfig, send_email
 from pathlib import Path
 
-config = EmailConfig(
-    smtp_hosts=["smtp.beispiel.at:587"],
-    from_address="alerts@beispiel.at"
-)
+config = EmailConfig(smtp_hosts=["smtp.beispiel.at:587"], from_address="alerts@beispiel.at")
 
 send_email(
     config=config,
@@ -553,7 +507,7 @@ send_email(
     body="Klartext-Inhalt",
     body_html="<h1>HTML-Inhalt</h1>",  # Optional
     from_address="override@beispiel.at",  # Optional
-    attachments=[Path("bericht.pdf")]  # Optional
+    attachments=[Path("bericht.pdf")],  # Optional
 )
 ```
 
@@ -585,17 +539,9 @@ Sendet eine einfache Klartext-Benachrichtigungs-E-Mail.
 ```python
 from finanzonline_databox.mail import EmailConfig, send_notification
 
-config = EmailConfig(
-    smtp_hosts=["smtp.beispiel.at:587"],
-    from_address="alerts@beispiel.at"
-)
+config = EmailConfig(smtp_hosts=["smtp.beispiel.at:587"], from_address="alerts@beispiel.at")
 
-send_notification(
-    config=config,
-    recipients="admin@beispiel.at",
-    subject="Systemwarnung",
-    message="Backup erfolgreich abgeschlossen"
-)
+send_notification(config=config, recipients="admin@beispiel.at", subject="Systemwarnung", message="Backup erfolgreich abgeschlossen")
 ```
 
 **Parameter:**
@@ -631,11 +577,11 @@ Alle Domain-Exceptions erben von `DataboxError`:
 
 ```python
 from finanzonline_databox.domain.errors import (
-    DataboxError,            # Basis-Exception
-    ConfigurationError,      # Fehlende oder ungültige Konfiguration
-    AuthenticationError,     # Login/Zugangsdaten-Fehler
-    SessionError,            # Session-Verwaltungsfehler
-    DataboxOperationError,   # DataBox-Operationsfehler
+    DataboxError,  # Basis-Exception
+    ConfigurationError,  # Fehlende oder ungültige Konfiguration
+    AuthenticationError,  # Login/Zugangsdaten-Fehler
+    SessionError,  # Session-Verwaltungsfehler
+    DataboxOperationError,  # DataBox-Operationsfehler
 )
 ```
 
@@ -652,25 +598,19 @@ from finanzonline_databox.domain.errors import (
 ## Rückgabecode-Hilfsfunktionen
 
 ```python
-from finanzonline_databox.domain.return_codes import (
-    get_return_code_info,
-    is_success,
-    is_retryable,
-    Severity,
-    ReturnCodeInfo
-)
+from finanzonline_databox.domain.return_codes import get_return_code_info, is_success, is_retryable, Severity, ReturnCodeInfo
 
 # Informationen über einen Rückgabecode abrufen
 info = get_return_code_info(0)
-print(info.code)       # 0
-print(info.meaning)    # "Erfolg"
-print(info.severity)   # Severity.SUCCESS
+print(info.code)  # 0
+print(info.meaning)  # "Erfolg"
+print(info.severity)  # Severity.SUCCESS
 print(info.retryable)  # False
 
 # Schnellprüfungen
-is_success(0)      # True
-is_retryable(-2)   # True (Wartung)
-is_retryable(-3)   # True (Technischer Fehler)
+is_success(0)  # True
+is_retryable(-2)  # True (Wartung)
+is_retryable(-3)  # True (Technischer Fehler)
 ```
 
 **DataBox-Rückgabecodes:**

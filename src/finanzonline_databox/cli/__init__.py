@@ -21,6 +21,8 @@ System Role:
 # Entry points (pyproject.toml) reference ``finanzonline_databox.cli:main``.
 # Tests import private helpers via ``from finanzonline_databox.cli import _parse_date`` etc.
 
+# Trigger command registration on the ``cli`` group.
+from . import _commands as _commands
 from ._app import (
     CLICK_CONTEXT_SETTINGS,
     TRACEBACK_SUMMARY_LIMIT,
@@ -44,23 +46,20 @@ from ._notifications import (
     _resolve_notification_recipients,
 )
 
-# Trigger command registration on the ``cli`` group.
-from . import _commands as _commands  # noqa: F401
-
 __all__ = [
     "CLICK_CONTEXT_SETTINGS",
     "TRACEBACK_SUMMARY_LIMIT",
     "TRACEBACK_VERBOSE_LIMIT",
     "CliContext",
+    "_filter_unread_entries",
+    # Private helpers re-exported for test access
+    "_get_databox_error_info",
+    "_get_error_info",
+    "_parse_date",
+    "_resolve_notification_recipients",
     "apply_traceback_preferences",
     "cli",
     "main",
     "restore_traceback_state",
     "snapshot_traceback_state",
-    # Private helpers re-exported for test access
-    "_get_databox_error_info",
-    "_get_error_info",
-    "_filter_unread_entries",
-    "_parse_date",
-    "_resolve_notification_recipients",
 ]

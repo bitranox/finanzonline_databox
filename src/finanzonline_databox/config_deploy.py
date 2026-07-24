@@ -5,7 +5,7 @@ host, or user configuration locations. Uses lib_layered_config's deploy_config
 function to copy the bundled defaultconfig.toml to requested target layers.
 
 Contents:
-    * :func:`deploy_configuration` – deploys configuration to specified targets
+    * :func:`deploy_configuration` - deploys configuration to specified targets
 
 System Role:
     Lives in the behaviors layer. The CLI command delegates to this module for
@@ -15,15 +15,19 @@ System Role:
 
 from __future__ import annotations
 
-from collections.abc import Sequence
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from lib_layered_config import deploy_config
 from lib_layered_config.examples.deploy import DeployAction, DeployResult
 
 from . import __init__conf__
 from .config import get_default_config_path
-from .enums import DeployTarget
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from pathlib import Path
+
+    from .enums import DeployTarget
 
 _DEPLOYED_ACTIONS = frozenset({DeployAction.CREATED, DeployAction.OVERWRITTEN})
 
@@ -45,9 +49,7 @@ def _extract_deployed_paths(results: list[DeployResult]) -> list[Path]:
     for result in results:
         if result.action in _DEPLOYED_ACTIONS:
             paths.append(result.destination)
-        for dot_d_result in result.dot_d_results:
-            if dot_d_result.action in _DEPLOYED_ACTIONS:
-                paths.append(dot_d_result.destination)
+        paths.extend(dot_d_result.destination for dot_d_result in result.dot_d_results if dot_d_result.action in _DEPLOYED_ACTIONS)
     return paths
 
 

@@ -38,7 +38,7 @@ class TestDisplayConfigHuman:
             }
         )
 
-        display_config(config, format=OutputFormat.HUMAN)
+        display_config(config, output_format=OutputFormat.HUMAN)
 
         captured = capsys.readouterr()
         assert "[app]" in captured.out
@@ -54,7 +54,7 @@ class TestDisplayConfigHuman:
             }
         )
 
-        display_config(config, format=OutputFormat.HUMAN)
+        display_config(config, output_format=OutputFormat.HUMAN)
 
         captured = capsys.readouterr()
         assert '"en"' in captured.out
@@ -67,7 +67,7 @@ class TestDisplayConfigHuman:
             }
         )
 
-        display_config(config, format=OutputFormat.HUMAN)
+        display_config(config, output_format=OutputFormat.HUMAN)
 
         captured = capsys.readouterr()
         assert "timeout = 30" in captured.out
@@ -80,7 +80,7 @@ class TestDisplayConfigHuman:
             }
         )
 
-        display_config(config, format=OutputFormat.HUMAN)
+        display_config(config, output_format=OutputFormat.HUMAN)
 
         captured = capsys.readouterr()
         assert '["a@b.com", "c@d.com"]' in captured.out
@@ -94,7 +94,7 @@ class TestDisplayConfigHuman:
             }
         )
 
-        display_config(config, format=OutputFormat.HUMAN, section="app")
+        display_config(config, output_format=OutputFormat.HUMAN, section="app")
 
         captured = capsys.readouterr()
         assert "[app]" in captured.out
@@ -106,7 +106,7 @@ class TestDisplayConfigHuman:
         config = _make_mock_config({"app": {"language": "en"}})
 
         with pytest.raises(SystemExit) as exc_info:
-            display_config(config, format=OutputFormat.HUMAN, section="nonexistent")
+            display_config(config, output_format=OutputFormat.HUMAN, section="nonexistent")
 
         assert exc_info.value.code == 1
         captured = capsys.readouterr()
@@ -120,7 +120,7 @@ class TestDisplayConfigJson:
         """Displays all configuration as JSON."""
         config = _make_mock_config({"app": {"language": "en"}})
 
-        display_config(config, format=OutputFormat.JSON)
+        display_config(config, output_format=OutputFormat.JSON)
 
         captured = capsys.readouterr()
         # Uses config.to_json() for full output
@@ -134,7 +134,7 @@ class TestDisplayConfigJson:
             }
         )
 
-        display_config(config, format=OutputFormat.JSON, section="app")
+        display_config(config, output_format=OutputFormat.JSON, section="app")
 
         captured = capsys.readouterr()
         assert '"app"' in captured.out
@@ -145,7 +145,7 @@ class TestDisplayConfigJson:
         config = _make_mock_config({"app": {"language": "en"}})
 
         with pytest.raises(SystemExit) as exc_info:
-            display_config(config, format=OutputFormat.JSON, section="nonexistent")
+            display_config(config, output_format=OutputFormat.JSON, section="nonexistent")
 
         assert exc_info.value.code == 1
         captured = capsys.readouterr()

@@ -34,11 +34,11 @@ from .use_cases import (
 __all__ = [
     # Ports
     "DataboxPort",
-    "NotificationPort",
-    "SessionPort",
     # Use cases
     "DownloadEntryUseCase",
     "ListDataboxUseCase",
+    "NotificationPort",
+    "SessionPort",
     "SyncDataboxUseCase",
     "SyncResult",
 ]

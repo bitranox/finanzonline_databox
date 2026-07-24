@@ -14,27 +14,31 @@ Contents
 
 System Role
 -----------
-CLI adapter layer — notification orchestration for CLI commands.
+CLI adapter layer - notification orchestration for CLI commands.
 """
 
 # pyright: reportUnusedFunction=false
 from __future__ import annotations
 
 import logging
-from pathlib import Path
-
-from lib_layered_config import Config
+from typing import TYPE_CHECKING
 
 from ..adapters.notification import EmailNotificationAdapter
-from ..application.use_cases import SyncResult
-from ..config import FinanzOnlineConfig
-from ..domain.models import DataboxEntry
 from ..mail import EmailConfig, load_email_config_from_dict
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from lib_layered_config import Config
+
+    from ..application.use_cases import SyncResult
+    from ..config import FinanzOnlineConfig
+    from ..domain.models import DataboxEntry
 
 logger = logging.getLogger(__name__)
 
 
-def _log_notification_result(success: bool, recipients: list[str], notification_type: str) -> None:
+def _log_notification_result(*, success: bool, recipients: list[str], notification_type: str) -> None:
     """Log the result of a notification attempt."""
     if success:
         logger.info("%s email sent", notification_type, extra={"recipients": recipients})
@@ -103,7 +107,7 @@ def _send_sync_notification(
 
         adapter, final_recipients = prepared
         success = adapter.send_sync_result(result, output_dir, final_recipients)
-        _log_notification_result(success, final_recipients, "Sync")
+        _log_notification_result(success=success, recipients=final_recipients, notification_type="Sync")
 
     except Exception as e:
         logger.warning("Sync notification error (non-fatal): %s", e)
@@ -168,6 +172,7 @@ def _send_document_notifications(
 
 
 def _send_sync_notifications_if_enabled(
+    *,
     no_email: bool,
     config: Config,
     fo_config: FinanzOnlineConfig,

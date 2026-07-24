@@ -260,7 +260,7 @@ class TestBuildDiagnostics:
     def test_creates_list_diagnostics(self, valid_credentials: Any) -> None:
         """Creates diagnostics with masked values for list operation."""
         request = DataboxListRequest(erltyp="B")
-        diag = _build_diagnostics("getDatabox", "SESSION123456", valid_credentials, request)
+        diag = _build_diagnostics("getDatabox", session_id="SESSION123456", credentials=valid_credentials, request=request)
 
         assert diag.operation == "getDatabox"
         assert diag.erltyp == "B"
@@ -273,7 +273,7 @@ class TestBuildDiagnostics:
         response.rc = 0
         response.msg = "Success"
 
-        diag = _build_diagnostics("getDatabox", "SESSION123", valid_credentials, request, response=response)
+        diag = _build_diagnostics("getDatabox", session_id="SESSION123", credentials=valid_credentials, request=request, response=response)
 
         assert diag.return_code == "0"
         assert diag.response_message == "Success"
@@ -281,7 +281,7 @@ class TestBuildDiagnostics:
     def test_creates_download_diagnostics(self, valid_credentials: Any) -> None:
         """Creates diagnostics with masked values for download operation."""
         request = DataboxDownloadRequest(applkey="abc123def456")
-        diag = _build_diagnostics("getDataboxEntry", "SESSION123456", valid_credentials, request)
+        diag = _build_diagnostics("getDataboxEntry", session_id="SESSION123456", credentials=valid_credentials, request=request)
 
         assert diag.operation == "getDataboxEntry"
         assert diag.applkey == "abc123def456"

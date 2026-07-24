@@ -50,27 +50,27 @@ from .return_codes import (
 )
 
 __all__ = [
+    # Errors
+    "AuthenticationError",
+    # Return codes
+    "CliExitCode",
+    "ConfigurationError",
     # Models
     "DataboxDownloadRequest",
     "DataboxDownloadResult",
     "DataboxEntry",
+    "DataboxError",
+    "DataboxErrorInfo",
     "DataboxListRequest",
     "DataboxListResult",
+    "DataboxOperationError",
     "Diagnostics",
     "FinanzOnlineCredentials",
     "NotificationOptions",
-    "SessionInfo",
-    # Errors
-    "AuthenticationError",
-    "ConfigurationError",
-    "DataboxError",
-    "DataboxErrorInfo",
-    "DataboxOperationError",
-    "SessionError",
-    # Return codes
-    "CliExitCode",
     "ReturnCode",
     "ReturnCodeInfo",
+    "SessionError",
+    "SessionInfo",
     "Severity",
     "get_return_code_info",
     "is_retryable",

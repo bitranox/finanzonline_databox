@@ -7,12 +7,12 @@ optional email notifications.
 
 Contents
 --------
-* :class:`ErrorTypeInfo` / :class:`FilesystemErrorHint` – typed error mappings.
-* :func:`_handle_command_exception` – top-level handler for databox commands.
+* :class:`ErrorTypeInfo` / :class:`FilesystemErrorHint` - typed error mappings.
+* :func:`_handle_command_exception` - top-level handler for databox commands.
 
 System Role
 -----------
-CLI adapter layer — error presentation and notification dispatch.
+CLI adapter layer - error presentation and notification dispatch.
 """
 
 # pyright: reportUnusedFunction=false
@@ -21,11 +21,10 @@ from __future__ import annotations
 import errno
 import logging
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import rich_click as click
-from lib_layered_config import Config
 
-from ..config import FinanzOnlineConfig
 from ..domain.errors import (
     AuthenticationError,
     ConfigurationError,
@@ -38,6 +37,11 @@ from ..domain.errors import (
 from ..domain.return_codes import CliExitCode, get_return_code_info
 from ..i18n import _
 from ._notifications import _log_notification_result, _prepare_notification  # pyright: ignore[reportPrivateUsage]
+
+if TYPE_CHECKING:
+    from lib_layered_config import Config
+
+    from ..config import FinanzOnlineConfig
 
 logger = logging.getLogger(__name__)
 
@@ -191,7 +195,7 @@ def _send_error_notification(
             retryable=error_info.retryable,
             diagnostics=error_info.diagnostics,
         )
-        _log_notification_result(success, final_recipients, "Error")
+        _log_notification_result(success=success, recipients=final_recipients, notification_type="Error")
 
     except Exception as e:
         logger.warning("Error notification error (non-fatal): %s", e)

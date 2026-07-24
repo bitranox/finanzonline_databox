@@ -13,6 +13,8 @@ from __future__ import annotations
 
 from finanzonline_databox.i18n import _
 
+_BYTES_PER_KIB = 1024
+
 
 def get_erltyp_display_name(erltyp: str) -> str:
     """Get translated display name for document type.
@@ -77,8 +79,8 @@ def format_bytes(size: int) -> str:
         >>> format_bytes(2621440)
         '2.5 MB'
     """
-    if size < 1024:
+    if size < _BYTES_PER_KIB:
         return f"{size} B"
-    if size < 1024 * 1024:
-        return f"{size / 1024:.1f} KB"
-    return f"{size / (1024 * 1024):.1f} MB"
+    if size < _BYTES_PER_KIB * _BYTES_PER_KIB:
+        return f"{size / _BYTES_PER_KIB:.1f} KB"
+    return f"{size / (_BYTES_PER_KIB * _BYTES_PER_KIB):.1f} MB"

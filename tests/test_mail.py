@@ -8,12 +8,10 @@ email operations.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
-from typing import IO, Any
+from typing import IO, TYPE_CHECKING, Any
 from unittest.mock import patch
 
 import pytest
-from btx_lib_mail.lib_mail import DeliveryOptions
 
 from finanzonline_databox.mail import (
     EmailConfig,
@@ -21,6 +19,11 @@ from finanzonline_databox.mail import (
     send_email,
     send_notification,
 )
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from btx_lib_mail.lib_mail import DeliveryOptions
 
 # ============================================================================
 # Transport doubles
@@ -155,7 +158,7 @@ class TestEmailConfigCustomValues:
 
 
 # ============================================================================
-# EmailConfig: Immutability
+# EmailConfig: Frozen Instances
 # ============================================================================
 
 
@@ -168,7 +171,7 @@ def test_email_config_is_frozen() -> None:
 
 
 # ============================================================================
-# EmailConfig: Validation
+# EmailConfig: Input Validation
 # ============================================================================
 
 
@@ -526,7 +529,7 @@ class TestSendEmailErrors:
         """SMTP connection failure raises RuntimeError."""
         transport = FailingTransport(ConnectionError("Cannot connect to SMTP server"))
 
-        with pytest.raises(RuntimeError, match="failed.*on all of following hosts"):
+        with pytest.raises(RuntimeError, match=r"failed.*on all of following hosts"):
             send_email(
                 config=valid_email_config,
                 recipients="recipient@test.com",
@@ -545,7 +548,7 @@ class TestSendEmailErrors:
         )
         transport = FailingTransport(Exception("Authentication failed"))
 
-        with pytest.raises(RuntimeError, match="failed.*on all of following hosts"):
+        with pytest.raises(RuntimeError, match=r"failed.*on all of following hosts"):
             send_email(
                 config=config,
                 recipients="recipient@test.com",
@@ -579,18 +582,20 @@ class TestSendEmailErrors:
 
         # Patch btx_send to simulate FileNotFoundError for missing attachment
         # (bypasses btx_lib_mail's security check on macOS temp directories)
-        with patch(
-            "finanzonline_databox.mail.btx_send",
-            side_effect=FileNotFoundError(f"Attachment not found: {nonexistent}"),
+        with (
+            patch(
+                "finanzonline_databox.mail.btx_send",
+                side_effect=FileNotFoundError(f"Attachment not found: {nonexistent}"),
+            ),
+            pytest.raises(FileNotFoundError),
         ):
-            with pytest.raises(FileNotFoundError):
-                send_email(
-                    config=config,
-                    recipients="recipient@test.com",
-                    subject="Test",
-                    body="Hello",
-                    attachments=[nonexistent],
-                )
+            send_email(
+                config=config,
+                recipients="recipient@test.com",
+                subject="Test",
+                body="Hello",
+                attachments=[nonexistent],
+            )
 
     def test_all_smtp_hosts_failing_raises(self) -> None:
         """Every host is tried before RuntimeError is raised."""

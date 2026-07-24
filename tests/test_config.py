@@ -11,10 +11,10 @@ from finanzonline_databox.config import (
     AppConfig,
     _normalize_path_string,  # pyright: ignore[reportPrivateUsage]
     _parse_email_format,  # pyright: ignore[reportPrivateUsage]
-    parse_string_list,
     get_default_config_path,
     load_app_config,
     load_finanzonline_config,
+    parse_string_list,
 )
 from finanzonline_databox.domain.errors import ConfigurationError
 from finanzonline_databox.enums import EmailFormat

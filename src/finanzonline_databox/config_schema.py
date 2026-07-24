@@ -52,14 +52,14 @@ def parse_string_list(value: Any) -> list[str]:
     Invalid values return empty list.
     """
     if isinstance(value, list):
-        items = cast(list[object], value)
+        items = cast("list[object]", value)
         return [str(item) for item in items if item]
 
     if isinstance(value, str) and value.startswith("["):
         try:
             parsed: object = json.loads(value)
             if isinstance(parsed, list):
-                parsed_items = cast(list[object], parsed)
+                parsed_items = cast("list[object]", parsed)
                 return [str(item) for item in parsed_items if item]
         except json.JSONDecodeError as exc:
             logger.warning("Malformed JSON string list %r, returning empty list: %s", value, exc)
@@ -74,7 +74,7 @@ def _parse_float_lenient(value: Any, default: float) -> float:
     return default
 
 
-def _parse_bool_lenient(value: Any, default: bool) -> bool:
+def _parse_bool_lenient(value: Any, *, default: bool) -> bool:
     """Parse a boolean value with fallback to default."""
     if isinstance(value, bool):
         return value
@@ -183,7 +183,7 @@ class EmailConfigSchema(BaseModel):
             "raise_on_missing_attachments": True,
             "raise_on_invalid_recipient": True,
         }
-        return _parse_bool_lenient(v, defaults.get(info.field_name, True))
+        return _parse_bool_lenient(v, default=defaults.get(info.field_name, True))
 
 
 class LibLogRichConfigSchema(BaseModel):

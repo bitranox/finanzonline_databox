@@ -14,7 +14,7 @@ Contents
 
 System Role
 -----------
-CLI adapter layer — orchestration utilities for databox commands.
+CLI adapter layer - orchestration utilities for databox commands.
 """
 
 # pyright: reportUnusedFunction=false
@@ -23,12 +23,11 @@ from __future__ import annotations
 import logging
 from datetime import datetime, timedelta
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import rich_click as click
-from lib_layered_config import Config
 
 from .._datetime_utils import local_now
-from ..adapters.finanzonline import DataboxClient, FinanzOnlineSessionClient
 from ..adapters.output import (
     format_list_result_human,
     format_list_result_json,
@@ -41,6 +40,11 @@ from ..domain.errors import ConfigurationError
 from ..domain.models import DataboxEntry, DataboxListRequest, DataboxListResult, FinanzOnlineCredentials
 from ..enums import OutputFormat, ReadFilter
 from ..i18n import _
+
+if TYPE_CHECKING:
+    from lib_layered_config import Config
+
+    from ..adapters.finanzonline import DataboxClient, FinanzOnlineSessionClient
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +64,7 @@ def _parse_date(date_str: str | None) -> datetime | None:
     if date_str is None:
         return None
     try:
-        parsed = datetime.strptime(date_str, "%Y-%m-%d")  # noqa: DTZ007
+        parsed = datetime.strptime(date_str, "%Y-%m-%d")
         return parsed.astimezone()  # Convert to local timezone
     except ValueError as exc:
         msg = f"Invalid date format: {date_str}. Use YYYY-MM-DD."
@@ -383,6 +387,7 @@ def _execute_list_operation(
 
 def _execute_chunked_sync(
     use_case: SyncDataboxUseCase,
+    *,
     credentials: FinanzOnlineCredentials,
     output_dir: Path,
     erltyp: str,
@@ -459,6 +464,7 @@ def _resolve_output_dir(
 
 def _resolve_download_filename(
     output_dir: Path,
+    *,
     filename: str | None,
     applkey: str,
     credentials: FinanzOnlineCredentials,

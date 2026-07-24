@@ -6,8 +6,8 @@ import pytest
 
 from finanzonline_databox.i18n import (
     DEFAULT_LANGUAGE,
-    Language,
     N_,
+    Language,
     _,
     get_current_language,
     setup_locale,

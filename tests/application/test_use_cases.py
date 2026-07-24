@@ -6,6 +6,7 @@ Each test reads like plain English and checks exactly one behavior.
 
 from __future__ import annotations
 
+import errno
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -18,8 +19,6 @@ from finanzonline_databox.application.use_cases import (
     SyncResult,
     _get_unique_path,  # pyright: ignore[reportPrivateUsage]
 )
-import errno
-
 from finanzonline_databox.domain.errors import FilesystemError, SessionError
 from finanzonline_databox.domain.models import (
     DataboxDownloadResult,
@@ -483,6 +482,7 @@ class TestSyncDataboxUseCaseSuccess:
 
     def test_syncs_entries_to_directory(
         self,
+        *,
         fake_session_client: FakeSessionClient,
         fake_databox_client: FakeDataboxClient,
         valid_credentials: Any,
@@ -519,6 +519,7 @@ class TestSyncDataboxUseCaseSkipping:
 
     def test_skips_existing_files(
         self,
+        *,
         fake_session_client: FakeSessionClient,
         fake_databox_client: FakeDataboxClient,
         valid_credentials: Any,
@@ -574,6 +575,7 @@ class TestSyncDataboxUseCaseFailure:
 
     def test_counts_failed_downloads(
         self,
+        *,
         fake_session_client: FakeSessionClient,
         fake_databox_client: FakeDataboxClient,
         valid_credentials: Any,
@@ -599,6 +601,7 @@ class TestSyncDataboxUseCaseFailure:
 
     def test_handles_download_exception(
         self,
+        *,
         fake_session_client: FakeSessionClient,
         fake_databox_client: FakeDataboxClient,
         valid_credentials: Any,
@@ -677,6 +680,7 @@ class TestSyncDataboxUseCaseBytesCalculation:
 
     def test_calculates_total_bytes_from_downloaded_content(
         self,
+        *,
         fake_session_client: FakeSessionClient,
         fake_databox_client: FakeDataboxClient,
         valid_credentials: Any,
@@ -711,6 +715,7 @@ class TestSyncDataboxUseCaseAnbringenFilter:
 
     def test_filters_entries_by_anbringen(
         self,
+        *,
         fake_session_client: FakeSessionClient,
         fake_databox_client: FakeDataboxClient,
         valid_credentials: Any,
@@ -745,6 +750,7 @@ class TestSyncDataboxUseCaseAnbringenFilter:
 
     def test_downloads_all_when_no_filter(
         self,
+        *,
         fake_session_client: FakeSessionClient,
         fake_databox_client: FakeDataboxClient,
         valid_credentials: Any,
@@ -774,6 +780,7 @@ class TestSyncDataboxUseCaseAnbringenFilter:
 
     def test_downloads_zero_when_filter_matches_none(
         self,
+        *,
         fake_session_client: FakeSessionClient,
         fake_databox_client: FakeDataboxClient,
         valid_credentials: Any,
@@ -811,6 +818,7 @@ class TestDownloadEntryUseCaseFilesystemError:
 
     def test_raises_filesystem_error_on_mkdir_failure(
         self,
+        *,
         fake_session_client: FakeSessionClient,
         fake_databox_client: FakeDataboxClient,
         valid_credentials: Any,
@@ -836,6 +844,7 @@ class TestDownloadEntryUseCaseFilesystemError:
 
     def test_raises_filesystem_error_on_write_failure(
         self,
+        *,
         fake_session_client: FakeSessionClient,
         fake_databox_client: FakeDataboxClient,
         valid_credentials: Any,
@@ -861,6 +870,7 @@ class TestDownloadEntryUseCaseFilesystemError:
 
     def test_logs_out_even_when_filesystem_error_occurs(
         self,
+        *,
         fake_session_client: FakeSessionClient,
         fake_databox_client: FakeDataboxClient,
         valid_credentials: Any,
@@ -912,6 +922,7 @@ class TestSyncDataboxUseCaseFilesystemError:
 
     def test_counts_file_write_failure_as_failed(
         self,
+        *,
         fake_session_client: FakeSessionClient,
         fake_databox_client: FakeDataboxClient,
         valid_credentials: Any,
@@ -951,6 +962,7 @@ class TestSyncDataboxUseCaseFilesystemError:
 
     def test_continues_after_individual_file_failure(
         self,
+        *,
         fake_session_client: FakeSessionClient,
         fake_databox_client: FakeDataboxClient,
         valid_credentials: Any,

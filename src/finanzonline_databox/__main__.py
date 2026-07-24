@@ -6,10 +6,10 @@ project's packaging guidelines. The wrapper delegates to
 installed console script, including traceback handling and exit-code mapping.
 
 Contents:
-    * :func:`_open_cli_session` – wires ``cli_session`` with the agreed limits.
-    * :func:`_command_to_run` / :func:`_command_name` – expose the command and label
+    * :func:`_open_cli_session` - wires ``cli_session`` with the agreed limits.
+    * :func:`_command_to_run` / :func:`_command_name` - expose the command and label
       used by the module entry.
-    * :func:`_module_main` – drives execution and returns the exit code.
+    * :func:`_module_main` - drives execution and returns the exit code.
 
 System Role:
     Lives in the adapters layer. It bridges CPython's module execution entry point
@@ -21,14 +21,17 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable
-from contextlib import AbstractContextManager
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 import lib_log_rich.runtime
-import rich_click as click
 from lib_cli_exit_tools import cli_session
 
 from . import __init__conf__, cli
+
+if TYPE_CHECKING:
+    from contextlib import AbstractContextManager
+
+    import rich_click as click
 
 # Match the CLI defaults so truncation behaviour stays consistent across entry
 # points regardless of whether users call the console script or ``python -m``.

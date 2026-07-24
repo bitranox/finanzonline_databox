@@ -5,10 +5,10 @@ Tests cover exception hierarchy, attributes, and message handling.
 
 from __future__ import annotations
 
-import pytest
-
 import errno
 from pathlib import Path
+
+import pytest
 
 from finanzonline_databox.domain.errors import (
     AuthenticationError,
@@ -241,7 +241,7 @@ class TestExceptionHierarchy:
         for err in errors:
             try:
                 raise err
-            except DataboxError as caught:
+            except DataboxError as caught:  # noqa: PERF203 - the loop body IS the test: raise/catch each error variant
                 assert caught.message in ["config", "auth", "session", "operation", "filesystem"]
 
     def test_specific_catch_first(self) -> None:
