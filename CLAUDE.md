@@ -4,37 +4,6 @@
 
 `finanzonline_databox` is a Python library and CLI for **automated retrieval of documents from the Austrian FinanzOnline DataBox**. It lists, downloads, and syncs tax documents (Bescheide, Mitteilungen, etc.) from the BMF DataBox Download web service. It follows Clean Architecture principles with clear separation between domain, application, and adapter layers.
 
-## Session Initialization
-
-When starting a new session, read and apply the following system prompt files from `/media/srv-main-softdev/projects/softwarestack/systemprompts`:
-
-### Core Guidelines (Always Apply)
-- `core_programming_solid.md`
-
-### Bash-Specific Guidelines
-When working with Bash scripts:
-- use skill `bitranox:coding-bash-reference` when in doubt of bash features or syntax
-- `core_programming_solid.md`
-- use skill `bitranox:coding-bash-clean-architecture`
-- `bash_clean_code.md`
-- `bash_small_functions.md`
-
-### Python-Specific Guidelines
-When working with Python code:
-- `core_programming_solid.md`
-- `python_solid_architecture_enforcer.md`
-- use skill `bitranox:coding-python-clean-architecture`
-- `python_clean_code.md`
-- `python_small_functions_style.md`
-- use skill `bitranox:coding-python-use-modern-libraries`
-- `python_structure_template.md`
-
-### Additional Guidelines
-- `self_documenting.md`
-- `self_documenting_template.md`
-- `python_jupyter_notebooks.md`
-- `python_testing.md`
-
 ## Project Structure
 
 ```
@@ -99,35 +68,17 @@ finanzonline_databox/
     - After updating project metadata (version, summary, URLs, authors) run `make test` (or `python -m scripts.test`) to regenerate the metadata module before committing.
 - **Release Tags**: Format is `vX.Y.Z` (push tags for CI to build and publish)
 
-## Common Make Targets
+## Make targets specific to this repo
 
-| Target            | Description                                                                   |
-|-------------------|-------------------------------------------------------------------------------|
-| `build`           | Build wheel/sdist artifacts                                                   |
-| `bump`            | Bump version (VERSION=X.Y.Z or PART=major\|minor\|patch) and update changelog |
-| `bump-major`      | Increment major version ((X+1).0.0)                                           |
-| `bump-minor`      | Increment minor version (X.Y.Z -> X.(Y+1).0)                                  |
-| `bump-patch`      | Increment patch version (X.Y.Z -> X.Y.(Z+1))                                  |
-| `clean`           | Remove caches, coverage, and build artifacts (includes `dist/` and `build/`)  |
-| `dev`             | Install package with dev extras                                               |
-| `help`            | Show make targets                                                             |
-| `install`         | Editable install                                                              |
-| `menu`            | Interactive TUI menu                                                          |
-| `push`            | Commit changes and push to GitHub (no CI monitoring)                          |
-| `release`         | Tag vX.Y.Z, push, sync packaging, run gh release if available                 |
-| `run`             | Run module entry (`python -m ... --help`)                                     |
-| `test`            | Lint, format, type-check, run tests with coverage, upload to Codecov          |
-| `version-current` | Print current version from `pyproject.toml`                                   |
+- `make run` - Run module entry (`python -m ... --help`)
 
-## Coding Style & Naming Conventions
-
-Follow the guidelines in `python_clean_code.md` for all Python code.
+Everything else is the generated bmk list: run `make help`.
 
 ## Architecture Overview
 
 use skill `bitranox:coding-python-clean-architecture` when designing and implementing features.
 
-## Security & Configuration
+## Security & Configuration specific to this repo
 
 - `.env` files are for local tooling only (CodeCov tokens, FinanzOnline credentials for testing)
 - **NEVER** commit secrets to version control
