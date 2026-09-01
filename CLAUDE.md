@@ -108,10 +108,6 @@ use skill `bitranox:coding-python-clean-architecture` when designing and impleme
 - **Always run `make test` before pushing** to avoid lint/test breakage
 - Ensure all tests pass and code is properly formatted
 
-### Post-Push Monitoring
-- Monitor GitHub Actions for errors after pushing
-- Attempt to correct any CI/CD errors that appear
-
 ## Domain Models
 
 Key domain models for the DataBox service:
