@@ -74,6 +74,23 @@ def _parse_float_lenient(value: Any, default: float) -> float:
     return default
 
 
+def _identifier_text(value: Any) -> Any:
+    """Return an all-digit identifier the config layer read as a number as its text.
+
+    lib_layered_config converts an unquoted ``.env`` or environment value such as ``123456789``
+    to an int. It converts only a number that reads back as the same text, so ``str()`` restores
+    exactly what was written; a leading zero such as ``0815`` was never converted. A bool is left
+    alone, so ``true`` is still refused rather than turned into the text ``True``.
+
+    Examples:
+        >>> _identifier_text(123456789), _identifier_text("ATU12345678"), _identifier_text(True)
+        ('123456789', 'ATU12345678', True)
+    """
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return str(value)
+    return value
+
+
 def _parse_bool_lenient(value: Any, *, default: bool) -> bool:
     """Parse a boolean value with fallback to default."""
     if isinstance(value, bool):
@@ -121,6 +138,12 @@ class FinanzOnlineConfigSchema(BaseModel):
     document_recipients: list[str] = Field(default_factory=list, description="Document notification recipients")
     email_format: str = Field(default="html", description="Email format: html, plain, or both")
     output_dir: str = Field(default="", description="Default output directory")
+
+    @field_validator("tid", "benid", "pin", "herstellerid", mode="before")
+    @classmethod
+    def keep_identifier_text(cls, v: Any) -> Any:
+        """Keep an all-digit credential as the text it was written as."""
+        return _identifier_text(v)
 
     @field_validator("session_timeout", "query_timeout", mode="before")
     @classmethod

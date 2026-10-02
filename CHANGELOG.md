@@ -7,6 +7,13 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+### Fixed
+- An all-digit participant ID, user ID, PIN or manufacturer ID written unquoted in `.env` or the
+  environment (`FINANZONLINE__TID=123456789`) was refused with "Input should be a valid string":
+  lib_layered_config reads such a value as a number, and from 7.0.0 does so in `.env` too. The
+  four credential fields now keep the text as written; a leading zero (`0815`) was never converted.
+  Requires `lib_layered_config>=7.0.0`.
+
 ## [1.2.20] 2026-07-24 14:03:32
 
 ### Fixed
