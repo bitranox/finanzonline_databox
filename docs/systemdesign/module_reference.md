@@ -11,14 +11,19 @@ Complete
 **Related Files:**
 
 * src/finanzonline_databox/behaviors.py
-* src/finanzonline_databox/cli.py
+* src/finanzonline_databox/cli/__init__.py
+* src/finanzonline_databox/cli/_app.py
+* src/finanzonline_databox/cli/_commands.py
+* src/finanzonline_databox/cli/_error_handling.py
+* src/finanzonline_databox/cli/_helpers.py
+* src/finanzonline_databox/cli/_notifications.py
+* src/finanzonline_databox/cli/typed_click.py
 * src/finanzonline_databox/__main__.py
 * src/finanzonline_databox/__init__.py
 * src/finanzonline_databox/__init__conf__.py
 * tests/test_cli.py
 * tests/test_module_entry.py
 * tests/test_behaviors.py
-* tests/test_scripts.py
 
 ---
 
@@ -35,13 +40,13 @@ separation that would be overkill for this minimal template.
 
 * Extracted the behaviour helpers into ``behaviors.py`` so both CLI and library
   consumers have a single cohesive module documenting the temporary domain.
-* Simplified ``cli.py`` to import the behaviour helpers, added explicit
-  functions for applying and restoring traceback preferences, and centralised
+* The ``cli`` package imports the behaviour helpers, provides explicit
+  functions for applying and restoring traceback preferences, and centralises
   the exit-code handling used by both entry points.
 * Reduced ``__main__.py`` to a thin wrapper delegating to the CLI helper while
   sharing the same traceback state restoration helpers.
-* Re-exported the helpers through ``__init__.py`` so CLI and library imports
-  draw from the same source.
+* ``__init__.py`` exposes the package metadata, ``get_config`` and ``print_info``
+  for library consumers.
 * Documented the responsibilities in this module reference so future refactors
   have an authoritative baseline.
 
@@ -90,55 +95,104 @@ stand-in domain.
 * **Output:** Returns ``None``.
 * **Location:** src/finanzonline_databox/behaviors.py
 
+### cli (package layout)
+
+* **Purpose:** ``cli/__init__.py`` re-exports the public surface
+  (``CLICK_CONTEXT_SETTINGS``, ``TRACEBACK_SUMMARY_LIMIT``,
+  ``TRACEBACK_VERBOSE_LIMIT``, ``CliContext``, ``cli``, ``main``,
+  ``apply_traceback_preferences``, ``snapshot_traceback_state``,
+  ``restore_traceback_state``) plus a few private helpers for tests, and imports
+  ``_commands`` so its subcommands register on the ``cli`` group. Entry points
+  reference ``finanzonline_databox.cli:main``.
+* **Submodules:** ``_app`` (root group, traceback state, ``main``),
+  ``_commands`` (``config``, ``config-deploy``, ``list``, ``download``,
+  ``sync``), ``_error_handling`` (exception to exit-code mapping and error
+  notifications), ``_helpers`` (date ranges, chunking, aggregation, filtering,
+  formatting, output paths), ``_notifications`` (sync and document notification
+  mails), ``typed_click`` (typed facade over the rich-click decorators).
+* **Location:** src/finanzonline_databox/cli/
+
 ### cli.apply_traceback_preferences
 
 * **Purpose:** Synchronise traceback configuration between the CLI and ``python -m`` paths.
-* **Input:** Boolean flag enabling rich tracebacks.
+* **Input:** Keyword-only boolean ``enabled`` flag enabling rich tracebacks.
 * **Output:** Updates ``lib_cli_exit_tools.config.traceback`` and
   ``traceback_force_color``.
-* **Location:** src/finanzonline_databox/cli.py
+* **Location:** src/finanzonline_databox/cli/_app.py
+
+### cli.snapshot_traceback_state / cli.restore_traceback_state
+
+* **Purpose:** Capture and reapply the traceback configuration around a run.
+* **Input:** ``restore_traceback_state`` takes the ``(traceback, force_color)``
+  tuple returned by ``snapshot_traceback_state``.
+* **Output:** The tuple, respectively ``None`` after updating
+  ``lib_cli_exit_tools.config``.
+* **Location:** src/finanzonline_databox/cli/_app.py
 
 ### cli.main
 
 * **Purpose:** Execute the click command group with shared exit handling.
-* **Input:** Optional argv, restore flag, summary and verbose limits.
+* **Input:** Optional argv and a keyword-only ``restore_traceback`` flag.
 * **Output:** Integer exit code (0 on success, mapped error codes otherwise).
-* **Location:** src/finanzonline_databox/cli.py
+  Restores the previous traceback state and shuts down ``lib_log_rich``
+  afterwards.
+* **Location:** src/finanzonline_databox/cli/_app.py
 
-### cli._record_traceback_choice / cli._announce_traceback_choice / cli._traceback_option_requested
+### cli.cli (root group) / cli._run_cli / cli.cli_main
 
-* **Purpose:** Persist the selected traceback mode in both the Click context and
-  ``lib_cli_exit_tools`` while exposing a predicate that tells whether the user
-  explicitly provided the option.
-* **Input:** Click context plus the boolean flag derived from CLI options.
-* **Output:** None (mutates context and ``lib_cli_exit_tools.config``) and a
-  boolean value from ``_traceback_option_requested``.
-* **Location:** src/finanzonline_databox/cli.py
+* **Purpose:** The root group stores the global ``--traceback`` and
+  ``--profile`` options in a ``CliContext``, loads configuration, initialises
+  locale and logging, and mirrors the traceback flag into
+  ``lib_cli_exit_tools.config``. A bare invocation prints the command help;
+  passing ``--traceback`` explicitly without a subcommand runs ``cli_main``
+  (the ``noop_main`` placeholder). ``_run_cli`` delegates execution to
+  ``lib_cli_exit_tools.run_cli`` and renders any escaping exception with the
+  summary or verbose traceback limit.
+* **Input:** Click context and global options, respectively optional argv.
+* **Output:** Command side effects, respectively the integer exit code.
+* **Location:** src/finanzonline_databox/cli/_app.py
 
-### cli._invoke_cli / cli._current_traceback_mode / cli._traceback_limit / cli._print_exception / cli._run_cli_via_exit_tools / cli._show_help
+### cli._commands
 
-* **Purpose:** Delegate execution to ``lib_cli_exit_tools`` while deciding how
-  to present tracebacks and when to show command help for bare invocations.
-* **Input:** Global configuration flags, configured length limits, optional
-  argv, and the Click context used for help rendering.
-* **Output:** Either a boolean flag, an integer limit, a rendered help screen,
-  or the exit code produced by ``lib_cli_exit_tools``.
-* **Location:** src/finanzonline_databox/cli.py
+* **Purpose:** Register the ``config``, ``config-deploy``, ``list``,
+  ``download`` and ``sync`` subcommands on the ``cli`` group; the ``info``,
+  ``hello`` and ``fail`` subcommands live next to the group in ``_app.py``.
+* **Location:** src/finanzonline_databox/cli/_commands.py
 
-### __main__._module_main
+### cli._error_handling
 
-* **Purpose:** Provide ``python -m`` entry point mirroring the console script.
-* **Input:** None.
-* **Output:** Exit code from ``cli.main`` after restoring traceback state.
-* **Location:** src/finanzonline_databox/__main__.py
+* **Purpose:** Map domain and filesystem exceptions to user-facing messages and
+  exit codes (``_get_error_info``, ``_get_databox_error_info``), show
+  configuration help, and send error notifications
+  (``_handle_databox_error``, ``_handle_command_exception``).
+* **Location:** src/finanzonline_databox/cli/_error_handling.py
 
-### __main__._open_cli_session / _command_to_run / _command_name
+### cli._helpers
 
-* **Purpose:** Describe the session wiring and command selection used by the
-  module entry point so tests and documentation can reason about the
-  composition.
-* **Output:** Context manager yielding the command runner, the Click command
-  itself, and the shell-facing name.
+* **Purpose:** Date parsing and range chunking, aggregation of chunked list and
+  sync results, read/unread/reference filtering, result formatting, and output
+  directory and filename resolution for the commands.
+* **Location:** src/finanzonline_databox/cli/_helpers.py
+
+### cli._notifications
+
+* **Purpose:** Resolve recipients and send sync and per-document notification
+  mails when enabled in the configuration.
+* **Location:** src/finanzonline_databox/cli/_notifications.py
+
+### cli.typed_click
+
+* **Purpose:** Typed facade over the rich-click ``option``, ``argument`` and
+  ``version_option`` decorators so call sites are fully typed.
+* **Location:** src/finanzonline_databox/cli/typed_click.py
+
+### __main__ (module entry)
+
+* **Purpose:** Provide the ``python -m finanzonline_databox`` entry point by
+  running ``cli.main``, the function the console scripts run, so exit codes
+  and traceback handling are identical across both transports.
+* **Input:** ``sys.argv``.
+* **Output:** ``SystemExit`` carrying the exit code returned by ``cli.main``.
 * **Location:** src/finanzonline_databox/__main__.py
 
 ### __init__conf__.print_info
@@ -150,9 +204,9 @@ stand-in domain.
 
 ### Package Exports
 
-* ``__init__.py`` re-exports behaviour helpers and ``print_info`` for library
-  consumers. No legacy compatibility layer remains; new code should import from
-  the canonical module paths.
+* ``__init__.py`` exposes the package metadata dunders, ``get_config`` and
+  ``print_info`` for library consumers. Behaviour helpers are imported from
+  ``finanzonline_databox.behaviors``.
 
 ---
 
@@ -177,6 +231,8 @@ stand-in domain.
 * ``lib_cli_exit_tools`` centralises exception rendering.
 * ``apply_traceback_preferences`` ensures colour output for ``--traceback``.
 * ``restore_traceback_state`` restores previous preferences after each run.
+* ``cli._error_handling`` maps domain errors to exit codes before
+  ``lib_cli_exit_tools`` renders anything unhandled.
 
 ---
 
@@ -184,11 +240,11 @@ stand-in domain.
 
 **Manual Testing Steps:**
 
-1. ``finanzonline_databox`` → prints CLI help (no default action).
-2. ``finanzonline_databox hello`` → prints greeting.
-3. ``finanzonline_databox fail`` → prints truncated traceback.
-4. ``finanzonline_databox --traceback fail`` → prints full rich traceback.
-5. ``python -m finanzonline_databox --traceback fail`` → matches console output.
+1. ``finanzonline_databox`` -> prints CLI help (no default action).
+2. ``finanzonline_databox hello`` -> prints greeting.
+3. ``finanzonline_databox fail`` -> prints truncated traceback.
+4. ``finanzonline_databox --traceback fail`` -> prints full rich traceback.
+5. ``python -m finanzonline_databox --traceback fail`` -> matches console output.
 
 **Automated Tests:**
 
@@ -198,17 +254,13 @@ stand-in domain.
   script, including traceback behaviour.
 * ``tests/test_behaviors.py`` verifies greeting/failure helpers against custom
   streams.
-* ``tests/test_scripts.py`` validates the automation entry points via the shared
-  scripts CLI.
-* ``tests/test_cli.py`` and ``tests/test_module_entry.py`` now introduce
-  structured recording helpers (``CapturedRun`` and ``PrintedTraceback``) so the
-  assertions read like documented scenarios.
 * Doctests embedded in behaviour and CLI helpers provide micro-regression tests
   for argument handling.
 
 **Edge Cases:**
 
-* Running without subcommand delegates to ``noop_main`` (no output).
+* Running without subcommand prints the help; with an explicit ``--traceback``
+  it delegates to ``noop_main`` (no output).
 * Repeated invocations respect previous traceback preference thanks to
   restoration helpers.
 
@@ -249,9 +301,9 @@ stand-in domain.
 
 **Internal References:**
 
-* README.md – usage examples
-* INSTALL.md – installation options
-* DEVELOPMENT.md – developer workflow
+* README.md - usage examples
+* INSTALL_en.md - installation options
+* DEVELOPMENT.md - developer workflow
 
 **External References:**
 

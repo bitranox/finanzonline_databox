@@ -7,12 +7,20 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+## [1.2.21] 2026-10-05 20:10:59
+
 ### Fixed
 - An all-digit participant ID, user ID, PIN or manufacturer ID written unquoted in `.env` or the
   environment (`FINANZONLINE__TID=123456789`) was refused with "Input should be a valid string":
   lib_layered_config reads such a value as a number, and from 7.0.0 does so in `.env` too. The
   four credential fields now keep the text as written; a leading zero (`0815`) was never converted.
   Requires `lib_layered_config>=7.0.0`.
+- `python -m finanzonline_databox` now runs the same `cli.main()` as the console scripts, so a usage
+  error or unknown command exits 2 under both (it exited 1 under `python -m`).
+
+### Changed
+- Raised dependency floors across major versions: lib_layered_config 7.0.1 (was 5.6.2), btx_lib_mail 3.0.1 (was 1.5.2), filelock 4.0.12 (was 3.32.5); the test suite passes against them. Also raised lib_log_rich to 6.3.8 and the remaining dependency and dev tool floors.
+- `docs/systemdesign/module_reference.md` now describes the `cli` package as it is (`cli/_app.py`, `_commands.py`, `_error_handling.py`, ...) instead of a single `cli.py`.
 
 ## [1.2.20] 2026-07-24 14:03:32
 
