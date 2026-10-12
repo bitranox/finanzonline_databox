@@ -1,6 +1,6 @@
 [project]
 name = "finanzonline_databox"
-version = "1.2.21"
+version = "1.2.22"
 description = "Python library and CLI for downloading documents from FinanzOnline Austria DataBox"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -261,3 +261,7 @@ ignore-vulns = ["GHSA-4xh5-x5gv-qwph", "PYSEC-2022-42969", "PYSEC-2022-43012", "
     "CVE-2025-68146", "CVE-2025-69277", "CVE-2026-21441","CVE-2026-1703","CVE-2026-26007",
     "CVE-2025-8869", "CVE-2026-25990", "CVE-2026-4539", "CVE-2026-25645",
 ]
+
+[tool.uv]
+exclude-newer = "1 day"
+exclude-newer-package = {btx-lib-mail = false, lib-cli-exit-tools = false, lib-layered-config = false, lib-log-rich = false, pydantic = "2026-10-11T18:37:56Z", pydantic-core = "2026-10-11T18:35:45Z", rtoml = "2026-10-12T00:17:16Z"}

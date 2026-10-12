@@ -7,6 +7,8 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+## [1.2.22] 2026-10-12 19:47:54
+
 ### Fixed
 - **A digit-only SMTP user name or password, output directory, email format, language or
   `[lib_log_rich]` service or environment name no longer fails validation.** lib_layered_config
