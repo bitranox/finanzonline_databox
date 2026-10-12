@@ -105,7 +105,9 @@ class AppConfigSchema(BaseModel):
         language: Language code for user-facing messages.
     """
 
-    model_config = ConfigDict(extra="ignore")
+    # lib_layered_config reads an unquoted all-digit .env value as an int; the conversion is
+    # lossless, so turning it back into text keeps a digit-only value valid instead of failing.
+    model_config = ConfigDict(extra="ignore", coerce_numbers_to_str=True)
 
     language: str = Field(default="en", description="Language for messages (en, de, es, fr, ru)")
 
@@ -126,7 +128,9 @@ class FinanzOnlineConfigSchema(BaseModel):
         output_dir: Default output directory for downloads.
     """
 
-    model_config = ConfigDict(extra="ignore")
+    # lib_layered_config reads an unquoted all-digit .env value as an int; the conversion is
+    # lossless, so turning it back into text keeps a digit-only value valid instead of failing.
+    model_config = ConfigDict(extra="ignore", coerce_numbers_to_str=True)
 
     tid: str = Field(default="", description="Participant ID")
     benid: str = Field(default="", description="User ID")
@@ -173,7 +177,9 @@ class EmailConfigSchema(BaseModel):
         default_recipients: Default email recipients.
     """
 
-    model_config = ConfigDict(extra="ignore")
+    # lib_layered_config reads an unquoted all-digit .env value as an int; the conversion is
+    # lossless, so turning it back into text keeps a digit-only value valid instead of failing.
+    model_config = ConfigDict(extra="ignore", coerce_numbers_to_str=True)
 
     smtp_hosts: list[str] = Field(default_factory=list, description="SMTP hosts (host:port)")
     from_address: str = Field(default="noreply@localhost", description="Sender address")
@@ -212,10 +218,17 @@ class EmailConfigSchema(BaseModel):
 class LibLogRichConfigSchema(BaseModel):
     """Schema for [lib_log_rich] configuration section.
 
-    Accepts any fields since lib_log_rich has its own validation.
+    Accepts any fields since lib_log_rich has its own validation. Only the two text fields that
+    every run sets are declared, so that a digit-only name is read back as text before
+    lib_log_rich sees it.
     """
 
-    model_config = ConfigDict(extra="allow")
+    # lib_layered_config reads an unquoted all-digit .env value as an int; the conversion is
+    # lossless, so turning it back into text keeps a digit-only name valid instead of failing.
+    model_config = ConfigDict(extra="allow", coerce_numbers_to_str=True)
+
+    service: str | None = None
+    environment: str | None = None
 
 
 class ConfigSchema(BaseModel):

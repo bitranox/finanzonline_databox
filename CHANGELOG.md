@@ -7,6 +7,14 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+### Fixed
+- **A digit-only SMTP user name or password, output directory, email format, language or
+  `[lib_log_rich]` service or environment name no longer fails validation.** lib_layered_config
+  reads an unquoted `.env` or environment value that spells a number losslessly as an int, so
+  `EMAIL__SMTP_PASSWORD=123456` was refused with `Input should be a valid string`. Every config
+  section model now reads such a number back as the text that was written (the credential fields
+  already did); numeric settings still read as numbers and a boolean is still refused as text.
+
 ## [1.2.21] 2026-10-05 20:10:59
 
 ### Fixed

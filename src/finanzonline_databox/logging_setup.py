@@ -36,6 +36,7 @@ from typing import TYPE_CHECKING, Any
 import lib_log_rich.runtime
 
 from . import __init__conf__
+from .config_schema import LibLogRichConfigSchema
 
 if TYPE_CHECKING:
     from lib_layered_config import Config
@@ -61,7 +62,8 @@ def _build_runtime_config(config: Config) -> lib_log_rich.runtime.RuntimeConfig:
         parameters default to package metadata when not configured.
     """
     log_config_raw: Any = config.get("lib_log_rich", default={})
-    log_config: dict[str, Any] = dict(log_config_raw) if log_config_raw else {}
+    parsed = LibLogRichConfigSchema.model_validate(dict(log_config_raw) if log_config_raw else {})
+    log_config: dict[str, Any] = parsed.model_dump(exclude_none=True)
 
     # Apply defaults for required fields
     if "service" not in log_config:
