@@ -619,7 +619,7 @@ wheels = [
 
 [[package]]
 name = "finanzonline-databox"
-version = "1.2.22"
+version = "1.2.23"
 source = { editable = "." }
 dependencies = [
     { name = "btx-lib-mail" },
