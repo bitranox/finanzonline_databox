@@ -7,6 +7,14 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+### Fixed
+
+- The test suite no longer reads the app and host configuration layers of the machine it runs on.
+  An autouse fixture points lib_layered_config's three app-root variables (`LIB_LAYERED_CONFIG_ETC`,
+  `_MAC_APP_ROOT`, `_PROGRAMDATA`) at an empty directory under `tmp_path`. Before, a system-wide
+  deploy setting `[app] language = "de"` turned two English CLI assertions red on that machine while
+  CI stayed green.
+
 ## [1.2.25] 2026-10-24 15:55:21
 
 ### Changed
