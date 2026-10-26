@@ -7,7 +7,7 @@ requires-python = ">=3.10"
 dependencies = [
     "rich-click>=1.9.9",
     "lib_cli_exit_tools>=2.4.1",
-    "lib_log_rich>=6.5.7",
+    "lib_log_rich>=7.0.1",
     "lib_layered_config>=7.3.0",
     "btx_lib_mail>=4.6.0",
     "pydantic>=2.14.1",
@@ -174,6 +174,7 @@ convention = "google"
 typeCheckingMode = "strict"
 extraPaths = [
   "src",
+  "tests",
 ]
 exclude = [
   "scripts/menu.py",
@@ -186,7 +187,7 @@ exclude = [
 [tool.pytest.ini_options]
 addopts = ["--doctest-modules"]
 doctest_optionflags = ["ELLIPSIS", "NORMALIZE_WHITESPACE"]
-pythonpath = ["src"]
+pythonpath = ["src", "tests"]
 markers = [
   "os_agnostic: test runs on every supported operating system",
   "os_windows: test exercises Windows-only behavior",
@@ -196,6 +197,7 @@ markers = [
   "local_only: test requires local infrastructure (not run in CI)",
   "integration: test exercises real external services",
 ]
+testpaths = ["src", "tests"]
 
 [tool.coverage.run]
 branch = true

@@ -14,6 +14,16 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
   `_MAC_APP_ROOT`, `_PROGRAMDATA`) at an empty directory under `tmp_path`. Before, a system-wide
   deploy setting `[app] language = "de"` turned two English CLI assertions red on that machine while
   CI stayed green.
+- The test suite no longer reads the developer's own user configuration layer. A new autouse fixture,
+  `user_layer_in_tmp_path`, points the user layer (`XDG_CONFIG_HOME`, `LIB_LAYERED_CONFIG_MAC_HOME_ROOT`,
+  `_APPDATA`, `_LOCALAPPDATA`) at an empty directory under `tmp_path`; it leaves `HOME` alone, because
+  git and uv read it.
+- The doctests under `src/` no longer run against the machine's configuration layers: a fixture in
+  `tests/conftest.py` never reaches them. The two layer redirects now live in a rootdir `conftest.py`,
+  their variable lists in `tests/layer_roots.py`; pyproject sets `testpaths` to include `src` and
+  `tests` (which keeps the root `conftest.py` out of doctest collection) and adds `tests` to
+  `pythonpath` and pyright's `extraPaths`. A test checks that every doctest collected from `src/` gets
+  both redirects.
 
 ## [1.2.25] 2026-10-24 15:55:21
 
