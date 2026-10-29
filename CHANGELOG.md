@@ -25,13 +25,13 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
   `pythonpath` and pyright's `extraPaths`. A test checks that every doctest collected from `src/` gets
   both redirects.
 
-## [1.2.25] 2026-10-24 15:55:21
+## [1.2.25] - 2026-10-24
 
 ### Changed
 
 - Raise the btx_lib_mail floor to 4.6.0.
 
-## [1.2.24] 2026-10-15 17:05:24
+## [1.2.24] - 2026-10-15
 
 ### Fixed
 
@@ -52,7 +52,7 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
   (`pytest_runtest_setup` in `tests/conftest.py`); registered in `pyproject.toml` alone they skipped
   nothing, so a test trusting its marker ran everywhere. `tests/test_platform_markers.py` pins it.
 
-## [1.2.23] 2026-10-15 16:18:07
+## [1.2.23] - 2026-10-15
 
 ### Added
 - Python 3.14 and 3.15 are supported versions: declared in the classifiers, so CI and `make test-all`
@@ -65,7 +65,7 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 - `INSTALL_en.md` and `INSTALL_de.md` explain why installing with uv protects against supply-chain
   attacks and why a plain `pip install` from PyPI does not.
 
-## [1.2.22] 2026-10-12 19:47:54
+## [1.2.22] - 2026-10-12
 
 ### Fixed
 - **A digit-only SMTP user name or password, output directory, email format, language or
@@ -75,7 +75,7 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
   section model now reads such a number back as the text that was written (the credential fields
   already did); numeric settings still read as numbers and a boolean is still refused as text.
 
-## [1.2.21] 2026-10-05 20:10:59
+## [1.2.21] - 2026-10-05
 
 ### Fixed
 - An all-digit participant ID, user ID, PIN or manufacturer ID written unquoted in `.env` or the
@@ -90,7 +90,7 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 - Raised dependency floors across major versions: lib_layered_config 7.0.1 (was 5.6.2), btx_lib_mail 3.0.1 (was 1.5.2), filelock 4.0.12 (was 3.32.5); the test suite passes against them. Also raised lib_log_rich to 6.3.8 and the remaining dependency and dev tool floors.
 - `docs/systemdesign/module_reference.md` now describes the `cli` package as it is (`cli/_app.py`, `_commands.py`, `_error_handling.py`, ...) instead of a single `cli.py`.
 
-## [1.2.20] 2026-07-24 14:03:32
+## [1.2.20] - 2026-07-24
 
 ### Fixed
 - CI red on latest ruff (0.16.0): the release widened ruff's own default rule set from
@@ -130,7 +130,7 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 - `logger.error(..., exc_info=True)` in `mail.py` replaced with `logger.exception(...)`
   (`G201`).
 
-## [1.2.19] 2026-07-20
+## [1.2.19] - 2026-07-20
 
 ### Changed
 - Bump the `btx_lib_mail` floor to `>=1.5.0` and forward its `transport`
@@ -145,7 +145,7 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 - List `btx_lib_mail` and `orjson` under Key Dependencies, which had been
   omitted despite both being declared dependencies.
 
-## [1.2.18] 2026-07-19
+## [1.2.18] - 2026-07-19
 
 ### Changed
 - Bump `btx_lib_mail` floor to `>=1.4.0` and wrap the SMTP password in
@@ -153,7 +153,7 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
   btx_lib_mail 1.4.0 which now stores `smtp_password` as a `SecretStr`.
 - Declare the `pydantic` dependency that the mail adapter now imports directly.
 
-## [1.2.17] 2026-06-14
+## [1.2.17] - 2026-06-14
 
 ### Changed
 - Added a `typed_click.py` facade wrapping rich-click's `option` / `version_option` / `argument` decorators behind explicit, fully-known signatures, keeping the CLI strict-clean under pyright 1.1.410 (`reportUnknownMemberType`) without disabling the rule (ignore isolated to the facade).
