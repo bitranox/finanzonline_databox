@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
+import lib_log_rich.runtime
 import pytest
 
 from finanzonline_databox.cli import (
@@ -14,6 +15,7 @@ from finanzonline_databox.cli import (
     _resolve_notification_recipients,  # pyright: ignore[reportPrivateUsage]
     apply_traceback_preferences,
     cli,
+    main,
     restore_traceback_state,
     snapshot_traceback_state,
 )
@@ -242,6 +244,31 @@ class TestInfoCommand:
         assert result.exit_code == 0
         # Should contain package name or version info
         assert "finanzonline" in result.output.lower() or "version" in result.output.lower()
+
+
+class TestMainEntryPoint:
+    """Tests for main(), the entry point of the console script."""
+
+    def test_a_failing_logging_shutdown_keeps_the_command_exit_code(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        """A slow log sink makes lib_log_rich's shutdown() raise; main() must still return the command's code."""
+        real_shutdown = lib_log_rich.runtime.shutdown
+
+        def shutdown_then_fail() -> None:
+            real_shutdown()
+            raise RuntimeError("Queue worker failed to stop within the allotted timeout")
+
+        monkeypatch.setattr(lib_log_rich.runtime, "shutdown", shutdown_then_fail)
+
+        exit_code = main(["info"])
+
+        err = capsys.readouterr().err
+        assert exit_code == 0, err
+        assert "Warning: logging did not shut down cleanly, some log events may be lost: Queue worker failed" in err
+        assert "Traceback" not in err
 
 
 class TestFailCommand:

@@ -656,3 +656,6 @@ msgstr "Haga clic para expandir"
 msgid "Chunk %d (days %d-%d): %d from API, %d after filter - %d unread"
 msgstr "Bloque %d (días %d-%d): %d de API, %d después de filtrar - %d no leídas"
 
+#: src/finanzonline_databox/cli/_app.py
+msgid "Warning: logging did not shut down cleanly, some log events may be lost: {error}"
+msgstr "Advertencia: el registro no se cerró correctamente; es posible que se hayan perdido algunos eventos de registro: {error}"

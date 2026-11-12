@@ -675,3 +675,7 @@ msgstr "Échoués"
 
 msgid "Total Size"
 msgstr "Taille Totale"
+
+#: src/finanzonline_databox/cli/_app.py
+msgid "Warning: logging did not shut down cleanly, some log events may be lost: {error}"
+msgstr "Avertissement : la journalisation ne s'est pas arrêtée proprement, certains événements de journal ont pu être perdus : {error}"

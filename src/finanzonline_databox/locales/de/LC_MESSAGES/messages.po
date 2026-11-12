@@ -673,3 +673,6 @@ msgstr "Klicken zum Ausklappen"
 msgid "Chunk %d (days %d-%d): %d from API, %d after filter - %d unread"
 msgstr "Chunk %d (Tage %d-%d): %d von API, %d nach Filter - %d ungelesen"
 
+#: src/finanzonline_databox/cli/_app.py
+msgid "Warning: logging did not shut down cleanly, some log events may be lost: {error}"
+msgstr "Warnung: Die Protokollierung wurde nicht sauber beendet, einige Protokolleinträge gingen möglicherweise verloren: {error}"

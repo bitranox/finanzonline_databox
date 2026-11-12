@@ -513,3 +513,6 @@ msgstr ""
 msgid "Unknown return code"
 msgstr ""
 
+#: src/finanzonline_databox/cli/_app.py
+msgid "Warning: logging did not shut down cleanly, some log events may be lost: {error}"
+msgstr ""

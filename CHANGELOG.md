@@ -9,6 +9,10 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ### Fixed
 
+- A failure while shutting down logging no longer replaces the command's result: `main()` used to
+  end in a `RuntimeError` traceback ("Queue worker failed to stop within the allotted timeout") when a
+  log sink such as an unreachable Graylog stalled lib_log_rich's queue, losing the exit code of a
+  finished command. It now prints one warning on stderr and keeps the exit code.
 - `notebooks/Quickstart.ipynb` installs the checkout it runs in, so CI's "Execute notebooks" job
   tests the commit under test. It used to install `git+https://github.com/...` every time, which is
   the pushed default branch, so a pull request's notebook run tested the code already there.
@@ -29,6 +33,11 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
   `tests` (which keeps the root `conftest.py` out of doctest collection) and adds `tests` to
   `pythonpath` and pyright's `extraPaths`. A test checks that every doctest collected from `src/` gets
   both redirects.
+
+### Changed
+
+- Requires `lib_log_rich>=8.2.0`, which backs off from an unreachable Graylog instead of stalling
+  the log queue.
 
 ## [1.2.25] - 2026-10-24
 
