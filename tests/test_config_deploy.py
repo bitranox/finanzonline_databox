@@ -21,7 +21,7 @@ class TestExtractDeployedPaths:
 
     def test_extracts_created_paths(self) -> None:
         """Extracts paths for CREATED action."""
-        from lib_layered_config.examples.deploy import DeployAction, DeployResult
+        from lib_layered_config import DeployAction, DeployResult
 
         result = DeployResult(
             destination=Path("/tmp/config.toml"),
@@ -34,7 +34,7 @@ class TestExtractDeployedPaths:
 
     def test_extracts_overwritten_paths(self) -> None:
         """Extracts paths for OVERWRITTEN action."""
-        from lib_layered_config.examples.deploy import DeployAction, DeployResult
+        from lib_layered_config import DeployAction, DeployResult
 
         result = DeployResult(
             destination=Path("/tmp/config.toml"),
@@ -47,7 +47,7 @@ class TestExtractDeployedPaths:
 
     def test_skips_kept_paths(self) -> None:
         """Skips paths for KEPT action."""
-        from lib_layered_config.examples.deploy import DeployAction, DeployResult
+        from lib_layered_config import DeployAction, DeployResult
 
         result = DeployResult(
             destination=Path("/tmp/config.toml"),
@@ -59,7 +59,7 @@ class TestExtractDeployedPaths:
 
     def test_extracts_dot_d_results(self) -> None:
         """Extracts paths from nested dot_d_results."""
-        from lib_layered_config.examples.deploy import DeployAction, DeployResult
+        from lib_layered_config import DeployAction, DeployResult
 
         dot_d_result = DeployResult(
             destination=Path("/tmp/config.d/extra.toml"),
@@ -77,7 +77,7 @@ class TestExtractDeployedPaths:
 
     def test_extracts_multiple_paths(self) -> None:
         """Extracts multiple paths from multiple results."""
-        from lib_layered_config.examples.deploy import DeployAction, DeployResult
+        from lib_layered_config import DeployAction, DeployResult
 
         results = [
             DeployResult(
@@ -102,7 +102,7 @@ class TestDeployConfiguration:
     @patch("finanzonline_databox.config_deploy.get_default_config_path")
     def test_deploys_to_user_target(self, mock_get_path: MagicMock, mock_deploy: MagicMock) -> None:
         """Deploys configuration to user target."""
-        from lib_layered_config.examples.deploy import DeployAction, DeployResult
+        from lib_layered_config import DeployAction, DeployResult
 
         mock_get_path.return_value = Path("/package/defaultconfig.toml")
         mock_deploy.return_value = [
@@ -125,7 +125,7 @@ class TestDeployConfiguration:
     @patch("finanzonline_databox.config_deploy.get_default_config_path")
     def test_deploys_with_force(self, mock_get_path: MagicMock, mock_deploy: MagicMock) -> None:
         """Force flag is passed to deploy_config."""
-        from lib_layered_config.examples.deploy import DeployAction, DeployResult
+        from lib_layered_config import DeployAction, DeployResult
 
         mock_get_path.return_value = Path("/package/defaultconfig.toml")
         mock_deploy.return_value = [
@@ -146,7 +146,7 @@ class TestDeployConfiguration:
     @patch("finanzonline_databox.config_deploy.get_default_config_path")
     def test_deploys_with_profile(self, mock_get_path: MagicMock, mock_deploy: MagicMock) -> None:
         """Profile is passed to deploy_config."""
-        from lib_layered_config.examples.deploy import DeployAction, DeployResult
+        from lib_layered_config import DeployAction, DeployResult
 
         mock_get_path.return_value = Path("/package/defaultconfig.toml")
         mock_deploy.return_value = [
@@ -167,7 +167,7 @@ class TestDeployConfiguration:
     @patch("finanzonline_databox.config_deploy.get_default_config_path")
     def test_deploys_to_multiple_targets(self, mock_get_path: MagicMock, mock_deploy: MagicMock) -> None:
         """Deploys to multiple targets at once."""
-        from lib_layered_config.examples.deploy import DeployAction, DeployResult
+        from lib_layered_config import DeployAction, DeployResult
 
         mock_get_path.return_value = Path("/package/defaultconfig.toml")
         mock_deploy.return_value = [
@@ -194,7 +194,7 @@ class TestDeployConfiguration:
     @patch("finanzonline_databox.config_deploy.get_default_config_path")
     def test_returns_empty_when_no_files_created(self, mock_get_path: MagicMock, mock_deploy: MagicMock) -> None:
         """Returns empty list when all files are skipped."""
-        from lib_layered_config.examples.deploy import DeployAction, DeployResult
+        from lib_layered_config import DeployAction, DeployResult
 
         mock_get_path.return_value = Path("/package/defaultconfig.toml")
         mock_deploy.return_value = [
